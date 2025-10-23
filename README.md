@@ -1,3 +1,7 @@
+# AI-Stock-Assistant-Node
+
+AI股票助手 Node.js 后端服务
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
@@ -23,7 +27,7 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+基于 [Nest](https://github.com/nestjs/nest) 框架的AI股票助手后端服务，提供智能股票分析和推荐功能。
 
 ## Project setup
 
