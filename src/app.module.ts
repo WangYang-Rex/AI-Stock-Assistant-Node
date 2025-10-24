@@ -8,9 +8,11 @@ import { TradingModule } from './trading/trading.module';
 import { QuotesModule } from './quotes/quotes.module';
 import { HoldingsModule } from './holdings/holdings.module';
 import { AiSignalsModule } from './aisignals/aisignals.module';
+import { LoggingModule } from './logging/logging.module';
 
 @Module({
   imports: [
+    LoggingModule,
     DatabaseModule,
     HealthModule,
     StockModule,
