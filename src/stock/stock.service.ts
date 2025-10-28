@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Stock } from '../entities/stock.entity';
+import { getStockInfo } from '../lib/stock/stockUtil';
 
 @Injectable()
 export class StockService {
@@ -16,9 +17,48 @@ export class StockService {
     return await this.stockRepository.save(stock);
   }
 
+  // 通过API获取股票信息并添加到数据库
+  async addStockFromAPI(code: string, marketCode: number): Promise<Stock> {
+    try {
+      // 1. 检查股票是否已存在
+      const existingStock = await this.findByCode(code);
+      if (existingStock) {
+        throw new Error(`股票代码 ${code} 已存在于数据库中`);
+      }
+
+      // 2. 调用API获取股票信息
+      const stockInfo = await getStockInfo(code, marketCode);
+
+      // 3. 将API返回的数据映射到数据库实体
+      const stockData: Partial<Stock> = {
+        code: stockInfo.code,
+        name: stockInfo.name,
+        market: stockInfo.market,
+        marketCode: stockInfo.marketCode,
+        latestPrice: stockInfo.latestPrice,
+        changePercent: stockInfo.changePercent,
+        changeAmount: stockInfo.changeAmount,
+        openPrice: stockInfo.openPrice,
+        highPrice: stockInfo.highPrice,
+        lowPrice: stockInfo.lowPrice,
+        previousClosePrice: stockInfo.previousClosePrice,
+        volume: stockInfo.volume,
+        pe: stockInfo.pe,
+        // 注意：StockInfo 中的 volumeAmount, amplitude, turnoverRate 字段在 Stock 实体中不存在
+      };
+
+      // 4. 保存到数据库
+      const stock = this.stockRepository.create(stockData);
+      return await this.stockRepository.save(stock);
+    } catch (error) {
+      console.error(`添加股票 ${code} 失败:`, error);
+      throw error;
+    }
+  }
+
   // 根据股票代码查找股票
-  async findBySymbol(symbol: string): Promise<Stock | null> {
-    return await this.stockRepository.findOne({ where: { symbol } });
+  async findByCode(code: string): Promise<Stock | null> {
+    return await this.stockRepository.findOne({ where: { code } });
   }
 
   // 获取所有股票
@@ -53,15 +93,20 @@ export class StockService {
 
   // 更新股票价格信息
   async updateStockPrice(
-    symbol: string,
+    code: string,
     priceData: {
       latestPrice?: number;
-      previousClose?: number;
+      previousClosePrice?: number;
       changePercent?: number;
       changeAmount?: number;
+      openPrice?: number;
+      highPrice?: number;
+      lowPrice?: number;
+      volume?: number;
+      pe?: number;
     },
   ): Promise<Stock | null> {
-    const stock = await this.findBySymbol(symbol);
+    const stock = await this.findByCode(code);
     if (!stock) {
       return null;
     }
@@ -71,13 +116,13 @@ export class StockService {
 
   // 更新持仓信息
   async updateHoldingInfo(
-    symbol: string,
+    code: string,
     holdingData: {
       holdingQuantity?: number;
       holdingCost?: number;
     },
   ): Promise<Stock | null> {
-    const stock = await this.findBySymbol(symbol);
+    const stock = await this.findByCode(code);
     if (!stock) {
       return null;
     }
@@ -92,8 +137,8 @@ export class StockService {
   }
 
   // 计算并更新市值
-  async calculateMarketValue(symbol: string): Promise<Stock | null> {
-    const stock = await this.findBySymbol(symbol);
+  async calculateMarketValue(code: string): Promise<Stock | null> {
+    const stock = await this.findByCode(code);
     if (!stock || !stock.holdingQuantity || !stock.latestPrice) {
       return null;
     }
@@ -109,6 +154,48 @@ export class StockService {
       .where('stock.holdingQuantity > 0')
       .orderBy('stock.marketValue', 'DESC')
       .getMany();
+  }
+
+  // 批量更新股票信息
+  async batchUpdateStocks(
+    updates: Array<{ code: string; updateData: Partial<Stock> }>,
+  ): Promise<Stock[]> {
+    const results: Stock[] = [];
+
+    for (const update of updates) {
+      const stock = await this.findByCode(update.code);
+      if (stock) {
+        const updatedStock = await this.updateStock(
+          stock.id,
+          update.updateData,
+        );
+        if (updatedStock) {
+          results.push(updatedStock);
+        }
+      }
+    }
+
+    return results;
+  }
+
+  // 更新市盈率
+  async updatePE(code: string, pe: number): Promise<Stock | null> {
+    const stock = await this.findByCode(code);
+    if (!stock) {
+      return null;
+    }
+
+    return await this.updateStock(stock.id, { pe });
+  }
+
+  // 更新成交量
+  async updateVolume(code: string, volume: number): Promise<Stock | null> {
+    const stock = await this.findByCode(code);
+    if (!stock) {
+      return null;
+    }
+
+    return await this.updateStock(stock.id, { volume });
   }
 
   // 获取股票统计信息

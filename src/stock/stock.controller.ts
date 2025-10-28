@@ -12,6 +12,23 @@ export class StockController {
     return await this.stockService.createStock(stockData);
   }
 
+  // 通过API添加股票
+  @Post('add')
+  async addStock(
+    @Body() body: { code: string; marketCode: number },
+  ): Promise<Stock | { error: string }> {
+    try {
+      const stock = await this.stockService.addStockFromAPI(
+        body.code,
+        body.marketCode,
+      );
+      return stock;
+    } catch (error: any) {
+      const errorMessage = error instanceof Error ? error.message : '未知错误';
+      return { error: errorMessage };
+    }
+  }
+
   // 获取所有股票
   @Post('list')
   async getAllStocks(
@@ -35,9 +52,12 @@ export class StockController {
   }
 
   // 根据股票代码获取股票
-  @Post('get-by-symbol')
-  async getStockBySymbol(@Body() body: { symbol: string }) {
-    return await this.stockService.findBySymbol(body.symbol);
+  @Post('get-by-code')
+  async getStockByCode(
+    @Body() body: { code: string },
+  ): Promise<Stock | { error: string }> {
+    const stock = await this.stockService.findByCode(body.code);
+    return stock || { error: 'Stock not found' };
   }
 
   // 更新股票信息
@@ -58,18 +78,28 @@ export class StockController {
   async updateStockPrice(
     @Body()
     body: {
-      symbol: string;
+      code: string;
       latestPrice?: number;
-      previousClose?: number;
+      previousClosePrice?: number;
       changePercent?: number;
       changeAmount?: number;
+      openPrice?: number;
+      highPrice?: number;
+      lowPrice?: number;
+      volume?: number;
+      pe?: number;
     },
   ) {
-    return await this.stockService.updateStockPrice(body.symbol, {
+    return await this.stockService.updateStockPrice(body.code, {
       latestPrice: body.latestPrice,
-      previousClose: body.previousClose,
+      previousClosePrice: body.previousClosePrice,
       changePercent: body.changePercent,
       changeAmount: body.changeAmount,
+      openPrice: body.openPrice,
+      highPrice: body.highPrice,
+      lowPrice: body.lowPrice,
+      volume: body.volume,
+      pe: body.pe,
     });
   }
 
@@ -78,12 +108,12 @@ export class StockController {
   async updateHoldingInfo(
     @Body()
     body: {
-      symbol: string;
+      code: string;
       holdingQuantity?: number;
       holdingCost?: number;
     },
   ) {
-    return await this.stockService.updateHoldingInfo(body.symbol, {
+    return await this.stockService.updateHoldingInfo(body.code, {
       holdingQuantity: body.holdingQuantity,
       holdingCost: body.holdingCost,
     });
@@ -91,14 +121,44 @@ export class StockController {
 
   // 计算市值
   @Post('calculate-market-value')
-  async calculateMarketValue(@Body() body: { symbol: string }) {
-    return await this.stockService.calculateMarketValue(body.symbol);
+  async calculateMarketValue(@Body() body: { code: string }) {
+    return await this.stockService.calculateMarketValue(body.code);
   }
 
   // 获取持仓股票列表
   @Post('holdings')
   async getHoldingStocks() {
     return await this.stockService.getHoldingStocks();
+  }
+
+  // 批量更新股票信息
+  @Post('batch-update')
+  async batchUpdateStocks(
+    @Body()
+    body: {
+      updates: Array<{ code: string; updateData: Partial<Stock> }>;
+    },
+  ): Promise<Stock[]> {
+    const result = await this.stockService.batchUpdateStocks(body.updates);
+    return result;
+  }
+
+  // 更新市盈率
+  @Post('update-pe')
+  async updatePE(
+    @Body() body: { code: string; pe: number },
+  ): Promise<Stock | { error: string }> {
+    const result = await this.stockService.updatePE(body.code, body.pe);
+    return result || { error: 'Stock not found' };
+  }
+
+  // 更新成交量
+  @Post('update-volume')
+  async updateVolume(
+    @Body() body: { code: string; volume: number },
+  ): Promise<Stock | { error: string }> {
+    const result = await this.stockService.updateVolume(body.code, body.volume);
+    return result || { error: 'Stock not found' };
   }
 
   // 获取股票统计信息

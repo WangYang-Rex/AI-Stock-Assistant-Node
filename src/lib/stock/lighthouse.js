@@ -6,9 +6,9 @@
  * 优化功能：
  * - ✅ 添加请求头（User-Agent、Referer）
  * - ✅ 请求重试机制
- * - ✅ 数据缓存
  * - ✅ 请求间隔控制
  * - ✅ 完善错误处理
+ * - ✅ 实时数据获取（无缓存）
  */
 const http = require('http');
 const https = require('https');
@@ -22,11 +22,6 @@ const CONFIG = {
   REQUEST_TIMEOUT: 10000,        // 请求超时时间(ms)
   MAX_RETRIES: 3,                // 最大重试次数
   RETRY_DELAY: 1000,             // 重试间隔(ms)
-  
-  // 缓存配置
-  CACHE_ENABLED: true,           // 是否启用缓存
-  CACHE_TTL: 60 * 1000,          // 缓存有效期(ms) - 1分钟
-  CACHE_FILE: 'lighthouse.cache.json',
   
   // 输出配置
   OUTPUT_CSV: 'lighthouse.csv',
@@ -66,46 +61,6 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/**
- * 读取缓存
- */
-function readCache() {
-  if (!CONFIG.CACHE_ENABLED) return null;
-  
-  try {
-    if (!fs.existsSync(CONFIG.CACHE_FILE)) return null;
-    
-    const cache = JSON.parse(fs.readFileSync(CONFIG.CACHE_FILE, 'utf-8'));
-    const now = Date.now();
-    
-    // 检查缓存是否过期
-    if (cache.timestamp && (now - cache.timestamp) < CONFIG.CACHE_TTL) {
-      return cache.data;
-    }
-    
-    return null;
-  } catch (error) {
-    console.warn('⚠️  读取缓存失败:', error.message);
-    return null;
-  }
-}
-
-/**
- * 写入缓存
- */
-function writeCache(data) {
-  if (!CONFIG.CACHE_ENABLED) return;
-  
-  try {
-    const cache = {
-      timestamp: Date.now(),
-      data: data
-    };
-    fs.writeFileSync(CONFIG.CACHE_FILE, JSON.stringify(cache, null, 2));
-  } catch (error) {
-    console.warn('⚠️  写入缓存失败:', error.message);
-  }
-}
 
 /**
  * HTTP请求函数（支持 gzip 解压和重试）
@@ -201,30 +156,40 @@ function validateData(json) {
 }
 
 /**
- * 数据处理函数
+ * 数据处理函数 - 根据 stock.md 字段标准优化
+ * 将东方财富API返回的原始数据转换为标准化的股票数据格式
  */
 function processData(rawData) {
   return rawData
     .filter(item => item.f2 !== null && item.f2 !== '-')  // 过滤停牌或无效数据
     .map(item => ({
-      code: String(item.f12).padStart(6, '0'),
-      name: item.f14 || '未知',
-      price: item.f2 || 0,
-      changePercent: item.f3 || 0,
-      changeAmount: item.f4 || 0,
-      volume: item.f5 || 0,
-      amount: item.f6 || 0,
-      amplitude: item.f7 || 0,
-      turnoverRate: item.f8 || 0,
-      peRatio: item.f9 || 0,
-      high: item.f15 || 0,
-      low: item.f16 || 0,
-      open: item.f17 || 0,
-      close: item.f18 || 0,
-      market: item.f13 === 1 ? '上交所' : '深交所',
-      marketCode: item.f13
+      // 基础信息字段
+      code: String(item.f12).padStart(6, '0'),                    // f12: 股票代码
+      name: item.f14 || '未知',                                   // f14: 股票名称
+      market: item.f13 === 1 ? '上交所' : '深交所',              // f13: 市场代码映射
+      marketCode: item.f13,                                      // f13: 市场代码
+      
+      // 价格相关字段
+      latestPrice: Number(item.f2) || 0,                         // f2: 最新价
+      changePercent: Number(item.f3) || 0,                       // f3: 涨跌幅(%)
+      changeAmount: Number(item.f4) || 0,                        // f4: 涨跌额
+      openPrice: Number(item.f17) || 0,                          // f17: 开盘价
+      highPrice: Number(item.f15) || 0,                          // f15: 最高价
+      lowPrice: Number(item.f16) || 0,                            // f16: 最低价
+      previousClosePrice: Number(item.f18) || 0,                 // f18: 昨收价
+      
+      // 交易量相关字段
+      volume: Number(item.f5) || 0,                              // f5: 成交量(手)
+      volumeAmount: Number(item.f6) || 0,                         // f6: 成交额(元)
+      
+      // 财务指标字段
+      pe: Number(item.f9) || 0,                                  // f9: 市盈率
+      
+      // 扩展字段（保留原有功能）
+      amplitude: Number(item.f7) || 0,                           // f7: 振幅(%)
+      turnoverRate: Number(item.f8) || 0,                        // f8: 换手率(%)
     }))
-    .sort((a, b) => b.changePercent - a.changePercent);
+    .sort((a, b) => b.changePercent - a.changePercent);          // 按涨跌幅降序排列
 }
 
 /**
@@ -263,7 +228,7 @@ function showStatistics(rows) {
   
   const avgChange = (rows.reduce((sum, r) => sum + r.changePercent, 0) / rows.length).toFixed(2);
   const totalVolume = rows.reduce((sum, r) => sum + r.volume, 0);
-  const totalAmount = rows.reduce((sum, r) => sum + r.amount, 0);
+  const totalAmount = rows.reduce((sum, r) => sum + r.volumeAmount, 0);
   
   console.log('\n📈 市场统计:');
   console.log(`  上涨: ${rising} 只 | 下跌: ${falling} 只 | 平盘: ${flat} 只`);
@@ -279,31 +244,19 @@ function showStatistics(rows) {
   try {
     console.log('🚀 开始获取灯塔工厂概念股数据...\n');
     
-    // 1. 尝试读取缓存
-    let cachedData = readCache();
-    let rows;
+    // 1. 发起网络请求获取最新数据
+    console.log('🌐 从东方财富API获取最新数据...');
+    const txt = await fetch(URL);
+    const json = JSON.parse(txt);
     
-    if (cachedData) {
-      console.log('💾 使用缓存数据（缓存有效期内）');
-      rows = cachedData.rows;
-    } else {
-      // 2. 发起网络请求
-      console.log('🌐 从东方财富API获取数据...');
-      const txt = await fetch(URL);
-      const json = JSON.parse(txt);
-      
-      // 3. 数据验证
-      validateData(json);
-      
-      // 4. 数据处理
-      rows = processData(json.data.diff);
-      
-      // 5. 写入缓存
-      writeCache({ rows, timestamp: Date.now() });
-      console.log('✅ 数据获取成功\n');
-    }
+    // 2. 数据验证
+    validateData(json);
     
-    // 6. 显示数据
+    // 3. 数据处理
+    const rows = processData(json.data.diff);
+    console.log('✅ 数据获取成功\n');
+    
+    // 4. 显示数据
     console.log('📊 灯塔工厂概念股 – 实时行情（东方财富）');
     console.log(`📅 查询时间: ${new Date().toLocaleString('zh-CN')}`);
     console.log(`📈 成功获取 ${rows.length} 只股票数据\n`);
@@ -311,33 +264,31 @@ function showStatistics(rows) {
       代码: r.code,
       名称: r.name,
       市场: r.market,
-      最新价: r.price,
+      最新价: r.latestPrice,
       涨跌幅: `${r.changePercent}%`,
       涨跌额: r.changeAmount,
       成交量: r.volume,
-      成交额: r.amount,
+      成交额: r.volumeAmount,
       振幅: `${r.amplitude}%`,
       换手率: `${r.turnoverRate}%`,
-      市盈率: r.peRatio,
-      最高: r.high,
-      最低: r.low,
-      今开: r.open,
-      昨收: r.close,
+      市盈率: r.pe,
+      最高: r.highPrice,
+      最低: r.lowPrice,
+      今开: r.openPrice,
+      昨收: r.previousClosePrice,
       市场代码: r.marketCode
     })));
     
-    // 7. 显示统计信息
+    // 5. 显示统计信息
     showStatistics(rows);
     
-    // 8. 保存文件
+    // 6. 保存文件
     console.log('\n💾 保存数据...');
-    // saveToCSV(rows, CONFIG.OUTPUT_CSV);
-    console.log(`  ✅ CSV已保存: ${CONFIG.OUTPUT_CSV}`);
     
     saveToJSON(rows, CONFIG.OUTPUT_JSON);
     console.log(`  ✅ JSON已保存: ${CONFIG.OUTPUT_JSON}`);
     
-    // 9. 性能统计
+    // 7. 性能统计
     const duration = Date.now() - startTime;
     console.log(`\n⏱️  总耗时: ${duration}ms\n`);
     

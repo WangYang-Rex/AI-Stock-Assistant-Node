@@ -60,6 +60,16 @@ export class Stock {
   })
   changePercent: number;
 
+  // 涨跌额
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    comment: '涨跌额',
+  })
+  changeAmount: number;
+
   // 开盘价
   @Column({
     type: 'decimal',
@@ -90,24 +100,6 @@ export class Stock {
   })
   lowPrice: number;
 
-  // 涨跌额
-  @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 2,
-    nullable: true,
-    comment: '涨跌额',
-  })
-  changeAmount: number;
-
-  // 成交量
-  @Column({
-    type: 'bigint',
-    nullable: true,
-    comment: '成交量(股)',
-  })
-  volume: number;
-
   // 昨收价
   @Column({
     type: 'decimal',
@@ -117,6 +109,14 @@ export class Stock {
     comment: '昨收价',
   })
   previousClosePrice: number;
+
+  // 成交量
+  @Column({
+    type: 'bigint',
+    nullable: true,
+    comment: '成交量(股)',
+  })
+  volume: number;
 
   // 持仓数量
   @Column({
