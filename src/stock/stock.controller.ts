@@ -53,6 +53,54 @@ export class StockController {
     return { success };
   }
 
+  // 更新股票价格信息
+  @Post('update-price')
+  async updateStockPrice(
+    @Body()
+    body: {
+      symbol: string;
+      latestPrice?: number;
+      previousClose?: number;
+      changePercent?: number;
+      changeAmount?: number;
+    },
+  ) {
+    return await this.stockService.updateStockPrice(body.symbol, {
+      latestPrice: body.latestPrice,
+      previousClose: body.previousClose,
+      changePercent: body.changePercent,
+      changeAmount: body.changeAmount,
+    });
+  }
+
+  // 更新持仓信息
+  @Post('update-holding')
+  async updateHoldingInfo(
+    @Body()
+    body: {
+      symbol: string;
+      holdingQuantity?: number;
+      holdingCost?: number;
+    },
+  ) {
+    return await this.stockService.updateHoldingInfo(body.symbol, {
+      holdingQuantity: body.holdingQuantity,
+      holdingCost: body.holdingCost,
+    });
+  }
+
+  // 计算市值
+  @Post('calculate-market-value')
+  async calculateMarketValue(@Body() body: { symbol: string }) {
+    return await this.stockService.calculateMarketValue(body.symbol);
+  }
+
+  // 获取持仓股票列表
+  @Post('holdings')
+  async getHoldingStocks() {
+    return await this.stockService.getHoldingStocks();
+  }
+
   // 获取股票统计信息
   @Post('stats/overview')
   async getStockStats() {

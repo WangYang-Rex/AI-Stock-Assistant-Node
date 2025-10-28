@@ -8,41 +8,76 @@ import {
 } from 'typeorm';
 
 @Entity('quotes')
-@Index(['symbol'])
-@Index(['quoteDate'])
-@Index(['quoteTime'])
-@Index(['symbol', 'quoteDate'])
-@Index(['symbol', 'quoteTime'])
+@Index(['code'], { unique: false })
+@Index(['market'])
+@Index(['snapshotTime'])
+@Index(['snapshotDate'])
 export class Quote {
   @PrimaryGeneratedColumn()
   id: number;
 
   // 股票代码
   @Column({ type: 'varchar', length: 20, comment: '股票代码' })
-  symbol: string;
+  code: string;
 
-  // 行情日期
-  @Column({ type: 'date', comment: '行情日期' })
-  quoteDate: Date;
+  // 股票名称
+  @Column({ type: 'varchar', length: 100, comment: '股票名称' })
+  name: string;
 
-  // 行情时间
-  @Column({ type: 'time', comment: '行情时间' })
-  quoteTime: string;
+  // 市场
+  @Column({ type: 'varchar', length: 20, comment: '市场' })
+  market: string;
 
-  // 股票价格
+  // 市场代码
+  @Column({ type: 'varchar', length: 20, comment: '市场代码' })
+  marketCode: string;
+
+  // 市盈率
+  @Column({
+    type: 'decimal',
+    precision: 8,
+    scale: 2,
+    nullable: true,
+    comment: '市盈率',
+  })
+  pe: number;
+
+  // 最新价
   @Column({
     type: 'decimal',
     precision: 10,
     scale: 2,
-    comment: '股票价格',
+    nullable: true,
+    comment: '最新价',
   })
-  price: number;
+  latestPrice: number;
+
+  // 涨跌幅
+  @Column({
+    type: 'decimal',
+    precision: 8,
+    scale: 4,
+    nullable: true,
+    comment: '涨跌幅(%)',
+  })
+  changePercent: number;
+
+  // 涨跌额
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    comment: '涨跌额',
+  })
+  changeAmount: number;
 
   // 开盘价
   @Column({
     type: 'decimal',
     precision: 10,
     scale: 2,
+    nullable: true,
     comment: '开盘价',
   })
   openPrice: number;
@@ -52,6 +87,7 @@ export class Quote {
     type: 'decimal',
     precision: 10,
     scale: 2,
+    nullable: true,
     comment: '最高价',
   })
   highPrice: number;
@@ -61,35 +97,53 @@ export class Quote {
     type: 'decimal',
     precision: 10,
     scale: 2,
+    nullable: true,
     comment: '最低价',
   })
   lowPrice: number;
 
-  // 收盘价
+  // 成交量
+  @Column({
+    type: 'bigint',
+    nullable: true,
+    comment: '成交量(股)',
+  })
+  volume: number;
+
+  // 成交额
+  @Column({
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+    comment: '成交额(元)',
+  })
+  volumeAmount: number;
+
+  // 昨收价
   @Column({
     type: 'decimal',
     precision: 10,
     scale: 2,
-    comment: '收盘价',
-  })
-  closePrice: number;
-
-  // 成交量
-  @Column({
-    type: 'bigint',
-    comment: '成交量',
-  })
-  volume: number;
-
-  // 换手率
-  @Column({
-    type: 'decimal',
-    precision: 8,
-    scale: 4,
     nullable: true,
-    comment: '换手率(%)',
+    comment: '昨收价',
   })
-  turnoverRate: number;
+  previousClosePrice: number;
+
+  // 快照时间
+  @Column({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    comment: '快照时间',
+  })
+  snapshotTime: Date;
+
+  // 快照日期
+  @Column({
+    type: 'date',
+    comment: '快照日期',
+  })
+  snapshotDate: Date;
 
   // 创建时间
   @CreateDateColumn({ comment: '创建时间' })

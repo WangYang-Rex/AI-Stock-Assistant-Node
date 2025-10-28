@@ -1,136 +1,166 @@
-import { Controller, Post, Body } from '@nestjs/common';
-import { QuotesService } from './quotes.service';
-import { Quote } from '../entities/quote.entity';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  ParseIntPipe,
+  HttpStatus,
+  HttpCode,
+} from '@nestjs/common';
+import { QuotesService, CreateQuoteDto, UpdateQuoteDto, QuoteQueryDto } from './quotes.service';
 
 @Controller('quotes')
 export class QuotesController {
   constructor(private readonly quotesService: QuotesService) {}
 
-  // 创建行情记录
-  @Post('create')
-  async createQuote(@Body() quoteData: Partial<Quote>) {
-    return await this.quotesService.createQuote(quoteData);
+  /**
+   * 创建行情快照
+   */
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() createQuoteDto: CreateQuoteDto) {
+    return await this.quotesService.createQuote(createQuoteDto);
   }
 
-  // 批量创建行情记录
-  @Post('create-batch')
-  async createMultipleQuotes(@Body() body: { quoteDataList: Partial<Quote>[] }) {
-    return await this.quotesService.createMultipleQuotes(body.quoteDataList);
+  /**
+   * 批量创建行情快照
+   */
+  @Post('batch')
+  @HttpCode(HttpStatus.CREATED)
+  async createBatch(@Body() createQuoteDtos: CreateQuoteDto[]) {
+    return await this.quotesService.createQuotes(createQuoteDtos);
   }
 
-  // 获取所有行情记录
-  @Post('list')
-  async getAllQuotes() {
-    return await this.quotesService.findAll();
+  /**
+   * 获取所有行情快照
+   */
+  @Get()
+  async findAll(@Query() queryDto: QuoteQueryDto) {
+    return await this.quotesService.findAll(queryDto);
   }
 
-  // 根据股票代码获取行情记录
-  @Post('get-by-symbol')
-  async getQuotesBySymbol(@Body() body: { symbol: string }) {
-    return await this.quotesService.findBySymbol(body.symbol);
+  /**
+   * 根据ID获取行情快照
+   */
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return await this.quotesService.findOne(id);
   }
 
-  // 根据日期获取行情记录
-  @Post('get-by-date')
-  async getQuotesByDate(@Body() body: { quoteDate: string }) {
-    const quoteDate = new Date(body.quoteDate);
-    return await this.quotesService.findByDate(quoteDate);
+  /**
+   * 获取指定股票的最新行情
+   */
+  @Get('latest/:code')
+  async findLatestByCode(@Param('code') code: string) {
+    return await this.quotesService.findLatestByCode(code);
   }
 
-  // 根据股票代码和日期获取行情记录
-  @Post('get-by-symbol-and-date')
-  async getQuotesBySymbolAndDate(
-    @Body()
-    body: {
-      symbol: string;
-      quoteDate: string;
-    },
+  /**
+   * 获取指定股票的历史行情
+   */
+  @Get('history/:code')
+  async findByCode(
+    @Param('code') code: string,
+    @Query('startTime') startTime?: string,
+    @Query('endTime') endTime?: string,
+    @Query('limit', ParseIntPipe) limit?: number,
   ) {
-    const quoteDate = new Date(body.quoteDate);
-    return await this.quotesService.findBySymbolAndDate(body.symbol, quoteDate);
+    const start = startTime ? new Date(startTime) : undefined;
+    const end = endTime ? new Date(endTime) : undefined;
+    return await this.quotesService.findByCode(code, start, end, limit);
   }
 
-  // 根据股票代码和日期范围获取行情记录
-  @Post('get-by-symbol-and-date-range')
-  async getQuotesBySymbolAndDateRange(
-    @Body()
-    body: {
-      symbol: string;
-      startDate: string;
-      endDate: string;
-    },
+  /**
+   * 根据日期获取指定股票的行情
+   */
+  @Get('date/:code')
+  async findByCodeAndDate(
+    @Param('code') code: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('limit', ParseIntPipe) limit?: number,
   ) {
-    const startDate = new Date(body.startDate);
-    const endDate = new Date(body.endDate);
-    return await this.quotesService.findBySymbolAndDateRange(
-      body.symbol,
-      startDate,
-      endDate,
-    );
+    const start = startDate ? new Date(startDate) : undefined;
+    const end = endDate ? new Date(endDate) : undefined;
+    return await this.quotesService.findByCodeAndDate(code, start, end, limit);
   }
 
-  // 根据价格范围获取行情记录
-  @Post('get-by-price-range')
-  async getQuotesByPriceRange(
-    @Body()
-    body: {
-      minPrice: number;
-      maxPrice: number;
-    },
+  /**
+   * 获取指定日期的所有行情
+   */
+  @Get('date')
+  async findByDate(@Query('date') date: string) {
+    const targetDate = new Date(date);
+    return await this.quotesService.findByDate(targetDate);
+  }
+
+  /**
+   * 更新行情快照
+   */
+  @Put(':id')
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateQuoteDto: UpdateQuoteDto,
   ) {
-    return await this.quotesService.findByPriceRange(body.minPrice, body.maxPrice);
+    return await this.quotesService.update(id, updateQuoteDto);
   }
 
-  // 获取最新行情记录
-  @Post('get-latest')
-  async getLatestQuotes(
-    @Body()
-    body: {
-      symbol?: string;
-      limit?: number;
-    },
+  /**
+   * 删除行情快照
+   */
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    await this.quotesService.remove(id);
+  }
+
+  /**
+   * 批量删除指定时间范围的行情快照
+   */
+  @Delete('range')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeByTimeRange(
+    @Query('startTime') startTime: string,
+    @Query('endTime') endTime: string,
   ) {
-    return await this.quotesService.findLatest(body.symbol, body.limit || 100);
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    await this.quotesService.removeByTimeRange(start, end);
   }
 
-  // 获取行情统计信息
-  @Post('stats')
-  async getQuoteStats(
-    @Body()
-    body: {
-      symbol?: string;
-      startDate?: string;
-      endDate?: string;
-    },
-  ) {
-    const startDate = body.startDate ? new Date(body.startDate) : undefined;
-    const endDate = body.endDate ? new Date(body.endDate) : undefined;
-    return await this.quotesService.getQuoteStats(body.symbol, startDate, endDate);
+  /**
+   * 获取市场统计信息
+   */
+  @Get('stats/market')
+  async getMarketStats() {
+    return await this.quotesService.getMarketStats();
   }
 
-  // 更新行情记录
-  @Post('update')
-  async updateQuote(
-    @Body()
-    body: {
-      id: number;
-      updateData: Partial<Quote>;
-    },
-  ) {
-    return await this.quotesService.updateQuote(body.id, body.updateData);
+  /**
+   * 获取涨跌幅排行榜
+   */
+  @Get('rankings/gainers')
+  async getTopGainers(@Query('limit', ParseIntPipe) limit?: number) {
+    return await this.quotesService.getTopGainers(limit);
   }
 
-  // 删除行情记录
-  @Post('delete')
-  async deleteQuote(@Body() body: { id: number }) {
-    const success = await this.quotesService.deleteQuote(body.id);
-    return { success };
+  /**
+   * 获取跌幅排行榜
+   */
+  @Get('rankings/losers')
+  async getTopLosers(@Query('limit', ParseIntPipe) limit?: number) {
+    return await this.quotesService.getTopLosers(limit);
   }
 
-  // 清理过期数据
-  @Post('clean-old-data')
-  async cleanOldData(@Body() body: { daysToKeep?: number }) {
-    const deletedCount = await this.quotesService.cleanOldData(body.daysToKeep || 30);
-    return { deletedCount, message: `已清理 ${deletedCount} 条过期数据` };
+  /**
+   * 获取成交量排行榜
+   */
+  @Get('rankings/volume')
+  async getTopVolume(@Query('limit', ParseIntPipe) limit?: number) {
+    return await this.quotesService.getTopVolume(limit);
   }
 }

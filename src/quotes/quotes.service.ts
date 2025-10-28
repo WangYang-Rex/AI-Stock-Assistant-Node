@@ -1,7 +1,53 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThan, MoreThan } from 'typeorm';
+import { Repository, Between, FindManyOptions } from 'typeorm';
 import { Quote } from '../entities/quote.entity';
+
+export interface CreateQuoteDto {
+  code: string;
+  name: string;
+  market: string;
+  marketCode: string;
+  pe?: number;
+  latestPrice?: number;
+  changePercent?: number;
+  changeAmount?: number;
+  openPrice?: number;
+  highPrice?: number;
+  lowPrice?: number;
+  volume?: number;
+  volumeAmount?: number;
+  previousClosePrice?: number;
+  snapshotTime?: Date;
+  snapshotDate?: Date;
+}
+
+export interface UpdateQuoteDto {
+  pe?: number;
+  latestPrice?: number;
+  changePercent?: number;
+  changeAmount?: number;
+  openPrice?: number;
+  highPrice?: number;
+  lowPrice?: number;
+  volume?: number;
+  volumeAmount?: number;
+  previousClosePrice?: number;
+  snapshotTime?: Date;
+  snapshotDate?: Date;
+}
+
+export interface QuoteQueryDto {
+  code?: string;
+  market?: string;
+  marketCode?: string;
+  startTime?: Date;
+  endTime?: Date;
+  startDate?: Date;
+  endDate?: Date;
+  page?: number;
+  limit?: number;
+}
 
 @Injectable()
 export class QuotesService {
@@ -10,181 +56,217 @@ export class QuotesService {
     private readonly quoteRepository: Repository<Quote>,
   ) {}
 
-  // 创建行情记录
-  async createQuote(quoteData: Partial<Quote>): Promise<Quote> {
-    const quote = this.quoteRepository.create(quoteData);
+  /**
+   * 创建行情快照
+   */
+  async createQuote(createQuoteDto: CreateQuoteDto): Promise<Quote> {
+    const quote = this.quoteRepository.create(createQuoteDto);
     return await this.quoteRepository.save(quote);
   }
 
-  // 批量创建行情记录
-  async createMultipleQuotes(
-    quoteDataList: Partial<Quote>[],
-  ): Promise<Quote[]> {
-    const quotes = this.quoteRepository.create(quoteDataList);
+  /**
+   * 批量创建行情快照
+   */
+  async createQuotes(createQuoteDtos: CreateQuoteDto[]): Promise<Quote[]> {
+    const quotes = this.quoteRepository.create(createQuoteDtos);
     return await this.quoteRepository.save(quotes);
   }
 
-  // 获取所有行情记录
-  async findAll(): Promise<Quote[]> {
-    return await this.quoteRepository.find({
-      order: { quoteDate: 'DESC', quoteTime: 'DESC' },
-    });
-  }
+  /**
+   * 获取所有行情快照
+   */
+  async findAll(queryDto: QuoteQueryDto = {}): Promise<{ quotes: Quote[]; total: number }> {
+    const {
+      code,
+      market,
+      marketCode,
+      startTime,
+      endTime,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 10,
+    } = queryDto;
 
-  // 根据股票代码获取行情记录
-  async findBySymbol(symbol: string): Promise<Quote[]> {
-    return await this.quoteRepository.find({
-      where: { symbol },
-      order: { quoteDate: 'DESC', quoteTime: 'DESC' },
-    });
-  }
-
-  // 根据日期获取行情记录
-  async findByDate(quoteDate: Date): Promise<Quote[]> {
-    return await this.quoteRepository.find({
-      where: { quoteDate },
-      order: { quoteTime: 'ASC' },
-    });
-  }
-
-  // 根据股票代码和日期获取行情记录
-  async findBySymbolAndDate(
-    symbol: string,
-    quoteDate: Date,
-  ): Promise<Quote[]> {
-    return await this.quoteRepository.find({
-      where: { symbol, quoteDate },
-      order: { quoteTime: 'ASC' },
-    });
-  }
-
-  // 根据股票代码和日期范围获取行情记录
-  async findBySymbolAndDateRange(
-    symbol: string,
-    startDate: Date,
-    endDate: Date,
-  ): Promise<Quote[]> {
-    return await this.quoteRepository.find({
-      where: {
-        symbol,
-        quoteDate: Between(startDate, endDate),
-      },
-      order: { quoteDate: 'ASC', quoteTime: 'ASC' },
-    });
-  }
-
-  // 根据价格范围获取行情记录
-  async findByPriceRange(
-    minPrice: number,
-    maxPrice: number,
-  ): Promise<Quote[]> {
-    return await this.quoteRepository.find({
-      where: {
-        price: Between(minPrice, maxPrice),
-      },
-      order: { quoteDate: 'DESC', quoteTime: 'DESC' },
-    });
-  }
-
-  // 获取最新行情记录
-  async findLatest(symbol?: string, limit: number = 100): Promise<Quote[]> {
-    const queryBuilder = this.quoteRepository.createQueryBuilder('quote');
-
-    if (symbol) {
-      queryBuilder.where('quote.symbol = :symbol', { symbol });
+    const where: any = {};
+    
+    if (code) {
+      where.code = code;
     }
-
-    return await queryBuilder
-      .orderBy('quote.quoteDate', 'DESC')
-      .addOrderBy('quote.quoteTime', 'DESC')
-      .limit(limit)
-      .getMany();
-  }
-
-  // 获取行情统计信息
-  async getQuoteStats(
-    symbol?: string,
-    startDate?: Date,
-    endDate?: Date,
-  ): Promise<{
-    totalQuotes: number;
-    avgPrice: number;
-    maxPrice: number;
-    minPrice: number;
-    totalVolume: number;
-    priceRange: {
-      highest: number;
-      lowest: number;
-    };
-  }> {
-    const queryBuilder = this.quoteRepository.createQueryBuilder('quote');
-
-    if (symbol) {
-      queryBuilder.where('quote.symbol = :symbol', { symbol });
+    
+    if (market) {
+      where.market = market;
     }
-
+    
+    if (marketCode) {
+      where.marketCode = marketCode;
+    }
+    
+    if (startTime && endTime) {
+      where.snapshotTime = Between(startTime, endTime);
+    } else if (startTime) {
+      where.snapshotTime = Between(startTime, new Date());
+    }
+    
     if (startDate && endDate) {
-      queryBuilder.andWhere(
-        'quote.quoteDate BETWEEN :startDate AND :endDate',
-        {
-          startDate,
-          endDate,
-        },
-      );
+      where.snapshotDate = Between(startDate, endDate);
+    } else if (startDate) {
+      where.snapshotDate = Between(startDate, new Date());
     }
 
-    const quotes = await queryBuilder.getMany();
-
-    const totalQuotes = quotes.length;
-    const prices = quotes.map((q) => Number(q.price));
-    const volumes = quotes.map((q) => Number(q.volume));
-
-    const avgPrice =
-      prices.length > 0 ? prices.reduce((sum, price) => sum + price, 0) / prices.length : 0;
-    const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
-    const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
-    const totalVolume = volumes.reduce((sum, volume) => sum + volume, 0);
-
-    const highPrices = quotes.map((q) => Number(q.highPrice));
-    const lowPrices = quotes.map((q) => Number(q.lowPrice));
-
-    return {
-      totalQuotes,
-      avgPrice,
-      maxPrice,
-      minPrice,
-      totalVolume,
-      priceRange: {
-        highest: highPrices.length > 0 ? Math.max(...highPrices) : 0,
-        lowest: lowPrices.length > 0 ? Math.min(...lowPrices) : 0,
-      },
+    const options: FindManyOptions<Quote> = {
+      where,
+      order: { snapshotTime: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
     };
+
+    const [quotes, total] = await this.quoteRepository.findAndCount(options);
+    
+    return { quotes, total };
   }
 
-  // 更新行情记录
-  async updateQuote(
-    id: number,
-    updateData: Partial<Quote>,
-  ): Promise<Quote | null> {
-    await this.quoteRepository.update(id, updateData);
+  /**
+   * 根据ID获取行情快照
+   */
+  async findOne(id: number): Promise<Quote> {
     return await this.quoteRepository.findOne({ where: { id } });
   }
 
-  // 删除行情记录
-  async deleteQuote(id: number): Promise<boolean> {
-    const result = await this.quoteRepository.delete(id);
-    return result.affected ? result.affected > 0 : false;
+  /**
+   * 获取指定股票的最新行情
+   */
+  async findLatestByCode(code: string): Promise<Quote> {
+    return await this.quoteRepository.findOne({
+      where: { code },
+      order: { snapshotTime: 'DESC' },
+    });
   }
 
-  // 清理过期数据（保留最近N天的数据）
-  async cleanOldData(daysToKeep: number = 30): Promise<number> {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+  /**
+   * 获取指定股票的历史行情
+   */
+  async findByCode(
+    code: string,
+    startTime?: Date,
+    endTime?: Date,
+    limit: number = 100,
+  ): Promise<Quote[]> {
+    const where: any = { code };
+    
+    if (startTime && endTime) {
+      where.snapshotTime = Between(startTime, endTime);
+    } else if (startTime) {
+      where.snapshotTime = Between(startTime, new Date());
+    }
 
-    const result = await this.quoteRepository.delete({
-      quoteDate: LessThan(cutoffDate),
+    return await this.quoteRepository.find({
+      where,
+      order: { snapshotTime: 'DESC' },
+      take: limit,
     });
+  }
 
-    return result.affected || 0;
+  /**
+   * 根据日期获取指定股票的行情
+   */
+  async findByCodeAndDate(
+    code: string,
+    startDate?: Date,
+    endDate?: Date,
+    limit: number = 100,
+  ): Promise<Quote[]> {
+    const where: any = { code };
+    
+    if (startDate && endDate) {
+      where.snapshotDate = Between(startDate, endDate);
+    } else if (startDate) {
+      where.snapshotDate = Between(startDate, new Date());
+    }
+
+    return await this.quoteRepository.find({
+      where,
+      order: { snapshotDate: 'DESC', snapshotTime: 'DESC' },
+      take: limit,
+    });
+  }
+
+  /**
+   * 获取指定日期的所有行情
+   */
+  async findByDate(date: Date): Promise<Quote[]> {
+    return await this.quoteRepository.find({
+      where: { snapshotDate: date },
+      order: { snapshotTime: 'DESC' },
+    });
+  }
+
+  /**
+   * 更新行情快照
+   */
+  async update(id: number, updateQuoteDto: UpdateQuoteDto): Promise<Quote> {
+    await this.quoteRepository.update(id, updateQuoteDto);
+    return await this.findOne(id);
+  }
+
+  /**
+   * 删除行情快照
+   */
+  async remove(id: number): Promise<void> {
+    await this.quoteRepository.delete(id);
+  }
+
+  /**
+   * 批量删除指定时间范围的行情快照
+   */
+  async removeByTimeRange(startTime: Date, endTime: Date): Promise<void> {
+    await this.quoteRepository.delete({
+      snapshotTime: Between(startTime, endTime),
+    });
+  }
+
+  /**
+   * 获取市场统计信息
+   */
+  async getMarketStats(): Promise<any[]> {
+    return await this.quoteRepository
+      .createQueryBuilder('quote')
+      .select('quote.market', 'market')
+      .addSelect('COUNT(*)', 'count')
+      .addSelect('AVG(quote.latestPrice)', 'avgPrice')
+      .addSelect('MAX(quote.latestPrice)', 'maxPrice')
+      .addSelect('MIN(quote.latestPrice)', 'minPrice')
+      .groupBy('quote.market')
+      .getRawMany();
+  }
+
+  /**
+   * 获取涨跌幅排行榜
+   */
+  async getTopGainers(limit: number = 10): Promise<Quote[]> {
+    return await this.quoteRepository.find({
+      order: { changePercent: 'DESC' },
+      take: limit,
+    });
+  }
+
+  /**
+   * 获取跌幅排行榜
+   */
+  async getTopLosers(limit: number = 10): Promise<Quote[]> {
+    return await this.quoteRepository.find({
+      order: { changePercent: 'ASC' },
+      take: limit,
+    });
+  }
+
+  /**
+   * 获取成交量排行榜
+   */
+  async getTopVolume(limit: number = 10): Promise<Quote[]> {
+    return await this.quoteRepository.find({
+      order: { volume: 'DESC' },
+      take: limit,
+    });
   }
 }
