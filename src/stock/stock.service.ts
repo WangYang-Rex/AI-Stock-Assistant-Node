@@ -17,41 +17,75 @@ export class StockService {
     return await this.stockRepository.save(stock);
   }
 
-  // 通过API获取股票信息并添加到数据库
-  async addStockFromAPI(code: string, marketCode: number): Promise<Stock> {
+  // 同步股票信息：通过API获取股票信息，不存在则新增，存在则更新
+  async syncStockFromAPI(
+    code: string,
+    marketCode: number,
+  ): Promise<{ stock: Stock; isNew: boolean }> {
     try {
-      // 1. 检查股票是否已存在
-      const existingStock = await this.findByCode(code);
-      if (existingStock) {
-        throw new Error(`股票代码 ${code} 已存在于数据库中`);
-      }
-
-      // 2. 调用API获取股票信息
+      // 1. 调用API获取股票信息
       const stockInfo = await getStockInfo(code, marketCode);
 
-      // 3. 将API返回的数据映射到数据库实体
-      const stockData: Partial<Stock> = {
-        code: stockInfo.code,
-        name: stockInfo.name,
-        market: stockInfo.market,
-        marketCode: stockInfo.marketCode,
-        latestPrice: stockInfo.latestPrice,
-        changePercent: stockInfo.changePercent,
-        changeAmount: stockInfo.changeAmount,
-        openPrice: stockInfo.openPrice,
-        highPrice: stockInfo.highPrice,
-        lowPrice: stockInfo.lowPrice,
-        previousClosePrice: stockInfo.previousClosePrice,
-        volume: stockInfo.volume,
-        pe: stockInfo.pe,
-        // 注意：StockInfo 中的 volumeAmount, amplitude, turnoverRate 字段在 Stock 实体中不存在
-      };
+      // 2. 检查股票是否已存在
+      const existingStock = await this.findByCode(code);
 
-      // 4. 保存到数据库
-      const stock = this.stockRepository.create(stockData);
-      return await this.stockRepository.save(stock);
+      if (existingStock) {
+        // 3. 如果存在，更新股票信息（保留持仓相关字段）
+        const updateData: Partial<Stock> = {
+          name: stockInfo.name,
+          market: stockInfo.market,
+          marketCode: stockInfo.marketCode,
+          latestPrice: stockInfo.latestPrice,
+          changePercent: stockInfo.changePercent,
+          changeAmount: stockInfo.changeAmount,
+          openPrice: stockInfo.openPrice,
+          highPrice: stockInfo.highPrice,
+          lowPrice: stockInfo.lowPrice,
+          previousClosePrice: stockInfo.previousClosePrice,
+          volume: stockInfo.volume,
+          pe: stockInfo.pe,
+        };
+
+        // 如果更新了最新价格，重新计算市值
+        if (updateData.latestPrice && existingStock.holdingQuantity) {
+          updateData.marketValue =
+            existingStock.holdingQuantity * updateData.latestPrice;
+        }
+
+        const updatedStock = await this.updateStock(
+          existingStock.id,
+          updateData,
+        );
+        return { stock: updatedStock!, isNew: false };
+      } else {
+        // 4. 如果不存在，创建新股票记录
+        const stockData: Partial<Stock> = {
+          code: stockInfo.code,
+          name: stockInfo.name,
+          market: stockInfo.market,
+          marketCode: stockInfo.marketCode,
+          latestPrice: stockInfo.latestPrice,
+          changePercent: stockInfo.changePercent,
+          changeAmount: stockInfo.changeAmount,
+          openPrice: stockInfo.openPrice,
+          highPrice: stockInfo.highPrice,
+          lowPrice: stockInfo.lowPrice,
+          previousClosePrice: stockInfo.previousClosePrice,
+          volume: stockInfo.volume,
+          pe: stockInfo.pe,
+          // 初始化持仓相关字段为0
+          holdingQuantity: 0,
+          holdingCost: 0,
+          marketValue: 0,
+          // 注意：StockInfo 中的 volumeAmount, amplitude, turnoverRate 字段在 Stock 实体中不存在
+        };
+
+        const stock = this.stockRepository.create(stockData);
+        const savedStock = await this.stockRepository.save(stock);
+        return { stock: savedStock, isNew: true };
+      }
     } catch (error) {
-      console.error(`添加股票 ${code} 失败:`, error);
+      console.error(`同步股票 ${code} 失败:`, error);
       throw error;
     }
   }
@@ -196,6 +230,54 @@ export class StockService {
     }
 
     return await this.updateStock(stock.id, { volume });
+  }
+
+  // 更新市值字段
+  async updateMarketValue(
+    code: string,
+    marketValue: number,
+  ): Promise<Stock | null> {
+    const stock = await this.findByCode(code);
+    if (!stock) {
+      return null;
+    }
+
+    return await this.updateStock(stock.id, { marketValue });
+  }
+
+  // 根据市值范围查找股票
+  async findByMarketValueRange(
+    minValue: number,
+    maxValue: number,
+  ): Promise<Stock[]> {
+    return await this.stockRepository
+      .createQueryBuilder('stock')
+      .where('stock.marketValue BETWEEN :minValue AND :maxValue', {
+        minValue,
+        maxValue,
+      })
+      .orderBy('stock.marketValue', 'DESC')
+      .getMany();
+  }
+
+  // 获取市值排行榜
+  async getMarketValueRanking(limit: number = 10): Promise<Stock[]> {
+    return await this.stockRepository
+      .createQueryBuilder('stock')
+      .where('stock.marketValue > 0')
+      .orderBy('stock.marketValue', 'DESC')
+      .limit(limit)
+      .getMany();
+  }
+
+  // 获取持仓成本排行榜
+  async getHoldingCostRanking(limit: number = 10): Promise<Stock[]> {
+    return await this.stockRepository
+      .createQueryBuilder('stock')
+      .where('stock.holdingCost > 0')
+      .orderBy('stock.holdingCost', 'DESC')
+      .limit(limit)
+      .getMany();
   }
 
   // 获取股票统计信息

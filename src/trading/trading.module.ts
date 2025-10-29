@@ -3,9 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Trading } from '../entities/trading.entity';
 import { TradingService } from './trading.service';
 import { TradingController } from './trading.controller';
+import { CommonModule } from '../common/common.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Trading])],
+  imports: [TypeOrmModule.forFeature([Trading]), CommonModule],
   controllers: [TradingController],
   providers: [TradingService],
   exports: [TradingService],

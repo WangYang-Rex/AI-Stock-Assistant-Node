@@ -14,7 +14,7 @@ async function createTable() {
     console.log('数据库连接成功！');
 
     // 读取SQL文件
-    const sql = fs.readFileSync('./create-all-tables.sql', 'utf8');
+    const sql = fs.readFileSync('./create-all-tables-updated.sql', 'utf8');
     
     // 执行SQL
     await connection.execute(sql);

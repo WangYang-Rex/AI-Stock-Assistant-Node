@@ -11,7 +11,12 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
-import { QuotesService, CreateQuoteDto, UpdateQuoteDto, QuoteQueryDto } from './quotes.service';
+import { QuotesService } from './quotes.service';
+import type {
+  CreateQuoteDto,
+  UpdateQuoteDto,
+  QuoteQueryDto,
+} from './quotes.service';
 
 @Controller('quotes')
 export class QuotesController {
@@ -136,8 +141,22 @@ export class QuotesController {
    * 获取市场统计信息
    */
   @Get('stats/market')
-  async getMarketStats() {
-    return await this.quotesService.getMarketStats();
+  async getMarketStats(): Promise<
+    {
+      market: string;
+      count: string;
+      avgPrice: string;
+      maxPrice: string;
+      minPrice: string;
+    }[]
+  > {
+    return (await this.quotesService.getMarketStats()) as {
+      market: string;
+      count: string;
+      avgPrice: string;
+      maxPrice: string;
+      minPrice: string;
+    }[];
   }
 
   /**

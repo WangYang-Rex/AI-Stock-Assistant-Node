@@ -1,15 +1,26 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { TradingService } from './trading.service';
 import { Trading } from '../entities/trading.entity';
+import { ResponseService } from '../common/services/response.service';
+import { ApiResponse } from '../common/dto/response.dto';
 
 @Controller('trading')
 export class TradingController {
-  constructor(private readonly tradingService: TradingService) {}
+  constructor(
+    private readonly tradingService: TradingService,
+    private readonly responseService: ResponseService,
+  ) {}
 
   // 创建交易记录
   @Post('create')
-  async createTrading(@Body() tradingData: Partial<Trading>) {
-    return await this.tradingService.createTrading(tradingData);
+  async createTrading(
+    @Body() tradingData: Partial<Trading>,
+  ): Promise<ApiResponse<Trading | null>> {
+    return this.responseService.handleAsync(
+      () => this.tradingService.createTrading(tradingData),
+      '交易记录创建成功',
+      '交易记录创建失败',
+    );
   }
 
   // 批量创建交易记录

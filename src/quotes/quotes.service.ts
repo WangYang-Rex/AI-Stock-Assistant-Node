@@ -75,7 +75,9 @@ export class QuotesService {
   /**
    * 获取所有行情快照
    */
-  async findAll(queryDto: QuoteQueryDto = {}): Promise<{ quotes: Quote[]; total: number }> {
+  async findAll(
+    queryDto: QuoteQueryDto = {},
+  ): Promise<{ quotes: Quote[]; total: number }> {
     const {
       code,
       market,
@@ -89,25 +91,25 @@ export class QuotesService {
     } = queryDto;
 
     const where: any = {};
-    
+
     if (code) {
       where.code = code;
     }
-    
+
     if (market) {
       where.market = market;
     }
-    
+
     if (marketCode) {
       where.marketCode = marketCode;
     }
-    
+
     if (startTime && endTime) {
       where.snapshotTime = Between(startTime, endTime);
     } else if (startTime) {
       where.snapshotTime = Between(startTime, new Date());
     }
-    
+
     if (startDate && endDate) {
       where.snapshotDate = Between(startDate, endDate);
     } else if (startDate) {
@@ -122,21 +124,21 @@ export class QuotesService {
     };
 
     const [quotes, total] = await this.quoteRepository.findAndCount(options);
-    
+
     return { quotes, total };
   }
 
   /**
    * 根据ID获取行情快照
    */
-  async findOne(id: number): Promise<Quote> {
+  async findOne(id: number): Promise<Quote | null> {
     return await this.quoteRepository.findOne({ where: { id } });
   }
 
   /**
    * 获取指定股票的最新行情
    */
-  async findLatestByCode(code: string): Promise<Quote> {
+  async findLatestByCode(code: string): Promise<Quote | null> {
     return await this.quoteRepository.findOne({
       where: { code },
       order: { snapshotTime: 'DESC' },
@@ -153,7 +155,7 @@ export class QuotesService {
     limit: number = 100,
   ): Promise<Quote[]> {
     const where: any = { code };
-    
+
     if (startTime && endTime) {
       where.snapshotTime = Between(startTime, endTime);
     } else if (startTime) {
@@ -177,7 +179,7 @@ export class QuotesService {
     limit: number = 100,
   ): Promise<Quote[]> {
     const where: any = { code };
-    
+
     if (startDate && endDate) {
       where.snapshotDate = Between(startDate, endDate);
     } else if (startDate) {
@@ -204,7 +206,10 @@ export class QuotesService {
   /**
    * 更新行情快照
    */
-  async update(id: number, updateQuoteDto: UpdateQuoteDto): Promise<Quote> {
+  async update(
+    id: number,
+    updateQuoteDto: UpdateQuoteDto,
+  ): Promise<Quote | null> {
     await this.quoteRepository.update(id, updateQuoteDto);
     return await this.findOne(id);
   }
@@ -228,7 +233,15 @@ export class QuotesService {
   /**
    * 获取市场统计信息
    */
-  async getMarketStats(): Promise<any[]> {
+  async getMarketStats(): Promise<
+    {
+      market: string;
+      count: string;
+      avgPrice: string;
+      maxPrice: string;
+      minPrice: string;
+    }[]
+  > {
     return await this.quoteRepository
       .createQueryBuilder('quote')
       .select('quote.market', 'market')

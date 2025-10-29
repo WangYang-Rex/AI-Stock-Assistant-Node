@@ -40,7 +40,9 @@ export class AiSignalsService {
   }
 
   // 根据信号类型获取AI信号记录
-  async findBySignalType(signalType: 'buy' | 'sell' | 'hold'): Promise<AiSignal[]> {
+  async findBySignalType(
+    signalType: 'buy' | 'sell' | 'hold',
+  ): Promise<AiSignal[]> {
     return await this.aiSignalRepository.find({
       where: { signalType },
       order: { signalTime: 'DESC' },
@@ -156,30 +158,35 @@ export class AiSignalsService {
     const signals = await queryBuilder.getMany();
 
     const totalSignals = signals.length;
-    const buySignals = signals.filter(s => s.signalType === 'buy').length;
-    const sellSignals = signals.filter(s => s.signalType === 'sell').length;
-    const holdSignals = signals.filter(s => s.signalType === 'hold').length;
-    
-    const avgConfidence = signals.length > 0 
-      ? signals.reduce((sum, s) => sum + s.confidence, 0) / signals.length 
-      : 0;
-    
-    const highConfidenceSignals = signals.filter(s => s.confidence >= 80).length;
+    const buySignals = signals.filter((s) => s.signalType === 'buy').length;
+    const sellSignals = signals.filter((s) => s.signalType === 'sell').length;
+    const holdSignals = signals.filter((s) => s.signalType === 'hold').length;
+
+    const avgConfidence =
+      signals.length > 0
+        ? signals.reduce((sum, s) => sum + s.confidence, 0) / signals.length
+        : 0;
+
+    const highConfidenceSignals = signals.filter(
+      (s) => s.confidence >= 80,
+    ).length;
 
     // 按模型版本统计
     const modelVersionMap = new Map<string, number>();
-    signals.forEach(signal => {
+    signals.forEach((signal) => {
       const count = modelVersionMap.get(signal.modelVersion) || 0;
       modelVersionMap.set(signal.modelVersion, count + 1);
     });
-    const byModelVersion = Array.from(modelVersionMap.entries()).map(([modelVersion, count]) => ({
-      modelVersion,
-      count,
-    }));
+    const byModelVersion = Array.from(modelVersionMap.entries()).map(
+      ([modelVersion, count]) => ({
+        modelVersion,
+        count,
+      }),
+    );
 
     // 按股票代码统计
     const symbolMap = new Map<string, number>();
-    signals.forEach(signal => {
+    signals.forEach((signal) => {
       const count = symbolMap.get(signal.symbol) || 0;
       symbolMap.set(signal.symbol, count + 1);
     });

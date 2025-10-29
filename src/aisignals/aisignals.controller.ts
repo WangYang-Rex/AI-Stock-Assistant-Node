@@ -1,10 +1,15 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { AiSignalsService } from './aisignals.service';
 import { AiSignal } from '../entities/aisignal.entity';
+import { ResponseService } from '../common/services/response.service';
+import { ApiResponse } from '../common/dto/response.dto';
 
 @Controller('aisignals')
 export class AiSignalsController {
-  constructor(private readonly aiSignalsService: AiSignalsService) {}
+  constructor(
+    private readonly aiSignalsService: AiSignalsService,
+    private readonly responseService: ResponseService,
+  ) {}
 
   // 创建AI信号记录
   @Post('create')
@@ -14,8 +19,12 @@ export class AiSignalsController {
 
   // 批量创建AI信号记录
   @Post('create-batch')
-  async createMultipleAiSignals(@Body() body: { aiSignalDataList: Partial<AiSignal>[] }) {
-    return await this.aiSignalsService.createMultipleAiSignals(body.aiSignalDataList);
+  async createMultipleAiSignals(
+    @Body() body: { aiSignalDataList: Partial<AiSignal>[] },
+  ) {
+    return await this.aiSignalsService.createMultipleAiSignals(
+      body.aiSignalDataList,
+    );
   }
 
   // 获取所有AI信号记录
@@ -32,7 +41,9 @@ export class AiSignalsController {
 
   // 根据信号类型获取AI信号记录
   @Post('get-by-signal-type')
-  async getAiSignalsBySignalType(@Body() body: { signalType: 'buy' | 'sell' | 'hold' }) {
+  async getAiSignalsBySignalType(
+    @Body() body: { signalType: 'buy' | 'sell' | 'hold' },
+  ) {
     return await this.aiSignalsService.findBySignalType(body.signalType);
   }
 
@@ -54,7 +65,11 @@ export class AiSignalsController {
   ) {
     const startTime = new Date(body.startTime);
     const endTime = new Date(body.endTime);
-    return await this.aiSignalsService.findBySymbolAndTimeRange(body.symbol, startTime, endTime);
+    return await this.aiSignalsService.findBySymbolAndTimeRange(
+      body.symbol,
+      startTime,
+      endTime,
+    );
   }
 
   // 根据置信度范围获取AI信号记录
@@ -66,7 +81,10 @@ export class AiSignalsController {
       maxConfidence: number;
     },
   ) {
-    return await this.aiSignalsService.findByConfidenceRange(body.minConfidence, body.maxConfidence);
+    return await this.aiSignalsService.findByConfidenceRange(
+      body.minConfidence,
+      body.maxConfidence,
+    );
   }
 
   // 获取最新AI信号记录
@@ -78,7 +96,10 @@ export class AiSignalsController {
       limit?: number;
     },
   ) {
-    return await this.aiSignalsService.findLatest(body.symbol, body.limit || 100);
+    return await this.aiSignalsService.findLatest(
+      body.symbol,
+      body.limit || 100,
+    );
   }
 
   // 根据股票代码和信号类型获取记录
@@ -90,7 +111,10 @@ export class AiSignalsController {
       signalType: 'buy' | 'sell' | 'hold';
     },
   ) {
-    return await this.aiSignalsService.getSignalsBySymbolAndType(body.symbol, body.signalType);
+    return await this.aiSignalsService.getSignalsBySymbolAndType(
+      body.symbol,
+      body.signalType,
+    );
   }
 
   // 获取高置信度信号
@@ -120,7 +144,11 @@ export class AiSignalsController {
   ) {
     const startTime = body.startTime ? new Date(body.startTime) : undefined;
     const endTime = body.endTime ? new Date(body.endTime) : undefined;
-    return await this.aiSignalsService.getAiSignalStats(body.symbol, startTime, endTime);
+    return await this.aiSignalsService.getAiSignalStats(
+      body.symbol,
+      startTime,
+      endTime,
+    );
   }
 
   // 更新AI信号记录
@@ -145,7 +173,9 @@ export class AiSignalsController {
   // 清理过期数据
   @Post('clean-old-data')
   async cleanOldData(@Body() body: { daysToKeep?: number }) {
-    const deletedCount = await this.aiSignalsService.cleanOldData(body.daysToKeep || 30);
+    const deletedCount = await this.aiSignalsService.cleanOldData(
+      body.daysToKeep || 30,
+    );
     return { deletedCount, message: `已清理 ${deletedCount} 条过期数据` };
   }
 }
