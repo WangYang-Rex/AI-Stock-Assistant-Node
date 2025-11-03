@@ -6,6 +6,7 @@
 
 const https = require('https');
 const http = require('http');
+const fs = require('fs');
 
 // 配置
 const CONFIG = {
@@ -70,6 +71,18 @@ function formatTime(timestamp) {
 
   return `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:${second.padStart(2, '0')}`;
 }
+/**
+ * 保存为JSON
+ */
+function saveToJSON(rows, filename) {
+  const output = {
+    timestamp: new Date().toISOString(),
+    count: rows.length,
+    data: rows
+  };
+  fs.writeFileSync(filename, JSON.stringify(output, null, 2), 'utf-8');
+}
+
 
 /**
  * 获取股票基本信息
@@ -249,6 +262,7 @@ async function main() {
 
   if (trendsData) {
     printTrendsData(trendsData, 10);
+    saveToJSON(trendsData, '588080.json');
   } else {
     console.log('❌ 无法获取分时数据\n');
   }

@@ -9,7 +9,6 @@ import {
 
 @Entity('quotes')
 @Index(['code'], { unique: false })
-@Index(['market'])
 @Index(['snapshotTime'])
 @Index(['snapshotDate'])
 export class Quote {
@@ -24,23 +23,9 @@ export class Quote {
   @Column({ type: 'varchar', length: 100, comment: '股票名称' })
   name: string;
 
-  // 市场
-  @Column({ type: 'varchar', length: 20, comment: '市场' })
-  market: string;
-
   // 市场代码
   @Column({ type: 'varchar', length: 20, comment: '市场代码' })
   marketCode: string;
-
-  // 市盈率
-  @Column({
-    type: 'decimal',
-    precision: 8,
-    scale: 2,
-    nullable: true,
-    comment: '市盈率',
-  })
-  pe: number;
 
   // 最新价
   @Column({
@@ -62,16 +47,6 @@ export class Quote {
   })
   changePercent: number;
 
-  // 涨跌额
-  @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 2,
-    nullable: true,
-    comment: '涨跌额',
-  })
-  changeAmount: number;
-
   // 开盘价
   @Column({
     type: 'decimal',
@@ -81,26 +56,6 @@ export class Quote {
     comment: '开盘价',
   })
   openPrice: number;
-
-  // 最高价
-  @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 2,
-    nullable: true,
-    comment: '最高价',
-  })
-  highPrice: number;
-
-  // 最低价
-  @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 2,
-    nullable: true,
-    comment: '最低价',
-  })
-  lowPrice: number;
 
   // 成交量
   @Column({

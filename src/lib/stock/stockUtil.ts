@@ -135,13 +135,15 @@ function fetch(
 }
 
 /**
- * 构建单个股票的API URL
+ * 构建股票数组的API URL（批量查询）
  */
-function buildStockUrl(code: string, marketCode: number): string {
-  const secid = `${marketCode}.${code}`;
+function buildBatchStockUrl(
+  stocks: Array<{ code: string; marketCode: number }>,
+): string {
+  const secids = stocks.map((s) => `${s.marketCode}.${s.code}`).join(',');
   return (
     `http://push2.eastmoney.com/api/qt/ulist.np/get?` +
-    `fltt=2&invt=2&secids=${secid}&` +
+    `fltt=2&invt=2&secids=${secids}&` +
     `fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18&` +
     `ut=bd1d9ddb04089700cf9c27f6f7426281`
   );
@@ -197,18 +199,20 @@ function processData(rawData: EastMoneyResponse['data']['diff']): StockInfo[] {
 /* ========== 主要函数 ========== */
 
 /**
- * 根据股票代码和市场代码获取股票信息
- * @param code 股票代码（如：'600588'）
- * @param marketCode 市场代码（1=上交所，0=深交所）
- * @returns Promise<StockInfo> 标准化的股票信息
+ * 批量获取股票信息（参考 lighthouse.js 实现）
+ * @param stocks 股票代码和市场代码数组，格式：[{code: '600588', marketCode: 1}, ...]
+ * @returns Promise<StockInfo[]> 标准化的股票信息数组
  */
 const getStockInfo = async (
-  code: string,
-  marketCode: number,
-): Promise<StockInfo> => {
+  stocks: Array<{ code: string; marketCode: number }>,
+): Promise<StockInfo[]> => {
   try {
-    // 1. 构建API URL
-    const url = buildStockUrl(code, marketCode);
+    if (!stocks || stocks.length === 0) {
+      throw new Error('股票代码数组不能为空');
+    }
+
+    // 1. 构建批量API URL
+    const url = buildBatchStockUrl(stocks);
 
     // 2. 发起网络请求
     const responseText = await fetch(url);
@@ -220,39 +224,70 @@ const getStockInfo = async (
     // 4. 数据处理
     const processedData = processData((json as EastMoneyResponse).data.diff);
 
-    // 5. 返回第一个（也是唯一一个）股票信息
-    if (processedData.length === 0) {
-      throw new Error(`未找到股票代码 ${code} 的数据`);
+    console.log(`📅 查询时间: ${new Date().toLocaleString('zh-CN')}`);
+    console.log(`📈 成功获取 ${processedData.length} 只股票数据\n`);
+
+    if (processedData.length > 0) {
+      console.table(
+        processedData.map((r) => ({
+          代码: r.code,
+          名称: r.name,
+          市场: r.market,
+          最新价: r.latestPrice,
+          涨跌幅: `${r.changePercent}%`,
+          涨跌额: r.changeAmount,
+          成交量: r.volume,
+          成交额: r.volumeAmount,
+          振幅: `${r.amplitude}%`,
+          换手率: `${r.turnoverRate}%`,
+          市盈率: r.pe,
+          最高: r.highPrice,
+          最低: r.lowPrice,
+          今开: r.openPrice,
+          昨收: r.previousClosePrice,
+          市场代码: r.marketCode,
+        })),
+      );
+
+      // // 显示统计信息
+      // const rising = processedData.filter((r) => r.changePercent > 0).length;
+      // const falling = processedData.filter((r) => r.changePercent < 0).length;
+      // const flat = processedData.filter((r) => r.changePercent === 0).length;
+      // const avgChange = (
+      //   processedData.reduce((sum, r) => sum + r.changePercent, 0) /
+      //   processedData.length
+      // ).toFixed(2);
+
+      // console.log('\n📈 市场统计:');
+      // console.log(
+      //   `  上涨: ${rising} 只 | 下跌: ${falling} 只 | 平盘: ${flat} 只`,
+      // );
+      // console.log(`  平均涨跌幅: ${avgChange}%`);
     }
 
-    console.log(`📅 查询时间: ${new Date().toLocaleString('zh-CN')}`);
-    console.log(`📈 成功获取股票 ${code}数据\n`);
-    console.table(
-      processedData.map((r) => ({
-        代码: r.code,
-        名称: r.name,
-        市场: r.market,
-        最新价: r.latestPrice,
-        涨跌幅: `${r.changePercent}%`,
-        涨跌额: r.changeAmount,
-        成交量: r.volume,
-        成交额: r.volumeAmount,
-        振幅: `${r.amplitude}%`,
-        换手率: `${r.turnoverRate}%`,
-        市盈率: r.pe,
-        最高: r.highPrice,
-        最低: r.lowPrice,
-        今开: r.openPrice,
-        昨收: r.previousClosePrice,
-        市场代码: r.marketCode,
-      })),
-    );
-
-    return processedData[0];
+    return processedData;
   } catch (error) {
-    console.error(`获取股票 ${code} 信息失败:`, error);
+    console.error(`获取股票信息失败:`, error);
     throw error;
   }
 };
 
-export { getStockInfo };
+/**
+ * 获取单个股票信息（便捷方法）
+ * @param code 股票代码（如：'600588'）
+ * @param marketCode 市场代码（1=上交所，0=深交所）
+ * @returns Promise<StockInfo> 标准化的股票信息
+ */
+const getSingleStockInfo = async (
+  code: string,
+  marketCode: number,
+): Promise<StockInfo> => {
+  const stocks = [{ code, marketCode }];
+  const results = await getStockInfo(stocks);
+  if (results.length === 0) {
+    throw new Error(`未找到股票代码 ${code} 的数据`);
+  }
+  return results[0];
+};
+
+export { getStockInfo, getSingleStockInfo };

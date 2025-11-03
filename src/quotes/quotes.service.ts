@@ -2,19 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, FindManyOptions } from 'typeorm';
 import { Quote } from '../entities/quote.entity';
+import { getStockInfo } from 'src/lib/stock/stockUtil';
 
 export interface CreateQuoteDto {
   code: string;
   name: string;
-  market: string;
   marketCode: string;
-  pe?: number;
   latestPrice?: number;
   changePercent?: number;
-  changeAmount?: number;
   openPrice?: number;
-  highPrice?: number;
-  lowPrice?: number;
   volume?: number;
   volumeAmount?: number;
   previousClosePrice?: number;
@@ -23,13 +19,9 @@ export interface CreateQuoteDto {
 }
 
 export interface UpdateQuoteDto {
-  pe?: number;
   latestPrice?: number;
   changePercent?: number;
-  changeAmount?: number;
   openPrice?: number;
-  highPrice?: number;
-  lowPrice?: number;
   volume?: number;
   volumeAmount?: number;
   previousClosePrice?: number;
@@ -39,7 +31,6 @@ export interface UpdateQuoteDto {
 
 export interface QuoteQueryDto {
   code?: string;
-  market?: string;
   marketCode?: string;
   startTime?: Date;
   endTime?: Date;
@@ -72,6 +63,32 @@ export class QuotesService {
     return await this.quoteRepository.save(quotes);
   }
 
+  // 同步股票快照：通过API获取股票信息，不存在则新增，存在则更新
+  async syncStockQuotesFromAPI(
+    stocks: Array<{ code: string; marketCode: number }>,
+  ): Promise<boolean> {
+    try {
+      // 1. 调用API获取股票信息
+      const stockInfos = await getStockInfo(stocks);
+
+      // 2. 转换为行情快照
+      const createQuoteDtos = stockInfos.map((stockInfo) => ({
+        code: stockInfo.code,
+        name: stockInfo.name,
+        marketCode: stockInfo.marketCode.toString(),
+        latestPrice: stockInfo.latestPrice,
+      }));
+
+      // 3. 插入行情快照
+      await this.createQuotes(createQuoteDtos);
+
+      return true;
+    } catch (error) {
+      console.error(`同步股票快照失败:`, error);
+      throw error;
+    }
+  }
+
   /**
    * 获取所有行情快照
    */
@@ -80,7 +97,6 @@ export class QuotesService {
   ): Promise<{ quotes: Quote[]; total: number }> {
     const {
       code,
-      market,
       marketCode,
       startTime,
       endTime,
@@ -94,10 +110,6 @@ export class QuotesService {
 
     if (code) {
       where.code = code;
-    }
-
-    if (market) {
-      where.market = market;
     }
 
     if (marketCode) {
@@ -235,7 +247,7 @@ export class QuotesService {
    */
   async getMarketStats(): Promise<
     {
-      market: string;
+      marketCode: string;
       count: string;
       avgPrice: string;
       maxPrice: string;
@@ -244,12 +256,12 @@ export class QuotesService {
   > {
     return await this.quoteRepository
       .createQueryBuilder('quote')
-      .select('quote.market', 'market')
+      .select('quote.marketCode', 'marketCode')
       .addSelect('COUNT(*)', 'count')
       .addSelect('AVG(quote.latestPrice)', 'avgPrice')
       .addSelect('MAX(quote.latestPrice)', 'maxPrice')
       .addSelect('MIN(quote.latestPrice)', 'minPrice')
-      .groupBy('quote.market')
+      .groupBy('quote.marketCode')
       .getRawMany();
   }
 

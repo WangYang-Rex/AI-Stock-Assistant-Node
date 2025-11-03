@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
@@ -9,11 +10,13 @@ import { TradingModule } from './trading/trading.module';
 import { AiSignalsModule } from './aisignals/aisignals.module';
 import { QuotesModule } from './quotes/quotes.module';
 import { CommonModule } from './common/common.module';
+import { SchedulerModule } from './scheduler/scheduler.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     DatabaseModule,
     HealthModule,
     StockModule,
@@ -21,6 +24,7 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
     AiSignalsModule,
     QuotesModule,
     CommonModule,
+    SchedulerModule,
   ],
   controllers: [AppController],
   providers: [

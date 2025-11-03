@@ -1,4 +1,5 @@
 {
+  "描述": "整理所有的API接口, 并生成Swagger 2.0 数据格式的 JSON文件",
   "swagger": "2.0",
   "info": {
     "title": "AI股票助手API",
@@ -8,7 +9,7 @@
       "name": "AI股票助手开发团队"
     }
   },
-  "host": "localhost:3033",
+  "host": "localhost:3000",
   "basePath": "/api",
   "schemes": ["http", "https"],
   "consumes": ["application/json"],
@@ -1467,6 +1468,63 @@
           }
         }
       }
+    },
+    "/scheduler/status": {
+      "get": {
+        "tags": ["定时任务"],
+        "summary": "获取定时任务状态",
+        "description": "获取调度器的运行状态信息",
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "description": "调度器状态"
+                },
+                "lastSyncTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "最后同步时间"
+                },
+                "nextSyncTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "下次同步时间"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scheduler/trigger-sync": {
+      "post": {
+        "tags": ["定时任务"],
+        "summary": "手动触发股票数据同步",
+        "description": "手动触发股票数据同步任务",
+        "responses": {
+          "200": {
+            "description": "触发成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "响应消息"
+                },
+                "timestamp": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "触发时间"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -1625,18 +1683,9 @@
           "type": "string",
           "description": "股票名称"
         },
-        "market": {
-          "type": "string",
-          "description": "市场"
-        },
         "marketCode": {
           "type": "string",
           "description": "市场代码"
-        },
-        "pe": {
-          "type": "number",
-          "format": "decimal",
-          "description": "市盈率"
         },
         "latestPrice": {
           "type": "number",
@@ -1648,25 +1697,10 @@
           "format": "decimal",
           "description": "涨跌幅(%)"
         },
-        "changeAmount": {
-          "type": "number",
-          "format": "decimal",
-          "description": "涨跌额"
-        },
         "openPrice": {
           "type": "number",
           "format": "decimal",
           "description": "开盘价"
-        },
-        "highPrice": {
-          "type": "number",
-          "format": "decimal",
-          "description": "最高价"
-        },
-        "lowPrice": {
-          "type": "number",
-          "format": "decimal",
-          "description": "最低价"
         },
         "volume": {
           "type": "integer",
@@ -2040,7 +2074,7 @@
     },
     "CreateQuoteDto": {
       "type": "object",
-      "required": ["code", "name", "market", "marketCode"],
+      "required": ["code", "name", "marketCode"],
       "properties": {
         "code": {
           "type": "string",
@@ -2050,18 +2084,9 @@
           "type": "string",
           "description": "股票名称"
         },
-        "market": {
-          "type": "string",
-          "description": "市场"
-        },
         "marketCode": {
           "type": "string",
           "description": "市场代码"
-        },
-        "pe": {
-          "type": "number",
-          "format": "decimal",
-          "description": "市盈率"
         },
         "latestPrice": {
           "type": "number",
@@ -2072,11 +2097,6 @@
           "type": "number",
           "format": "decimal",
           "description": "涨跌幅"
-        },
-        "changeAmount": {
-          "type": "number",
-          "format": "decimal",
-          "description": "涨跌额"
         },
         "openPrice": {
           "type": "number",
@@ -2123,11 +2143,6 @@
     "UpdateQuoteDto": {
       "type": "object",
       "properties": {
-        "pe": {
-          "type": "number",
-          "format": "decimal",
-          "description": "市盈率"
-        },
         "latestPrice": {
           "type": "number",
           "format": "decimal",
@@ -2138,25 +2153,10 @@
           "format": "decimal",
           "description": "涨跌幅"
         },
-        "changeAmount": {
-          "type": "number",
-          "format": "decimal",
-          "description": "涨跌额"
-        },
         "openPrice": {
           "type": "number",
           "format": "decimal",
           "description": "开盘价"
-        },
-        "highPrice": {
-          "type": "number",
-          "format": "decimal",
-          "description": "最高价"
-        },
-        "lowPrice": {
-          "type": "number",
-          "format": "decimal",
-          "description": "最低价"
         },
         "volume": {
           "type": "integer",
@@ -2609,6 +2609,10 @@
     {
       "name": "AI信号",
       "description": "AI信号管理相关接口"
+    },
+    {
+      "name": "定时任务",
+      "description": "定时任务和调度器相关接口"
     }
   ]
 }

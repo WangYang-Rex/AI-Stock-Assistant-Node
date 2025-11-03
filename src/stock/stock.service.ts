@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Stock } from '../entities/stock.entity';
-import { getStockInfo } from '../lib/stock/stockUtil';
+import { getSingleStockInfo } from '../lib/stock/stockUtil';
 
 @Injectable()
 export class StockService {
@@ -24,7 +24,7 @@ export class StockService {
   ): Promise<{ stock: Stock; isNew: boolean }> {
     try {
       // 1. 调用API获取股票信息
-      const stockInfo = await getStockInfo(code, marketCode);
+      const stockInfo = await getSingleStockInfo(code, marketCode);
 
       // 2. 检查股票是否已存在
       const existingStock = await this.findByCode(code);
