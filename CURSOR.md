@@ -9,3 +9,6 @@
 ```
 整理所有的API接口, 并生成Swagger 2.0 数据格式的 JSON文件
 ```
+
+#### quotes相关 
+- @588080.json 中的数据整理成 /quotes/batchAdd 接口所需的请求参数，股票为588080

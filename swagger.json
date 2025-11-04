@@ -326,7 +326,7 @@
         }
       }
     },
-    "/quotes": {
+    "/quotes/add": {
       "post": {
         "tags": ["行情数据"],
         "summary": "创建行情快照",
@@ -342,78 +342,16 @@
           }
         ],
         "responses": {
-          "201": {
+          "200": {
             "description": "创建成功",
             "schema": {
               "$ref": "#/definitions/Quote"
             }
           }
         }
-      },
-      "get": {
-        "tags": ["行情数据"],
-        "summary": "获取所有行情快照",
-        "description": "根据查询条件获取行情快照列表",
-        "parameters": [
-          {
-            "name": "code",
-            "in": "query",
-            "type": "string",
-            "description": "股票代码"
-          },
-          {
-            "name": "market",
-            "in": "query",
-            "type": "string",
-            "description": "市场"
-          },
-          {
-            "name": "marketCode",
-            "in": "query",
-            "type": "string",
-            "description": "市场代码"
-          },
-          {
-            "name": "startTime",
-            "in": "query",
-            "type": "string",
-            "format": "date-time",
-            "description": "开始时间"
-          },
-          {
-            "name": "endTime",
-            "in": "query",
-            "type": "string",
-            "format": "date-time",
-            "description": "结束时间"
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "type": "integer",
-            "description": "页码"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "integer",
-            "description": "每页数量"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "获取成功",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Quote"
-              }
-            }
-          }
-        }
       }
     },
-    "/quotes/batch": {
+    "/quotes/batchAdd": {
       "post": {
         "tags": ["行情数据"],
         "summary": "批量创建行情快照",
@@ -432,7 +370,7 @@
           }
         ],
         "responses": {
-          "201": {
+          "200": {
             "description": "批量创建成功",
             "schema": {
               "type": "array",
@@ -444,91 +382,63 @@
         }
       }
     },
-    "/quotes/{id}": {
-      "get": {
+    "/quotes/list": {
+      "post": {
         "tags": ["行情数据"],
-        "summary": "根据ID获取行情快照",
-        "description": "根据ID获取单个行情快照",
+        "summary": "获取所有行情快照",
+        "description": "根据查询条件获取行情快照列表",
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "integer",
-            "description": "行情快照ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "获取成功",
-            "schema": {
-              "$ref": "#/definitions/Quote"
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": ["行情数据"],
-        "summary": "更新行情快照",
-        "description": "更新指定的行情快照",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "integer",
-            "description": "行情快照ID"
-          },
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/UpdateQuoteDto"
+              "$ref": "#/definitions/QuoteQueryDto"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "更新成功",
+            "description": "获取成功",
             "schema": {
-              "$ref": "#/definitions/Quote"
+              "type": "object",
+              "properties": {
+                "quotes": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Quote"
+                  }
+                },
+                "total": {
+                  "type": "integer",
+                  "description": "总记录数"
+                }
+              }
             }
-          }
-        }
-      },
-      "delete": {
-        "tags": ["行情数据"],
-        "summary": "删除行情快照",
-        "description": "删除指定的行情快照",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "integer",
-            "description": "行情快照ID"
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "删除成功"
           }
         }
       }
     },
-    "/quotes/latest/{code}": {
-      "get": {
+    "/quotes/one": {
+      "post": {
         "tags": ["行情数据"],
-        "summary": "获取指定股票的最新行情",
-        "description": "获取指定股票代码的最新行情快照",
+        "summary": "根据ID获取行情快照",
+        "description": "根据ID获取单个行情快照",
         "parameters": [
           {
-            "name": "code",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "description": "股票代码"
+            "schema": {
+              "type": "object",
+              "required": ["id"],
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "行情快照ID"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -541,38 +451,72 @@
         }
       }
     },
-    "/quotes/history/{code}": {
-      "get": {
+    "/quotes/latest": {
+      "post": {
+        "tags": ["行情数据"],
+        "summary": "获取指定股票的最新行情",
+        "description": "获取指定股票代码的最新行情快照",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["code"],
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "description": "股票代码"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "schema": {
+              "$ref": "#/definitions/Quote"
+            }
+          }
+        }
+      }
+    },
+    "/quotes/history": {
+      "post": {
         "tags": ["行情数据"],
         "summary": "获取指定股票的历史行情",
         "description": "获取指定股票的历史行情快照",
         "parameters": [
           {
-            "name": "code",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "description": "股票代码"
-          },
-          {
-            "name": "startTime",
-            "in": "query",
-            "type": "string",
-            "format": "date-time",
-            "description": "开始时间"
-          },
-          {
-            "name": "endTime",
-            "in": "query",
-            "type": "string",
-            "format": "date-time",
-            "description": "结束时间"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "integer",
-            "description": "限制数量"
+            "schema": {
+              "type": "object",
+              "required": ["code"],
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "description": "股票代码"
+                },
+                "startTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "开始时间"
+                },
+                "endTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "结束时间"
+                },
+                "limit": {
+                  "type": "integer",
+                  "description": "限制数量"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -588,38 +532,40 @@
         }
       }
     },
-    "/quotes/date/{code}": {
-      "get": {
+    "/quotes/date-code": {
+      "post": {
         "tags": ["行情数据"],
         "summary": "根据日期获取指定股票的行情",
         "description": "根据日期范围获取指定股票的行情快照",
         "parameters": [
           {
-            "name": "code",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "description": "股票代码"
-          },
-          {
-            "name": "startDate",
-            "in": "query",
-            "type": "string",
-            "format": "date",
-            "description": "开始日期"
-          },
-          {
-            "name": "endDate",
-            "in": "query",
-            "type": "string",
-            "format": "date",
-            "description": "结束日期"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "type": "integer",
-            "description": "限制数量"
+            "schema": {
+              "type": "object",
+              "required": ["code"],
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "description": "股票代码"
+                },
+                "startDate": {
+                  "type": "string",
+                  "format": "date",
+                  "description": "开始日期"
+                },
+                "endDate": {
+                  "type": "string",
+                  "format": "date",
+                  "description": "结束日期"
+                },
+                "limit": {
+                  "type": "integer",
+                  "description": "限制数量"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -636,18 +582,26 @@
       }
     },
     "/quotes/date": {
-      "get": {
+      "post": {
         "tags": ["行情数据"],
         "summary": "获取指定日期的所有行情",
         "description": "获取指定日期的所有股票行情快照",
         "parameters": [
           {
-            "name": "date",
-            "in": "query",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "format": "date",
-            "description": "日期"
+            "schema": {
+              "type": "object",
+              "required": ["date"],
+              "properties": {
+                "date": {
+                  "type": "string",
+                  "format": "date",
+                  "description": "日期"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -663,38 +617,144 @@
         }
       }
     },
-    "/quotes/range": {
-      "delete": {
+    "/quotes/update": {
+      "post": {
         "tags": ["行情数据"],
-        "summary": "批量删除指定时间范围的行情快照",
-        "description": "删除指定时间范围内的所有行情快照",
+        "summary": "更新行情快照",
+        "description": "更新指定的行情快照",
         "parameters": [
           {
-            "name": "startTime",
-            "in": "query",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "format": "date-time",
-            "description": "开始时间"
-          },
-          {
-            "name": "endTime",
-            "in": "query",
-            "required": true,
-            "type": "string",
-            "format": "date-time",
-            "description": "结束时间"
+            "schema": {
+              "type": "object",
+              "required": ["id"],
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "行情快照ID"
+                },
+                "latestPrice": {
+                  "type": "number",
+                  "format": "decimal",
+                  "description": "最新价"
+                },
+                "changePercent": {
+                  "type": "number",
+                  "format": "decimal",
+                  "description": "涨跌幅"
+                },
+                "openPrice": {
+                  "type": "number",
+                  "format": "decimal",
+                  "description": "开盘价"
+                },
+                "volume": {
+                  "type": "integer",
+                  "format": "int64",
+                  "description": "成交量"
+                },
+                "volumeAmount": {
+                  "type": "number",
+                  "format": "decimal",
+                  "description": "成交额"
+                },
+                "previousClosePrice": {
+                  "type": "number",
+                  "format": "decimal",
+                  "description": "昨收价"
+                },
+                "snapshotTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "快照时间"
+                },
+                "snapshotDate": {
+                  "type": "string",
+                  "format": "date",
+                  "description": "快照日期"
+                }
+              }
+            }
           }
         ],
         "responses": {
-          "204": {
+          "200": {
+            "description": "更新成功",
+            "schema": {
+              "$ref": "#/definitions/Quote"
+            }
+          }
+        }
+      }
+    },
+    "/quotes/delete": {
+      "post": {
+        "tags": ["行情数据"],
+        "summary": "删除行情快照",
+        "description": "删除指定的行情快照",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["id"],
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "行情快照ID"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
             "description": "删除成功"
           }
         }
       }
     },
-    "/quotes/stats/market": {
-      "get": {
+    "/quotes/delete-range": {
+      "post": {
+        "tags": ["行情数据"],
+        "summary": "批量删除指定时间范围的行情快照",
+        "description": "删除指定时间范围内的所有行情快照",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["startTime", "endTime"],
+              "properties": {
+                "startTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "开始时间"
+                },
+                "endTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "结束时间"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功"
+          }
+        }
+      }
+    },
+    "/quotes/stats-market": {
+      "post": {
         "tags": ["行情数据"],
         "summary": "获取市场统计信息",
         "description": "获取各市场的统计信息",
@@ -711,17 +771,25 @@
         }
       }
     },
-    "/quotes/rankings/gainers": {
-      "get": {
+    "/quotes/rankings-gainers": {
+      "post": {
         "tags": ["行情数据"],
         "summary": "获取涨跌幅排行榜",
         "description": "获取涨幅最大的股票排行榜",
         "parameters": [
           {
-            "name": "limit",
-            "in": "query",
-            "type": "integer",
-            "description": "限制数量"
+            "name": "body",
+            "in": "body",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "description": "限制数量"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -737,17 +805,25 @@
         }
       }
     },
-    "/quotes/rankings/losers": {
-      "get": {
+    "/quotes/rankings-losers": {
+      "post": {
         "tags": ["行情数据"],
         "summary": "获取跌幅排行榜",
         "description": "获取跌幅最大的股票排行榜",
         "parameters": [
           {
-            "name": "limit",
-            "in": "query",
-            "type": "integer",
-            "description": "限制数量"
+            "name": "body",
+            "in": "body",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "description": "限制数量"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -763,17 +839,25 @@
         }
       }
     },
-    "/quotes/rankings/volume": {
-      "get": {
+    "/quotes/rankings-volume": {
+      "post": {
         "tags": ["行情数据"],
         "summary": "获取成交量排行榜",
         "description": "获取成交量最大的股票排行榜",
         "parameters": [
           {
-            "name": "limit",
-            "in": "query",
-            "type": "integer",
-            "description": "限制数量"
+            "name": "body",
+            "in": "body",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "description": "限制数量"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -2182,6 +2266,47 @@
           "type": "string",
           "format": "date",
           "description": "快照日期"
+        }
+      }
+    },
+    "QuoteQueryDto": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "股票代码"
+        },
+        "marketCode": {
+          "type": "string",
+          "description": "市场代码"
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "开始时间"
+        },
+        "endTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "结束时间"
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date",
+          "description": "开始日期"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date",
+          "description": "结束日期"
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "每页数量"
         }
       }
     },

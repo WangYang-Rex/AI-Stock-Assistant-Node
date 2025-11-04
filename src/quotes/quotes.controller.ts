@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  ParseIntPipe,
-  HttpStatus,
-  HttpCode,
-} from '@nestjs/common';
+import { Controller, Post, Body, ParseIntPipe } from '@nestjs/common';
 import { QuotesService } from './quotes.service';
 import type {
   CreateQuoteDto,
@@ -20,8 +13,7 @@ export class QuotesController {
   /**
    * 创建行情快照
    */
-  @Post()
-  @HttpCode(HttpStatus.CREATED)
+  @Post('add')
   async create(@Body() createQuoteDto: CreateQuoteDto) {
     return await this.quotesService.createQuote(createQuoteDto);
   }
@@ -29,8 +21,7 @@ export class QuotesController {
   /**
    * 批量创建行情快照
    */
-  @Post('batch')
-  @HttpCode(HttpStatus.CREATED)
+  @Post('batchAdd')
   async createBatch(@Body() createQuoteDtos: CreateQuoteDto[]) {
     return await this.quotesService.createQuotes(createQuoteDtos);
   }
@@ -113,7 +104,6 @@ export class QuotesController {
    * 删除行情快照
    */
   @Post('delete')
-  @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Body('id', ParseIntPipe) id: number) {
     await this.quotesService.remove(id);
   }
@@ -122,7 +112,6 @@ export class QuotesController {
    * 批量删除指定时间范围的行情快照
    */
   @Post('delete-range')
-  @HttpCode(HttpStatus.NO_CONTENT)
   async removeByTimeRange(
     @Body('startTime') startTime: string,
     @Body('endTime') endTime: string,
