@@ -11,18 +11,6 @@ export class StockController {
     private readonly responseService: ResponseService,
   ) {}
 
-  // // 创建股票
-  // @Post('create')
-  // async createStock(
-  //   @Body() stockData: Partial<Stock>,
-  // ): Promise<ApiResponse<Stock>> {
-  //   return this.responseService.handleAsync(
-  //     () => this.stockService.createStock(stockData),
-  //     '股票创建成功',
-  //     '股票创建失败',
-  //   );
-  // }
-
   // 同步股票信息：通过API获取股票信息，不存在则新增，存在则更新
   @Post('sync')
   async syncStock(
