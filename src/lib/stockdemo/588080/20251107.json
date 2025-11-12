@@ -1,0 +1,2056 @@
+{
+  "timestamp": "2025-11-07T09:15:55.323Z",
+  "data": {
+    "preClose": 1.462,
+    "trends": [
+      {
+        "time": "09:15:00",
+        "price": "1.462",
+        "volume": "0",
+        "amount": "0.00",
+        "avgPrice": "1.462",
+        "change": "0.00"
+      },
+      {
+        "time": "09:16:00",
+        "price": "1.461",
+        "volume": "0",
+        "amount": "0.00",
+        "avgPrice": "1.462",
+        "change": "-0.07"
+      },
+      {
+        "time": "09:17:00",
+        "price": "1.461",
+        "volume": "0",
+        "amount": "0.00",
+        "avgPrice": "1.462",
+        "change": "-0.07"
+      },
+      {
+        "time": "09:18:00",
+        "price": "1.461",
+        "volume": "0",
+        "amount": "0.00",
+        "avgPrice": "1.462",
+        "change": "-0.07"
+      },
+      {
+        "time": "09:19:00",
+        "price": "1.461",
+        "volume": "0",
+        "amount": "0.00",
+        "avgPrice": "1.462",
+        "change": "-0.07"
+      },
+      {
+        "time": "09:20:00",
+        "price": "1.461",
+        "volume": "0",
+        "amount": "0.00",
+        "avgPrice": "1.462",
+        "change": "-0.07"
+      },
+      {
+        "time": "09:21:00",
+        "price": "1.460",
+        "volume": "0",
+        "amount": "0.00",
+        "avgPrice": "1.462",
+        "change": "-0.14"
+      },
+      {
+        "time": "09:22:00",
+        "price": "1.456",
+        "volume": "0",
+        "amount": "0.00",
+        "avgPrice": "1.462",
+        "change": "-0.41"
+      },
+      {
+        "time": "09:23:00",
+        "price": "1.456",
+        "volume": "0",
+        "amount": "0.00",
+        "avgPrice": "1.462",
+        "change": "-0.41"
+      },
+      {
+        "time": "09:24:00",
+        "price": "1.456",
+        "volume": "0",
+        "amount": "0.00",
+        "avgPrice": "1.462",
+        "change": "-0.41"
+      },
+      {
+        "time": "09:25:00",
+        "price": "1.449",
+        "volume": "0",
+        "amount": "0.00",
+        "avgPrice": "1.462",
+        "change": "-0.89"
+      },
+      {
+        "time": "09:26:00",
+        "price": "1.446",
+        "volume": "458",
+        "amount": "662.87",
+        "avgPrice": "1.446",
+        "change": "-1.09"
+      },
+      {
+        "time": "09:27:00",
+        "price": "1.446",
+        "volume": "0",
+        "amount": "0.00",
+        "avgPrice": "1.446",
+        "change": "-1.09"
+      },
+      {
+        "time": "09:28:00",
+        "price": "1.446",
+        "volume": "0",
+        "amount": "0.00",
+        "avgPrice": "1.446",
+        "change": "-1.09"
+      },
+      {
+        "time": "09:29:00",
+        "price": "1.446",
+        "volume": "0",
+        "amount": "0.00",
+        "avgPrice": "1.446",
+        "change": "-1.09"
+      },
+      {
+        "time": "09:30:00",
+        "price": "1.446",
+        "volume": "0",
+        "amount": "0.00",
+        "avgPrice": "1.446",
+        "change": "-1.09"
+      },
+      {
+        "time": "09:31:00",
+        "price": "1.449",
+        "volume": "1072",
+        "amount": "1549.92",
+        "avgPrice": "1.446",
+        "change": "-0.89"
+      },
+      {
+        "time": "09:32:00",
+        "price": "1.446",
+        "volume": "565",
+        "amount": "816.92",
+        "avgPrice": "1.446",
+        "change": "-1.09"
+      },
+      {
+        "time": "09:33:00",
+        "price": "1.445",
+        "volume": "674",
+        "amount": "974.53",
+        "avgPrice": "1.446",
+        "change": "-1.16"
+      },
+      {
+        "time": "09:34:00",
+        "price": "1.445",
+        "volume": "588",
+        "amount": "849.26",
+        "avgPrice": "1.446",
+        "change": "-1.16"
+      },
+      {
+        "time": "09:35:00",
+        "price": "1.443",
+        "volume": "584",
+        "amount": "842.37",
+        "avgPrice": "1.446",
+        "change": "-1.30"
+      },
+      {
+        "time": "09:36:00",
+        "price": "1.441",
+        "volume": "825",
+        "amount": "1188.09",
+        "avgPrice": "1.445",
+        "change": "-1.44"
+      },
+      {
+        "time": "09:37:00",
+        "price": "1.444",
+        "volume": "452",
+        "amount": "651.18",
+        "avgPrice": "1.444",
+        "change": "-1.23"
+      },
+      {
+        "time": "09:38:00",
+        "price": "1.447",
+        "volume": "990",
+        "amount": "1432.51",
+        "avgPrice": "1.445",
+        "change": "-1.03"
+      },
+      {
+        "time": "09:39:00",
+        "price": "1.449",
+        "volume": "311",
+        "amount": "450.24",
+        "avgPrice": "1.445",
+        "change": "-0.89"
+      },
+      {
+        "time": "09:40:00",
+        "price": "1.447",
+        "volume": "277",
+        "amount": "400.38",
+        "avgPrice": "1.445",
+        "change": "-1.03"
+      },
+      {
+        "time": "09:41:00",
+        "price": "1.448",
+        "volume": "732",
+        "amount": "1060.26",
+        "avgPrice": "1.445",
+        "change": "-0.96"
+      },
+      {
+        "time": "09:42:00",
+        "price": "1.452",
+        "volume": "188",
+        "amount": "272.25",
+        "avgPrice": "1.445",
+        "change": "-0.68"
+      },
+      {
+        "time": "09:43:00",
+        "price": "1.453",
+        "volume": "334",
+        "amount": "484.36",
+        "avgPrice": "1.446",
+        "change": "-0.62"
+      },
+      {
+        "time": "09:44:00",
+        "price": "1.456",
+        "volume": "431",
+        "amount": "627.60",
+        "avgPrice": "1.446",
+        "change": "-0.41"
+      },
+      {
+        "time": "09:45:00",
+        "price": "1.452",
+        "volume": "418",
+        "amount": "607.43",
+        "avgPrice": "1.447",
+        "change": "-0.68"
+      },
+      {
+        "time": "09:46:00",
+        "price": "1.456",
+        "volume": "477",
+        "amount": "694.37",
+        "avgPrice": "1.447",
+        "change": "-0.41"
+      },
+      {
+        "time": "09:47:00",
+        "price": "1.453",
+        "volume": "395",
+        "amount": "574.25",
+        "avgPrice": "1.447",
+        "change": "-0.62"
+      },
+      {
+        "time": "09:48:00",
+        "price": "1.451",
+        "volume": "705",
+        "amount": "1023.62",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "09:49:00",
+        "price": "1.449",
+        "volume": "2679",
+        "amount": "3884.15",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "09:50:00",
+        "price": "1.451",
+        "volume": "902",
+        "amount": "1308.67",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "09:51:00",
+        "price": "1.449",
+        "volume": "466",
+        "amount": "674.47",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "09:52:00",
+        "price": "1.451",
+        "volume": "619",
+        "amount": "897.21",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "09:53:00",
+        "price": "1.450",
+        "volume": "256",
+        "amount": "371.11",
+        "avgPrice": "1.448",
+        "change": "-0.82"
+      },
+      {
+        "time": "09:54:00",
+        "price": "1.448",
+        "volume": "515",
+        "amount": "744.97",
+        "avgPrice": "1.448",
+        "change": "-0.96"
+      },
+      {
+        "time": "09:55:00",
+        "price": "1.447",
+        "volume": "447",
+        "amount": "646.54",
+        "avgPrice": "1.448",
+        "change": "-1.03"
+      },
+      {
+        "time": "09:56:00",
+        "price": "1.442",
+        "volume": "696",
+        "amount": "1005.75",
+        "avgPrice": "1.448",
+        "change": "-1.37"
+      },
+      {
+        "time": "09:57:00",
+        "price": "1.441",
+        "volume": "470",
+        "amount": "678.04",
+        "avgPrice": "1.448",
+        "change": "-1.44"
+      },
+      {
+        "time": "09:58:00",
+        "price": "1.444",
+        "volume": "280",
+        "amount": "404.32",
+        "avgPrice": "1.448",
+        "change": "-1.23"
+      },
+      {
+        "time": "09:59:00",
+        "price": "1.446",
+        "volume": "232",
+        "amount": "334.77",
+        "avgPrice": "1.448",
+        "change": "-1.09"
+      },
+      {
+        "time": "10:00:00",
+        "price": "1.446",
+        "volume": "222",
+        "amount": "320.72",
+        "avgPrice": "1.448",
+        "change": "-1.09"
+      },
+      {
+        "time": "10:01:00",
+        "price": "1.446",
+        "volume": "623",
+        "amount": "901.12",
+        "avgPrice": "1.448",
+        "change": "-1.09"
+      },
+      {
+        "time": "10:02:00",
+        "price": "1.444",
+        "volume": "449",
+        "amount": "649.10",
+        "avgPrice": "1.448",
+        "change": "-1.23"
+      },
+      {
+        "time": "10:03:00",
+        "price": "1.447",
+        "volume": "234",
+        "amount": "338.18",
+        "avgPrice": "1.448",
+        "change": "-1.03"
+      },
+      {
+        "time": "10:04:00",
+        "price": "1.446",
+        "volume": "62",
+        "amount": "89.16",
+        "avgPrice": "1.448",
+        "change": "-1.09"
+      },
+      {
+        "time": "10:05:00",
+        "price": "1.447",
+        "volume": "83",
+        "amount": "119.99",
+        "avgPrice": "1.448",
+        "change": "-1.03"
+      },
+      {
+        "time": "10:06:00",
+        "price": "1.445",
+        "volume": "234",
+        "amount": "338.40",
+        "avgPrice": "1.448",
+        "change": "-1.16"
+      },
+      {
+        "time": "10:07:00",
+        "price": "1.446",
+        "volume": "247",
+        "amount": "357.28",
+        "avgPrice": "1.448",
+        "change": "-1.09"
+      },
+      {
+        "time": "10:08:00",
+        "price": "1.446",
+        "volume": "136",
+        "amount": "196.80",
+        "avgPrice": "1.448",
+        "change": "-1.09"
+      },
+      {
+        "time": "10:09:00",
+        "price": "1.449",
+        "volume": "221",
+        "amount": "320.19",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "10:10:00",
+        "price": "1.449",
+        "volume": "71",
+        "amount": "103.30",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "10:11:00",
+        "price": "1.449",
+        "volume": "52",
+        "amount": "75.78",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "10:12:00",
+        "price": "1.448",
+        "volume": "88",
+        "amount": "127.01",
+        "avgPrice": "1.448",
+        "change": "-0.96"
+      },
+      {
+        "time": "10:13:00",
+        "price": "1.447",
+        "volume": "143",
+        "amount": "206.50",
+        "avgPrice": "1.448",
+        "change": "-1.03"
+      },
+      {
+        "time": "10:14:00",
+        "price": "1.449",
+        "volume": "80",
+        "amount": "115.58",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "10:15:00",
+        "price": "1.448",
+        "volume": "41",
+        "amount": "59.16",
+        "avgPrice": "1.448",
+        "change": "-0.96"
+      },
+      {
+        "time": "10:16:00",
+        "price": "1.448",
+        "volume": "116",
+        "amount": "168.15",
+        "avgPrice": "1.448",
+        "change": "-0.96"
+      },
+      {
+        "time": "10:17:00",
+        "price": "1.446",
+        "volume": "86",
+        "amount": "123.72",
+        "avgPrice": "1.448",
+        "change": "-1.09"
+      },
+      {
+        "time": "10:18:00",
+        "price": "1.446",
+        "volume": "108",
+        "amount": "156.13",
+        "avgPrice": "1.448",
+        "change": "-1.09"
+      },
+      {
+        "time": "10:19:00",
+        "price": "1.446",
+        "volume": "115",
+        "amount": "166.68",
+        "avgPrice": "1.448",
+        "change": "-1.09"
+      },
+      {
+        "time": "10:20:00",
+        "price": "1.445",
+        "volume": "24",
+        "amount": "34.53",
+        "avgPrice": "1.448",
+        "change": "-1.16"
+      },
+      {
+        "time": "10:21:00",
+        "price": "1.444",
+        "volume": "77",
+        "amount": "111.05",
+        "avgPrice": "1.448",
+        "change": "-1.23"
+      },
+      {
+        "time": "10:22:00",
+        "price": "1.444",
+        "volume": "160",
+        "amount": "230.71",
+        "avgPrice": "1.448",
+        "change": "-1.23"
+      },
+      {
+        "time": "10:23:00",
+        "price": "1.446",
+        "volume": "109",
+        "amount": "157.41",
+        "avgPrice": "1.448",
+        "change": "-1.09"
+      },
+      {
+        "time": "10:24:00",
+        "price": "1.445",
+        "volume": "20",
+        "amount": "28.76",
+        "avgPrice": "1.448",
+        "change": "-1.16"
+      },
+      {
+        "time": "10:25:00",
+        "price": "1.447",
+        "volume": "167",
+        "amount": "241.50",
+        "avgPrice": "1.448",
+        "change": "-1.03"
+      },
+      {
+        "time": "10:26:00",
+        "price": "1.447",
+        "volume": "73",
+        "amount": "105.80",
+        "avgPrice": "1.448",
+        "change": "-1.03"
+      },
+      {
+        "time": "10:27:00",
+        "price": "1.446",
+        "volume": "48",
+        "amount": "69.89",
+        "avgPrice": "1.448",
+        "change": "-1.09"
+      },
+      {
+        "time": "10:28:00",
+        "price": "1.447",
+        "volume": "47",
+        "amount": "68.14",
+        "avgPrice": "1.448",
+        "change": "-1.03"
+      },
+      {
+        "time": "10:29:00",
+        "price": "1.445",
+        "volume": "281",
+        "amount": "405.78",
+        "avgPrice": "1.448",
+        "change": "-1.16"
+      },
+      {
+        "time": "10:30:00",
+        "price": "1.446",
+        "volume": "36",
+        "amount": "51.56",
+        "avgPrice": "1.448",
+        "change": "-1.09"
+      },
+      {
+        "time": "10:31:00",
+        "price": "1.447",
+        "volume": "65",
+        "amount": "93.91",
+        "avgPrice": "1.448",
+        "change": "-1.03"
+      },
+      {
+        "time": "10:32:00",
+        "price": "1.447",
+        "volume": "58",
+        "amount": "84.15",
+        "avgPrice": "1.448",
+        "change": "-1.03"
+      },
+      {
+        "time": "10:33:00",
+        "price": "1.447",
+        "volume": "26",
+        "amount": "37.89",
+        "avgPrice": "1.448",
+        "change": "-1.03"
+      },
+      {
+        "time": "10:34:00",
+        "price": "1.449",
+        "volume": "36",
+        "amount": "51.51",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "10:35:00",
+        "price": "1.449",
+        "volume": "223",
+        "amount": "323.49",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "10:36:00",
+        "price": "1.451",
+        "volume": "69",
+        "amount": "99.86",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "10:37:00",
+        "price": "1.451",
+        "volume": "194",
+        "amount": "280.85",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "10:38:00",
+        "price": "1.454",
+        "volume": "92",
+        "amount": "133.65",
+        "avgPrice": "1.448",
+        "change": "-0.55"
+      },
+      {
+        "time": "10:39:00",
+        "price": "1.453",
+        "volume": "77",
+        "amount": "111.25",
+        "avgPrice": "1.448",
+        "change": "-0.62"
+      },
+      {
+        "time": "10:40:00",
+        "price": "1.451",
+        "volume": "140",
+        "amount": "203.03",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "10:41:00",
+        "price": "1.451",
+        "volume": "28",
+        "amount": "41.31",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "10:42:00",
+        "price": "1.450",
+        "volume": "72",
+        "amount": "104.11",
+        "avgPrice": "1.448",
+        "change": "-0.82"
+      },
+      {
+        "time": "10:43:00",
+        "price": "1.450",
+        "volume": "171",
+        "amount": "248.17",
+        "avgPrice": "1.448",
+        "change": "-0.82"
+      },
+      {
+        "time": "10:44:00",
+        "price": "1.453",
+        "volume": "201",
+        "amount": "291.61",
+        "avgPrice": "1.448",
+        "change": "-0.62"
+      },
+      {
+        "time": "10:45:00",
+        "price": "1.450",
+        "volume": "153",
+        "amount": "222.03",
+        "avgPrice": "1.448",
+        "change": "-0.82"
+      },
+      {
+        "time": "10:46:00",
+        "price": "1.449",
+        "volume": "86",
+        "amount": "125.26",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "10:47:00",
+        "price": "1.450",
+        "volume": "192",
+        "amount": "278.50",
+        "avgPrice": "1.448",
+        "change": "-0.82"
+      },
+      {
+        "time": "10:48:00",
+        "price": "1.449",
+        "volume": "9",
+        "amount": "13.58",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "10:49:00",
+        "price": "1.447",
+        "volume": "298",
+        "amount": "431.33",
+        "avgPrice": "1.448",
+        "change": "-1.03"
+      },
+      {
+        "time": "10:50:00",
+        "price": "1.449",
+        "volume": "132",
+        "amount": "191.04",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "10:51:00",
+        "price": "1.448",
+        "volume": "49",
+        "amount": "70.89",
+        "avgPrice": "1.448",
+        "change": "-0.96"
+      },
+      {
+        "time": "10:52:00",
+        "price": "1.449",
+        "volume": "45",
+        "amount": "64.75",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "10:53:00",
+        "price": "1.451",
+        "volume": "70",
+        "amount": "101.86",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "10:54:00",
+        "price": "1.449",
+        "volume": "56",
+        "amount": "80.72",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "10:55:00",
+        "price": "1.450",
+        "volume": "114",
+        "amount": "165.54",
+        "avgPrice": "1.448",
+        "change": "-0.82"
+      },
+      {
+        "time": "10:56:00",
+        "price": "1.451",
+        "volume": "137",
+        "amount": "198.62",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "10:57:00",
+        "price": "1.453",
+        "volume": "134",
+        "amount": "195.11",
+        "avgPrice": "1.448",
+        "change": "-0.62"
+      },
+      {
+        "time": "10:58:00",
+        "price": "1.452",
+        "volume": "143",
+        "amount": "207.91",
+        "avgPrice": "1.448",
+        "change": "-0.68"
+      },
+      {
+        "time": "10:59:00",
+        "price": "1.453",
+        "volume": "68",
+        "amount": "98.14",
+        "avgPrice": "1.448",
+        "change": "-0.62"
+      },
+      {
+        "time": "11:00:00",
+        "price": "1.453",
+        "volume": "101",
+        "amount": "146.59",
+        "avgPrice": "1.448",
+        "change": "-0.62"
+      },
+      {
+        "time": "11:01:00",
+        "price": "1.455",
+        "volume": "150",
+        "amount": "217.72",
+        "avgPrice": "1.448",
+        "change": "-0.48"
+      },
+      {
+        "time": "11:02:00",
+        "price": "1.456",
+        "volume": "223",
+        "amount": "324.54",
+        "avgPrice": "1.448",
+        "change": "-0.41"
+      },
+      {
+        "time": "11:03:00",
+        "price": "1.456",
+        "volume": "127",
+        "amount": "185.30",
+        "avgPrice": "1.448",
+        "change": "-0.41"
+      },
+      {
+        "time": "11:04:00",
+        "price": "1.455",
+        "volume": "221",
+        "amount": "321.91",
+        "avgPrice": "1.448",
+        "change": "-0.48"
+      },
+      {
+        "time": "11:05:00",
+        "price": "1.455",
+        "volume": "258",
+        "amount": "375.93",
+        "avgPrice": "1.448",
+        "change": "-0.48"
+      },
+      {
+        "time": "11:06:00",
+        "price": "1.453",
+        "volume": "161",
+        "amount": "234.07",
+        "avgPrice": "1.448",
+        "change": "-0.62"
+      },
+      {
+        "time": "11:07:00",
+        "price": "1.454",
+        "volume": "213",
+        "amount": "309.45",
+        "avgPrice": "1.448",
+        "change": "-0.55"
+      },
+      {
+        "time": "11:08:00",
+        "price": "1.452",
+        "volume": "60",
+        "amount": "87.83",
+        "avgPrice": "1.448",
+        "change": "-0.68"
+      },
+      {
+        "time": "11:09:00",
+        "price": "1.451",
+        "volume": "208",
+        "amount": "302.40",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "11:10:00",
+        "price": "1.453",
+        "volume": "100",
+        "amount": "145.61",
+        "avgPrice": "1.448",
+        "change": "-0.62"
+      },
+      {
+        "time": "11:11:00",
+        "price": "1.451",
+        "volume": "74",
+        "amount": "107.61",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "11:12:00",
+        "price": "1.451",
+        "volume": "135",
+        "amount": "195.20",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "11:13:00",
+        "price": "1.451",
+        "volume": "218",
+        "amount": "315.86",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "11:14:00",
+        "price": "1.453",
+        "volume": "55",
+        "amount": "80.32",
+        "avgPrice": "1.448",
+        "change": "-0.62"
+      },
+      {
+        "time": "11:15:00",
+        "price": "1.452",
+        "volume": "46",
+        "amount": "67.18",
+        "avgPrice": "1.448",
+        "change": "-0.68"
+      },
+      {
+        "time": "11:16:00",
+        "price": "1.453",
+        "volume": "40",
+        "amount": "57.67",
+        "avgPrice": "1.448",
+        "change": "-0.62"
+      },
+      {
+        "time": "11:17:00",
+        "price": "1.451",
+        "volume": "36",
+        "amount": "52.18",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "11:18:00",
+        "price": "1.450",
+        "volume": "197",
+        "amount": "285.35",
+        "avgPrice": "1.448",
+        "change": "-0.82"
+      },
+      {
+        "time": "11:19:00",
+        "price": "1.451",
+        "volume": "74",
+        "amount": "107.52",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "11:20:00",
+        "price": "1.451",
+        "volume": "41",
+        "amount": "59.27",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "11:21:00",
+        "price": "1.450",
+        "volume": "86",
+        "amount": "124.77",
+        "avgPrice": "1.448",
+        "change": "-0.82"
+      },
+      {
+        "time": "11:22:00",
+        "price": "1.449",
+        "volume": "34",
+        "amount": "48.87",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "11:23:00",
+        "price": "1.447",
+        "volume": "132",
+        "amount": "190.62",
+        "avgPrice": "1.448",
+        "change": "-1.03"
+      },
+      {
+        "time": "11:24:00",
+        "price": "1.449",
+        "volume": "85",
+        "amount": "122.64",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "11:25:00",
+        "price": "1.449",
+        "volume": "25",
+        "amount": "36.18",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "11:26:00",
+        "price": "1.448",
+        "volume": "82",
+        "amount": "118.76",
+        "avgPrice": "1.448",
+        "change": "-0.96"
+      },
+      {
+        "time": "11:27:00",
+        "price": "1.449",
+        "volume": "134",
+        "amount": "193.98",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "11:28:00",
+        "price": "1.450",
+        "volume": "57",
+        "amount": "82.88",
+        "avgPrice": "1.448",
+        "change": "-0.82"
+      },
+      {
+        "time": "11:29:00",
+        "price": "1.451",
+        "volume": "19",
+        "amount": "27.68",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "11:30:00",
+        "price": "1.449",
+        "volume": "115",
+        "amount": "166.71",
+        "avgPrice": "1.448",
+        "change": "-0.89"
+      },
+      {
+        "time": "13:01:00",
+        "price": "1.448",
+        "volume": "147",
+        "amount": "212.75",
+        "avgPrice": "1.448",
+        "change": "-0.96"
+      },
+      {
+        "time": "13:02:00",
+        "price": "1.448",
+        "volume": "182",
+        "amount": "263.09",
+        "avgPrice": "1.448",
+        "change": "-0.96"
+      },
+      {
+        "time": "13:03:00",
+        "price": "1.450",
+        "volume": "102",
+        "amount": "148.30",
+        "avgPrice": "1.448",
+        "change": "-0.82"
+      },
+      {
+        "time": "13:04:00",
+        "price": "1.451",
+        "volume": "78",
+        "amount": "113.62",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "13:05:00",
+        "price": "1.452",
+        "volume": "49",
+        "amount": "71.44",
+        "avgPrice": "1.448",
+        "change": "-0.68"
+      },
+      {
+        "time": "13:06:00",
+        "price": "1.451",
+        "volume": "55",
+        "amount": "79.64",
+        "avgPrice": "1.448",
+        "change": "-0.75"
+      },
+      {
+        "time": "13:07:00",
+        "price": "1.453",
+        "volume": "83",
+        "amount": "120.40",
+        "avgPrice": "1.448",
+        "change": "-0.62"
+      },
+      {
+        "time": "13:08:00",
+        "price": "1.454",
+        "volume": "351",
+        "amount": "510.54",
+        "avgPrice": "1.448",
+        "change": "-0.55"
+      },
+      {
+        "time": "13:09:00",
+        "price": "1.455",
+        "volume": "110",
+        "amount": "159.60",
+        "avgPrice": "1.448",
+        "change": "-0.48"
+      },
+      {
+        "time": "13:10:00",
+        "price": "1.456",
+        "volume": "186",
+        "amount": "271.28",
+        "avgPrice": "1.448",
+        "change": "-0.41"
+      },
+      {
+        "time": "13:11:00",
+        "price": "1.455",
+        "volume": "176",
+        "amount": "256.24",
+        "avgPrice": "1.448",
+        "change": "-0.48"
+      },
+      {
+        "time": "13:12:00",
+        "price": "1.456",
+        "volume": "555",
+        "amount": "808.55",
+        "avgPrice": "1.449",
+        "change": "-0.41"
+      },
+      {
+        "time": "13:13:00",
+        "price": "1.455",
+        "volume": "81",
+        "amount": "117.57",
+        "avgPrice": "1.449",
+        "change": "-0.48"
+      },
+      {
+        "time": "13:14:00",
+        "price": "1.456",
+        "volume": "234",
+        "amount": "340.91",
+        "avgPrice": "1.449",
+        "change": "-0.41"
+      },
+      {
+        "time": "13:15:00",
+        "price": "1.455",
+        "volume": "95",
+        "amount": "138.31",
+        "avgPrice": "1.449",
+        "change": "-0.48"
+      },
+      {
+        "time": "13:16:00",
+        "price": "1.454",
+        "volume": "10",
+        "amount": "13.83",
+        "avgPrice": "1.449",
+        "change": "-0.55"
+      },
+      {
+        "time": "13:17:00",
+        "price": "1.455",
+        "volume": "161",
+        "amount": "233.83",
+        "avgPrice": "1.449",
+        "change": "-0.48"
+      },
+      {
+        "time": "13:18:00",
+        "price": "1.459",
+        "volume": "354",
+        "amount": "516.51",
+        "avgPrice": "1.449",
+        "change": "-0.21"
+      },
+      {
+        "time": "13:19:00",
+        "price": "1.458",
+        "volume": "69",
+        "amount": "100.43",
+        "avgPrice": "1.449",
+        "change": "-0.27"
+      },
+      {
+        "time": "13:20:00",
+        "price": "1.458",
+        "volume": "53",
+        "amount": "77.06",
+        "avgPrice": "1.449",
+        "change": "-0.27"
+      },
+      {
+        "time": "13:21:00",
+        "price": "1.456",
+        "volume": "126",
+        "amount": "183.42",
+        "avgPrice": "1.449",
+        "change": "-0.41"
+      },
+      {
+        "time": "13:22:00",
+        "price": "1.455",
+        "volume": "98",
+        "amount": "142.95",
+        "avgPrice": "1.449",
+        "change": "-0.48"
+      },
+      {
+        "time": "13:23:00",
+        "price": "1.454",
+        "volume": "85",
+        "amount": "123.62",
+        "avgPrice": "1.449",
+        "change": "-0.55"
+      },
+      {
+        "time": "13:24:00",
+        "price": "1.453",
+        "volume": "55",
+        "amount": "80.46",
+        "avgPrice": "1.449",
+        "change": "-0.62"
+      },
+      {
+        "time": "13:25:00",
+        "price": "1.452",
+        "volume": "38",
+        "amount": "54.72",
+        "avgPrice": "1.449",
+        "change": "-0.68"
+      },
+      {
+        "time": "13:26:00",
+        "price": "1.453",
+        "volume": "80",
+        "amount": "116.41",
+        "avgPrice": "1.449",
+        "change": "-0.62"
+      },
+      {
+        "time": "13:27:00",
+        "price": "1.452",
+        "volume": "8",
+        "amount": "11.81",
+        "avgPrice": "1.449",
+        "change": "-0.68"
+      },
+      {
+        "time": "13:28:00",
+        "price": "1.452",
+        "volume": "89",
+        "amount": "128.56",
+        "avgPrice": "1.449",
+        "change": "-0.68"
+      },
+      {
+        "time": "13:29:00",
+        "price": "1.452",
+        "volume": "20",
+        "amount": "29.18",
+        "avgPrice": "1.449",
+        "change": "-0.68"
+      },
+      {
+        "time": "13:30:00",
+        "price": "1.453",
+        "volume": "46",
+        "amount": "66.78",
+        "avgPrice": "1.449",
+        "change": "-0.62"
+      },
+      {
+        "time": "13:31:00",
+        "price": "1.455",
+        "volume": "97",
+        "amount": "141.14",
+        "avgPrice": "1.449",
+        "change": "-0.48"
+      },
+      {
+        "time": "13:32:00",
+        "price": "1.456",
+        "volume": "69",
+        "amount": "100.64",
+        "avgPrice": "1.449",
+        "change": "-0.41"
+      },
+      {
+        "time": "13:33:00",
+        "price": "1.455",
+        "volume": "57",
+        "amount": "83.47",
+        "avgPrice": "1.449",
+        "change": "-0.48"
+      },
+      {
+        "time": "13:34:00",
+        "price": "1.454",
+        "volume": "14",
+        "amount": "20.02",
+        "avgPrice": "1.449",
+        "change": "-0.55"
+      },
+      {
+        "time": "13:35:00",
+        "price": "1.456",
+        "volume": "47",
+        "amount": "69.01",
+        "avgPrice": "1.449",
+        "change": "-0.41"
+      },
+      {
+        "time": "13:36:00",
+        "price": "1.456",
+        "volume": "188",
+        "amount": "273.17",
+        "avgPrice": "1.449",
+        "change": "-0.41"
+      },
+      {
+        "time": "13:37:00",
+        "price": "1.455",
+        "volume": "73",
+        "amount": "106.66",
+        "avgPrice": "1.449",
+        "change": "-0.48"
+      },
+      {
+        "time": "13:38:00",
+        "price": "1.455",
+        "volume": "40",
+        "amount": "58.40",
+        "avgPrice": "1.449",
+        "change": "-0.48"
+      },
+      {
+        "time": "13:39:00",
+        "price": "1.454",
+        "volume": "69",
+        "amount": "100.55",
+        "avgPrice": "1.449",
+        "change": "-0.55"
+      },
+      {
+        "time": "13:40:00",
+        "price": "1.455",
+        "volume": "19",
+        "amount": "27.77",
+        "avgPrice": "1.449",
+        "change": "-0.48"
+      },
+      {
+        "time": "13:41:00",
+        "price": "1.454",
+        "volume": "226",
+        "amount": "328.47",
+        "avgPrice": "1.449",
+        "change": "-0.55"
+      },
+      {
+        "time": "13:42:00",
+        "price": "1.455",
+        "volume": "40",
+        "amount": "58.65",
+        "avgPrice": "1.449",
+        "change": "-0.48"
+      },
+      {
+        "time": "13:43:00",
+        "price": "1.453",
+        "volume": "80",
+        "amount": "115.75",
+        "avgPrice": "1.449",
+        "change": "-0.62"
+      },
+      {
+        "time": "13:44:00",
+        "price": "1.452",
+        "volume": "112",
+        "amount": "161.95",
+        "avgPrice": "1.449",
+        "change": "-0.68"
+      },
+      {
+        "time": "13:45:00",
+        "price": "1.451",
+        "volume": "45",
+        "amount": "64.87",
+        "avgPrice": "1.449",
+        "change": "-0.75"
+      },
+      {
+        "time": "13:46:00",
+        "price": "1.450",
+        "volume": "82",
+        "amount": "118.35",
+        "avgPrice": "1.449",
+        "change": "-0.82"
+      },
+      {
+        "time": "13:47:00",
+        "price": "1.452",
+        "volume": "309",
+        "amount": "447.44",
+        "avgPrice": "1.449",
+        "change": "-0.68"
+      },
+      {
+        "time": "13:48:00",
+        "price": "1.451",
+        "volume": "80",
+        "amount": "115.89",
+        "avgPrice": "1.449",
+        "change": "-0.75"
+      },
+      {
+        "time": "13:49:00",
+        "price": "1.449",
+        "volume": "70",
+        "amount": "101.81",
+        "avgPrice": "1.449",
+        "change": "-0.89"
+      },
+      {
+        "time": "13:50:00",
+        "price": "1.447",
+        "volume": "202",
+        "amount": "292.71",
+        "avgPrice": "1.449",
+        "change": "-1.03"
+      },
+      {
+        "time": "13:51:00",
+        "price": "1.449",
+        "volume": "128",
+        "amount": "185.85",
+        "avgPrice": "1.449",
+        "change": "-0.89"
+      },
+      {
+        "time": "13:52:00",
+        "price": "1.449",
+        "volume": "41",
+        "amount": "59.49",
+        "avgPrice": "1.449",
+        "change": "-0.89"
+      },
+      {
+        "time": "13:53:00",
+        "price": "1.448",
+        "volume": "253",
+        "amount": "365.96",
+        "avgPrice": "1.449",
+        "change": "-0.96"
+      },
+      {
+        "time": "13:54:00",
+        "price": "1.446",
+        "volume": "240",
+        "amount": "347.16",
+        "avgPrice": "1.449",
+        "change": "-1.09"
+      },
+      {
+        "time": "13:55:00",
+        "price": "1.447",
+        "volume": "157",
+        "amount": "226.84",
+        "avgPrice": "1.449",
+        "change": "-1.03"
+      },
+      {
+        "time": "13:56:00",
+        "price": "1.446",
+        "volume": "92",
+        "amount": "132.80",
+        "avgPrice": "1.449",
+        "change": "-1.09"
+      },
+      {
+        "time": "13:57:00",
+        "price": "1.445",
+        "volume": "282",
+        "amount": "406.92",
+        "avgPrice": "1.449",
+        "change": "-1.16"
+      },
+      {
+        "time": "13:58:00",
+        "price": "1.444",
+        "volume": "207",
+        "amount": "298.83",
+        "avgPrice": "1.449",
+        "change": "-1.23"
+      },
+      {
+        "time": "13:59:00",
+        "price": "1.446",
+        "volume": "147",
+        "amount": "213.05",
+        "avgPrice": "1.449",
+        "change": "-1.09"
+      },
+      {
+        "time": "14:00:00",
+        "price": "1.445",
+        "volume": "222",
+        "amount": "320.53",
+        "avgPrice": "1.449",
+        "change": "-1.16"
+      },
+      {
+        "time": "14:01:00",
+        "price": "1.444",
+        "volume": "86",
+        "amount": "124.25",
+        "avgPrice": "1.449",
+        "change": "-1.23"
+      },
+      {
+        "time": "14:02:00",
+        "price": "1.445",
+        "volume": "178",
+        "amount": "257.23",
+        "avgPrice": "1.449",
+        "change": "-1.16"
+      },
+      {
+        "time": "14:03:00",
+        "price": "1.446",
+        "volume": "24",
+        "amount": "34.96",
+        "avgPrice": "1.449",
+        "change": "-1.09"
+      },
+      {
+        "time": "14:04:00",
+        "price": "1.446",
+        "volume": "226",
+        "amount": "326.71",
+        "avgPrice": "1.449",
+        "change": "-1.09"
+      },
+      {
+        "time": "14:05:00",
+        "price": "1.444",
+        "volume": "369",
+        "amount": "532.36",
+        "avgPrice": "1.449",
+        "change": "-1.23"
+      },
+      {
+        "time": "14:06:00",
+        "price": "1.443",
+        "volume": "11",
+        "amount": "16.08",
+        "avgPrice": "1.449",
+        "change": "-1.30"
+      },
+      {
+        "time": "14:07:00",
+        "price": "1.442",
+        "volume": "526",
+        "amount": "759.45",
+        "avgPrice": "1.449",
+        "change": "-1.37"
+      },
+      {
+        "time": "14:08:00",
+        "price": "1.443",
+        "volume": "342",
+        "amount": "493.26",
+        "avgPrice": "1.449",
+        "change": "-1.30"
+      },
+      {
+        "time": "14:09:00",
+        "price": "1.442",
+        "volume": "83",
+        "amount": "119.02",
+        "avgPrice": "1.449",
+        "change": "-1.37"
+      },
+      {
+        "time": "14:10:00",
+        "price": "1.443",
+        "volume": "52",
+        "amount": "75.14",
+        "avgPrice": "1.449",
+        "change": "-1.30"
+      },
+      {
+        "time": "14:11:00",
+        "price": "1.444",
+        "volume": "108",
+        "amount": "155.37",
+        "avgPrice": "1.449",
+        "change": "-1.23"
+      },
+      {
+        "time": "14:12:00",
+        "price": "1.444",
+        "volume": "493",
+        "amount": "711.66",
+        "avgPrice": "1.449",
+        "change": "-1.23"
+      },
+      {
+        "time": "14:13:00",
+        "price": "1.444",
+        "volume": "116",
+        "amount": "167.40",
+        "avgPrice": "1.449",
+        "change": "-1.23"
+      },
+      {
+        "time": "14:14:00",
+        "price": "1.443",
+        "volume": "202",
+        "amount": "292.15",
+        "avgPrice": "1.449",
+        "change": "-1.30"
+      },
+      {
+        "time": "14:15:00",
+        "price": "1.441",
+        "volume": "236",
+        "amount": "340.85",
+        "avgPrice": "1.449",
+        "change": "-1.44"
+      },
+      {
+        "time": "14:16:00",
+        "price": "1.443",
+        "volume": "77",
+        "amount": "110.63",
+        "avgPrice": "1.449",
+        "change": "-1.30"
+      },
+      {
+        "time": "14:17:00",
+        "price": "1.442",
+        "volume": "106",
+        "amount": "153.28",
+        "avgPrice": "1.449",
+        "change": "-1.37"
+      },
+      {
+        "time": "14:18:00",
+        "price": "1.442",
+        "volume": "34",
+        "amount": "49.09",
+        "avgPrice": "1.449",
+        "change": "-1.37"
+      },
+      {
+        "time": "14:19:00",
+        "price": "1.444",
+        "volume": "44",
+        "amount": "62.83",
+        "avgPrice": "1.449",
+        "change": "-1.23"
+      },
+      {
+        "time": "14:20:00",
+        "price": "1.445",
+        "volume": "24",
+        "amount": "35.32",
+        "avgPrice": "1.449",
+        "change": "-1.16"
+      },
+      {
+        "time": "14:21:00",
+        "price": "1.446",
+        "volume": "114",
+        "amount": "165.19",
+        "avgPrice": "1.449",
+        "change": "-1.09"
+      },
+      {
+        "time": "14:22:00",
+        "price": "1.445",
+        "volume": "94",
+        "amount": "136.05",
+        "avgPrice": "1.449",
+        "change": "-1.16"
+      },
+      {
+        "time": "14:23:00",
+        "price": "1.444",
+        "volume": "96",
+        "amount": "138.41",
+        "avgPrice": "1.449",
+        "change": "-1.23"
+      },
+      {
+        "time": "14:24:00",
+        "price": "1.446",
+        "volume": "125",
+        "amount": "180.51",
+        "avgPrice": "1.448",
+        "change": "-1.09"
+      },
+      {
+        "time": "14:25:00",
+        "price": "1.445",
+        "volume": "72",
+        "amount": "104.30",
+        "avgPrice": "1.448",
+        "change": "-1.16"
+      },
+      {
+        "time": "14:26:00",
+        "price": "1.445",
+        "volume": "38",
+        "amount": "55.26",
+        "avgPrice": "1.448",
+        "change": "-1.16"
+      },
+      {
+        "time": "14:27:00",
+        "price": "1.445",
+        "volume": "8",
+        "amount": "11.61",
+        "avgPrice": "1.448",
+        "change": "-1.16"
+      },
+      {
+        "time": "14:28:00",
+        "price": "1.445",
+        "volume": "35",
+        "amount": "50.14",
+        "avgPrice": "1.448",
+        "change": "-1.16"
+      },
+      {
+        "time": "14:29:00",
+        "price": "1.444",
+        "volume": "100",
+        "amount": "144.90",
+        "avgPrice": "1.448",
+        "change": "-1.23"
+      },
+      {
+        "time": "14:30:00",
+        "price": "1.446",
+        "volume": "52",
+        "amount": "74.49",
+        "avgPrice": "1.448",
+        "change": "-1.09"
+      },
+      {
+        "time": "14:31:00",
+        "price": "1.447",
+        "volume": "132",
+        "amount": "190.97",
+        "avgPrice": "1.448",
+        "change": "-1.03"
+      },
+      {
+        "time": "14:32:00",
+        "price": "1.445",
+        "volume": "214",
+        "amount": "308.83",
+        "avgPrice": "1.448",
+        "change": "-1.16"
+      },
+      {
+        "time": "14:33:00",
+        "price": "1.444",
+        "volume": "201",
+        "amount": "290.79",
+        "avgPrice": "1.448",
+        "change": "-1.23"
+      },
+      {
+        "time": "14:34:00",
+        "price": "1.443",
+        "volume": "102",
+        "amount": "146.65",
+        "avgPrice": "1.448",
+        "change": "-1.30"
+      },
+      {
+        "time": "14:35:00",
+        "price": "1.443",
+        "volume": "59",
+        "amount": "85.35",
+        "avgPrice": "1.448",
+        "change": "-1.30"
+      },
+      {
+        "time": "14:36:00",
+        "price": "1.444",
+        "volume": "35",
+        "amount": "50.54",
+        "avgPrice": "1.448",
+        "change": "-1.23"
+      },
+      {
+        "time": "14:37:00",
+        "price": "1.443",
+        "volume": "317",
+        "amount": "457.01",
+        "avgPrice": "1.448",
+        "change": "-1.30"
+      },
+      {
+        "time": "14:38:00",
+        "price": "1.443",
+        "volume": "103",
+        "amount": "148.25",
+        "avgPrice": "1.448",
+        "change": "-1.30"
+      },
+      {
+        "time": "14:39:00",
+        "price": "1.441",
+        "volume": "254",
+        "amount": "365.89",
+        "avgPrice": "1.448",
+        "change": "-1.44"
+      },
+      {
+        "time": "14:40:00",
+        "price": "1.442",
+        "volume": "147",
+        "amount": "211.79",
+        "avgPrice": "1.448",
+        "change": "-1.37"
+      },
+      {
+        "time": "14:41:00",
+        "price": "1.442",
+        "volume": "201",
+        "amount": "290.00",
+        "avgPrice": "1.448",
+        "change": "-1.37"
+      },
+      {
+        "time": "14:42:00",
+        "price": "1.443",
+        "volume": "94",
+        "amount": "135.75",
+        "avgPrice": "1.448",
+        "change": "-1.30"
+      },
+      {
+        "time": "14:43:00",
+        "price": "1.443",
+        "volume": "36",
+        "amount": "52.00",
+        "avgPrice": "1.448",
+        "change": "-1.30"
+      },
+      {
+        "time": "14:44:00",
+        "price": "1.443",
+        "volume": "88",
+        "amount": "127.31",
+        "avgPrice": "1.448",
+        "change": "-1.30"
+      },
+      {
+        "time": "14:45:00",
+        "price": "1.443",
+        "volume": "87",
+        "amount": "125.21",
+        "avgPrice": "1.448",
+        "change": "-1.30"
+      },
+      {
+        "time": "14:46:00",
+        "price": "1.442",
+        "volume": "1803",
+        "amount": "2599.54",
+        "avgPrice": "1.448",
+        "change": "-1.37"
+      },
+      {
+        "time": "14:47:00",
+        "price": "1.441",
+        "volume": "129",
+        "amount": "186.16",
+        "avgPrice": "1.448",
+        "change": "-1.44"
+      },
+      {
+        "time": "14:48:00",
+        "price": "1.441",
+        "volume": "109",
+        "amount": "157.44",
+        "avgPrice": "1.448",
+        "change": "-1.44"
+      },
+      {
+        "time": "14:49:00",
+        "price": "1.442",
+        "volume": "157",
+        "amount": "226.30",
+        "avgPrice": "1.448",
+        "change": "-1.37"
+      },
+      {
+        "time": "14:50:00",
+        "price": "1.440",
+        "volume": "191",
+        "amount": "275.49",
+        "avgPrice": "1.448",
+        "change": "-1.50"
+      },
+      {
+        "time": "14:51:00",
+        "price": "1.441",
+        "volume": "233",
+        "amount": "335.73",
+        "avgPrice": "1.448",
+        "change": "-1.44"
+      },
+      {
+        "time": "14:52:00",
+        "price": "1.442",
+        "volume": "123",
+        "amount": "177.30",
+        "avgPrice": "1.448",
+        "change": "-1.37"
+      },
+      {
+        "time": "14:53:00",
+        "price": "1.441",
+        "volume": "426",
+        "amount": "613.24",
+        "avgPrice": "1.448",
+        "change": "-1.44"
+      },
+      {
+        "time": "14:54:00",
+        "price": "1.441",
+        "volume": "117",
+        "amount": "169.02",
+        "avgPrice": "1.448",
+        "change": "-1.44"
+      },
+      {
+        "time": "14:55:00",
+        "price": "1.440",
+        "volume": "225",
+        "amount": "324.57",
+        "avgPrice": "1.448",
+        "change": "-1.50"
+      },
+      {
+        "time": "14:56:00",
+        "price": "1.441",
+        "volume": "256",
+        "amount": "368.95",
+        "avgPrice": "1.448",
+        "change": "-1.44"
+      },
+      {
+        "time": "14:57:00",
+        "price": "1.441",
+        "volume": "207",
+        "amount": "297.78",
+        "avgPrice": "1.448",
+        "change": "-1.44"
+      },
+      {
+        "time": "14:58:00",
+        "price": "1.441",
+        "volume": "342",
+        "amount": "492.26",
+        "avgPrice": "1.448",
+        "change": "-1.44"
+      },
+      {
+        "time": "14:59:00",
+        "price": "1.441",
+        "volume": "227",
+        "amount": "327.33",
+        "avgPrice": "1.448",
+        "change": "-1.44"
+      },
+      {
+        "time": "15:00:00",
+        "price": "1.442",
+        "volume": "240",
+        "amount": "346.47",
+        "avgPrice": "1.448",
+        "change": "-1.37"
+      }
+    ]
+  }
+}

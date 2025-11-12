@@ -106,7 +106,7 @@ export class QuotesService {
       limit = 10,
     } = queryDto;
 
-    const where: any = {};
+    const where: Record<string, any> = {};
 
     if (code) {
       where.code = code;
@@ -166,7 +166,7 @@ export class QuotesService {
     endTime?: Date,
     limit: number = 100,
   ): Promise<Quote[]> {
-    const where: any = { code };
+    const where: Record<string, any> = { code };
 
     if (startTime && endTime) {
       where.snapshotTime = Between(startTime, endTime);
@@ -190,7 +190,7 @@ export class QuotesService {
     endDate?: Date,
     limit: number = 100,
   ): Promise<Quote[]> {
-    const where: any = { code };
+    const where: Record<string, any> = { code };
 
     if (startDate && endDate) {
       where.snapshotDate = Between(startDate, endDate);

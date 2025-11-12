@@ -31,7 +31,7 @@ export class Quote {
   @Column({
     type: 'decimal',
     precision: 10,
-    scale: 2,
+    scale: 6,
     nullable: true,
     comment: '最新价',
   })
@@ -51,7 +51,7 @@ export class Quote {
   @Column({
     type: 'decimal',
     precision: 10,
-    scale: 2,
+    scale: 6,
     nullable: true,
     comment: '开盘价',
   })
@@ -69,7 +69,7 @@ export class Quote {
   @Column({
     type: 'decimal',
     precision: 15,
-    scale: 2,
+    scale: 6,
     nullable: true,
     comment: '成交额(元)',
   })
@@ -79,7 +79,7 @@ export class Quote {
   @Column({
     type: 'decimal',
     precision: 10,
-    scale: 2,
+    scale: 6,
     nullable: true,
     comment: '昨收价',
   })

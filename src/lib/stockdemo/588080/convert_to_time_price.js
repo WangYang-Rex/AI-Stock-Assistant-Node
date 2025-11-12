@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // 读取源文件
-const sourceFile = path.join(__dirname, '20251106.json');
+const sourceFile = path.join(__dirname, '20251107.json');
 const data = JSON.parse(fs.readFileSync(sourceFile, 'utf-8'));
 const date = '2025-11-06';
 
@@ -13,7 +13,7 @@ const timePriceArray = data.data.trends.map(trend => ({
 }));
 
 // 保存结果
-const outputFile = path.join(__dirname, 'time_price_20251106.json');
+const outputFile = path.join(__dirname, 'time_price_20251107.json');
 fs.writeFileSync(outputFile, JSON.stringify(timePriceArray, null, 2), 'utf-8');
 
 console.log(`✅ 转换完成！`);

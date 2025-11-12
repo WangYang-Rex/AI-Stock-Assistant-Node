@@ -34,7 +34,7 @@ export class Stock {
   @Column({
     type: 'decimal',
     precision: 8,
-    scale: 2,
+    scale: 6,
     nullable: true,
     comment: '市盈率',
   })
@@ -44,7 +44,7 @@ export class Stock {
   @Column({
     type: 'decimal',
     precision: 10,
-    scale: 2,
+    scale: 6,
     nullable: true,
     comment: '最新价',
   })
@@ -54,7 +54,7 @@ export class Stock {
   @Column({
     type: 'decimal',
     precision: 8,
-    scale: 4,
+    scale: 6,
     nullable: true,
     comment: '涨跌幅(%)',
   })
@@ -64,7 +64,7 @@ export class Stock {
   @Column({
     type: 'decimal',
     precision: 10,
-    scale: 2,
+    scale: 6,
     nullable: true,
     comment: '涨跌额',
   })
@@ -74,7 +74,7 @@ export class Stock {
   @Column({
     type: 'decimal',
     precision: 10,
-    scale: 2,
+    scale: 6,
     nullable: true,
     comment: '开盘价',
   })
@@ -84,7 +84,7 @@ export class Stock {
   @Column({
     type: 'decimal',
     precision: 10,
-    scale: 2,
+    scale: 6,
     nullable: true,
     comment: '最高价',
   })
@@ -94,7 +94,7 @@ export class Stock {
   @Column({
     type: 'decimal',
     precision: 10,
-    scale: 2,
+    scale: 6,
     nullable: true,
     comment: '最低价',
   })
@@ -104,7 +104,7 @@ export class Stock {
   @Column({
     type: 'decimal',
     precision: 10,
-    scale: 2,
+    scale: 6,
     nullable: true,
     comment: '昨收价',
   })
@@ -122,7 +122,7 @@ export class Stock {
   @Column({
     type: 'decimal',
     precision: 15,
-    scale: 2,
+    scale: 0,
     nullable: true,
     comment: '持仓数量',
   })
@@ -132,7 +132,7 @@ export class Stock {
   @Column({
     type: 'decimal',
     precision: 10,
-    scale: 2,
+    scale: 6,
     nullable: true,
     comment: '持仓成本',
   })
@@ -142,7 +142,7 @@ export class Stock {
   @Column({
     type: 'decimal',
     precision: 15,
-    scale: 2,
+    scale: 6,
     nullable: true,
     comment: '市值',
   })
