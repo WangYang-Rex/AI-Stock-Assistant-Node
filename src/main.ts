@@ -1,3 +1,11 @@
+// 确保 crypto 全局对象可用（解决 @nestjs/typeorm 中的 crypto 未定义问题）
+import * as nodeCrypto from 'crypto';
+if (typeof globalThis.crypto === 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  globalThis.crypto = nodeCrypto as any;
+}
+// (global as any).crypto = nodeCrypto;
+
 import { NestFactory } from '@nestjs/core';
 import { Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
