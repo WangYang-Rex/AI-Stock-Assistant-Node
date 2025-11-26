@@ -3,8 +3,8 @@ import OpenAI from 'openai';
 // 初始化 OpenAI 客户端（阿里云百炼）
 const openai = new OpenAI({
   // 如果没有配置环境变量，请用阿里云百炼API Key替换：apiKey: "sk-xxx"
-  apiKey:
-    process.env.DASHSCOPE_API_KEY || 'sk-7d42db4e0416498e97f8ffb879c07819',
+  // apiKey: 'sk-7d42db4e0416498e97f8ffb879c07819', // 阿里云百炼API wy Key
+  apiKey: 'sk-42ba3bb2b02445b38605bdc8f2406c3a', // crm 测试环境的
   baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
 });
 
