@@ -11,7 +11,7 @@ const openai = new OpenAI(
 
 async function main() {
   const completion = await openai.chat.completions.create({
-    model: "qwen-plus",  //此处以qwen-plus为例，可按需更换模型名称。模型列表：https://help.aliyun.com/zh/model-studio/getting-started/models
+    model: "qwen3-vl-32b-thinking", // "qwen-plus",  //此处以qwen-plus为例，可按需更换模型名称。模型列表：https://help.aliyun.com/zh/model-studio/getting-started/models
     messages: [
       { role: "system", content: "You are a helpful assistant." },
       { role: "user", content: "你是谁？" }
