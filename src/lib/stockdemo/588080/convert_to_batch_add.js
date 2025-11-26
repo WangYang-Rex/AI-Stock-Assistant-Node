@@ -2,11 +2,11 @@ const fs = require('fs');
 const path = require('path');
 
 // 读取源文件
-const sourceFile = path.join(__dirname, '20251125.json');
+const sourceFile = path.join(__dirname, '20251126.json');
 const data = JSON.parse(fs.readFileSync(sourceFile, 'utf-8'));
 
 // 从文件名提取日期 (2025-11-10)
-const date = '2025-11-25';
+const date = '2025-11-26';
 
 // 股票信息
 const stockCode = '588080';
@@ -52,7 +52,7 @@ const quotes = data.data.trends.map(trend => {
 });
 
 // 保存结果
-const outputFile = path.join(__dirname, 'batch_add_request_20251125.json');
+const outputFile = path.join(__dirname, 'batch_add_request_20251126.json');
 fs.writeFileSync(outputFile, JSON.stringify(quotes, null, 2), 'utf-8');
 
 console.log(`✅ 转换完成！`);
