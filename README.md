@@ -123,6 +123,16 @@ nvm use 16.20.2  # 或你项目使用的版本
 npm install -g pm2
 ```
 
+### PM2 更新
+
+如果看到 "In-memory PM2 is out-of-date" 提示，执行：
+
+```bash
+pm2 update
+```
+
+这会更新内存中的 PM2 守护进程，确保使用最新版本。
+
 ### 部署步骤
 
 1. **构建项目**：
@@ -130,15 +140,56 @@ npm install -g pm2
 yarn build
 ```
 
-2. **使用 PM2 配置文件启动**：
+2. **更新 PM2**（如果提示需要更新）：
+```bash
+pm2 update
+```
+
+3. **使用 PM2 配置文件启动**：
 ```bash
 pm2 start ecosystem.config.js
 ```
 
-3. **或者直接启动**：
+4. **或者直接启动**：
 ```bash
 pm2 start dist/main.js --name nestjs-app
 ```
+
+5. **检查应用健康状态**：
+```bash
+# 查看进程状态
+pm2 ls
+
+# 查看详细信息（包括运行时间）
+pm2 show nestjs-app
+
+# 测试应用是否正常响应
+curl http://localhost:3000/api/health
+# 或
+curl http://localhost:3000/api
+```
+
+### 监控应用稳定性
+
+如果重启次数（↺）很高，说明应用不稳定：
+
+1. **重置重启计数**（应用稳定后）：
+```bash
+pm2 reset nestjs-app
+```
+
+2. **监控应用运行**：
+```bash
+# 实时监控
+pm2 monit
+
+# 查看运行时间（uptime）
+pm2 show nestjs-app
+```
+
+3. **检查是否稳定运行**：
+   - 如果 `uptime` 持续增长，说明应用已稳定
+   - 如果重启次数不再增加，说明问题已解决
 
 ### 排查应用崩溃问题
 
@@ -192,7 +243,7 @@ netstat -tulpn | grep 3000
 # 查看进程状态
 pm2 ls
 
-# 查看详细信息
+# 查看详细信息（包括运行时间、重启次数等）
 pm2 show nestjs-app
 
 # 重启应用
@@ -204,12 +255,21 @@ pm2 stop nestjs-app
 # 删除应用
 pm2 delete nestjs-app
 
-# 监控
+# 重置重启计数（应用稳定后使用）
+pm2 reset nestjs-app
+
+# 监控（实时查看 CPU、内存使用）
 pm2 monit
+
+# 更新 PM2 守护进程
+pm2 update
 
 # 保存当前进程列表（开机自启）
 pm2 save
 pm2 startup
+
+# 查看应用健康检查
+curl http://localhost:3000/api/health
 ```
 
 ## Deployment

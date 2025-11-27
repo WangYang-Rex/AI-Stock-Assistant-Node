@@ -28,9 +28,12 @@ module.exports = {
       listen_timeout: 10000,
       // 优雅关闭超时时间
       kill_timeout: 5000,
-      // 重启间隔
-      min_uptime: '10s',
-      max_restarts: 10,
+      // 重启间隔（应用至少运行这个时间才认为是稳定启动）
+      min_uptime: '30s',
+      // 最大重启次数（在 min_uptime 时间窗口内）
+      max_restarts: 5,
+      // 重启延迟（毫秒）
+      restart_delay: 4000,
     },
   ],
 };
