@@ -80,6 +80,49 @@ PORT=3000
 
 ## PM2 部署与排查
 
+### PM2 安装与修复
+
+如果遇到 `Cannot find module 'ProcessContainerFork.js'` 错误，说明 PM2 安装有问题，按以下步骤修复：
+
+1. **删除有问题的 PM2 进程**：
+```bash
+pm2 delete all
+pm2 kill
+```
+
+2. **重新安装 PM2**（推荐使用 npm 全局安装）：
+```bash
+# 卸载旧版本
+npm uninstall -g pm2
+
+# 重新安装
+npm install -g pm2
+
+# 验证安装
+pm2 --version
+```
+
+3. **或者使用项目本地 PM2**（如果已添加到 package.json）：
+```bash
+# 安装依赖
+yarn install
+
+# 使用本地 PM2
+npx pm2 start ecosystem.config.js
+```
+
+4. **如果使用 nvm，确保在正确的 Node.js 版本下安装 PM2**：
+```bash
+# 检查当前 Node.js 版本
+node --version
+
+# 切换到项目使用的 Node.js 版本（如果需要）
+nvm use 16.20.2  # 或你项目使用的版本
+
+# 重新安装 PM2
+npm install -g pm2
+```
+
 ### 部署步骤
 
 1. **构建项目**：
