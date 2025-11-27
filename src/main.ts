@@ -1,3 +1,4 @@
+// import compression from 'compression';
 // 确保 crypto 全局对象可用（解决 @nestjs/typeorm 中的 crypto 未定义问题）
 import * as nodeCrypto from 'crypto';
 if (typeof globalThis.crypto === 'undefined') {
@@ -14,6 +15,15 @@ async function bootstrap() {
   try {
     const app = await NestFactory.create(AppModule, {
       logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+    });
+
+    // 启用 gzip 压缩
+    // app.use(compression());
+
+    // 配置 CORS 跨域请求
+    app.enableCors({
+      origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
+      credentials: true,
     });
 
     const globalPrefix = 'api';
