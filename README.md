@@ -61,6 +61,114 @@ $ yarn run test:e2e
 $ yarn run test:cov
 ```
 
+## 环境变量配置
+
+项目需要以下环境变量（创建 `.env` 或 `.env.production` 文件）：
+
+```bash
+# 数据库配置
+DB_HOST=your_database_host
+DB_PORT=3306
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+DB_DATABASE=your_database_name
+
+# 应用配置
+NODE_ENV=production
+PORT=3000
+```
+
+## PM2 部署与排查
+
+### 部署步骤
+
+1. **构建项目**：
+```bash
+yarn build
+```
+
+2. **使用 PM2 配置文件启动**：
+```bash
+pm2 start ecosystem.config.js
+```
+
+3. **或者直接启动**：
+```bash
+pm2 start dist/main.js --name nestjs-app
+```
+
+### 排查应用崩溃问题
+
+如果应用状态显示为 `errored` 或频繁重启（↺ 次数很高），按以下步骤排查：
+
+1. **查看错误日志**（最重要）：
+```bash
+# 查看实时日志
+pm2 logs nestjs-app
+
+# 查看错误日志
+pm2 logs nestjs-app --err --lines 50
+
+# 查看所有日志
+pm2 logs nestjs-app --lines 100
+```
+
+2. **检查环境变量**：
+```bash
+# 确认 .env 或 .env.production 文件存在且配置正确
+cat .env.production
+# 或
+cat .env
+```
+
+3. **检查数据库连接**：
+   - 确认数据库服务正在运行
+   - 验证数据库连接信息是否正确
+   - 检查网络连接和防火墙设置
+   - 测试数据库连接：
+   ```bash
+   mysql -h $DB_HOST -P $DB_PORT -u $DB_USERNAME -p$DB_PASSWORD $DB_DATABASE
+   ```
+
+4. **手动测试启动**（查看详细错误）：
+```bash
+# 直接运行编译后的文件，查看详细错误信息
+NODE_ENV=production node dist/main.js
+```
+
+5. **检查端口占用**：
+```bash
+# 检查端口是否被占用
+lsof -i :3000
+# 或
+netstat -tulpn | grep 3000
+```
+
+6. **常用 PM2 命令**：
+```bash
+# 查看进程状态
+pm2 ls
+
+# 查看详细信息
+pm2 show nestjs-app
+
+# 重启应用
+pm2 restart nestjs-app
+
+# 停止应用
+pm2 stop nestjs-app
+
+# 删除应用
+pm2 delete nestjs-app
+
+# 监控
+pm2 monit
+
+# 保存当前进程列表（开机自启）
+pm2 save
+pm2 startup
+```
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

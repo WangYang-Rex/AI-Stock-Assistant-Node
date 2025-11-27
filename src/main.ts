@@ -11,18 +11,28 @@ import { Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
-  });
+  try {
+    const app = await NestFactory.create(AppModule, {
+      logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+    });
 
-  const globalPrefix = 'api';
-  app.setGlobalPrefix(globalPrefix);
+    const globalPrefix = 'api';
+    app.setGlobalPrefix(globalPrefix);
 
-  const port = process.env.PORT || 3000;
-  await app.listen(port);
+    const port = process.env.PORT || 3000;
+    await app.listen(port);
 
-  Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
-  );
+    Logger.log(
+      `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
+    );
+  } catch (error) {
+    Logger.error('❌ Failed to start application:', error);
+    console.error('Error details:', error);
+    process.exit(1);
+  }
 }
-void bootstrap();
+bootstrap().catch((error) => {
+  Logger.error('❌ Unhandled error during bootstrap:', error);
+  console.error('Unhandled error:', error);
+  process.exit(1);
+});
