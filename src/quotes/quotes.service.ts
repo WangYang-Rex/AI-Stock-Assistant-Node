@@ -133,6 +133,16 @@ export class QuotesService {
         console.log(`syncStockQuotesFromAPI 插入行情快照开始`);
         await this.createQuotes(trends as any[]);
         console.log(`syncStockQuotesFromAPI 插入行情快照成功`);
+
+        // 用最后一条数据更新stock信息
+        console.log(`syncStockQuotesFromAPI 更新stock信息开始`);
+        const lastQuote = trends[trends.length - 1];
+        await this.stockService.updateStockPrice(stock.code, {
+          latestPrice: lastQuote.latestPrice,
+          changePercent: lastQuote.changePercent,
+        });
+
+        console.log(`syncStockQuotesFromAPI 更新stock信息成功`);
       }
 
       return true;
