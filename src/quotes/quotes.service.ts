@@ -1,8 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, FindManyOptions } from 'typeorm';
+import { Cron } from '@nestjs/schedule';
 import { Quote } from '../entities/quote.entity';
-import { getStockInfo } from 'src/lib/stock/stockUtil';
+// import { getStockInfo } from 'src/lib/stock/stockUtil';
+import { getTrendsData } from '../lib/stock/getTrendsData';
+import { sleepFun } from 'src/lib/utils/sleep';
+import { StockService } from '../stock/stock.service';
 
 export interface CreateQuoteDto {
   code: string;
@@ -42,9 +46,12 @@ export interface QuoteQueryDto {
 
 @Injectable()
 export class QuotesService {
+  private readonly logger = new Logger(QuotesService.name);
+
   constructor(
     @InjectRepository(Quote)
     private readonly quoteRepository: Repository<Quote>,
+    private readonly stockService: StockService,
   ) {}
 
   /**
@@ -64,23 +71,69 @@ export class QuotesService {
   }
 
   // 同步股票快照：通过API获取股票信息，不存在则新增，存在则更新
-  async syncStockQuotesFromAPI(
-    stocks: Array<{ code: string; marketCode: number }>,
-  ): Promise<boolean> {
+  async syncStockQuotesFromAPI(stock: {
+    code: string;
+    marketCode: number;
+  }): Promise<boolean> {
     try {
       // 1. 调用API获取股票信息
-      const stockInfos = await getStockInfo(stocks);
+      // 注意：getTrendsData 参数顺序是 (stockCode, marketCode)
+      console.log(`syncStockQuotesFromAPI 获取实时数据开始`);
+      const res = await getTrendsData(stock.code, String(stock.marketCode));
 
-      // 2. 转换为行情快照
-      const createQuoteDtos = stockInfos.map((stockInfo) => ({
-        code: stockInfo.code,
-        name: stockInfo.name,
-        marketCode: stockInfo.marketCode.toString(),
-        latestPrice: stockInfo.latestPrice,
-      }));
+      // 2. 检查返回值是否为 null
+      if (!res || !res.trends || res.trends.length === 0) {
+        console.log(`syncStockQuotesFromAPI 获取分时数据失败：返回值为 null`);
+        return false;
+      }
+      // 3. 解构数据
+      const { date, preClose, trends } = res;
+      console.log(
+        `syncStockQuotesFromAPI 获取分时数据成功`,
+        `日期: ${date}`,
+        `昨收价: ${preClose}`,
+        `共 ${trends.length} 条`,
+      );
 
-      // 3. 插入行情快照
-      await this.createQuotes(createQuoteDtos);
+      await sleepFun(1000); // 延迟1秒
+
+      // 4. 先检查系统中当天的数据有没有
+      const today = date; // new Date().toISOString().split('T')[0];
+      const existingQuotes = await this.quoteRepository.find({
+        where: {
+          snapshotDate: Between(
+            new Date(`${today} 00:00:00`),
+            new Date(`${today} 23:59:59`),
+          ),
+          code: stock.code,
+          marketCode: String(stock.marketCode),
+        },
+      });
+      console.log(
+        `syncStockQuotesFromAPI 查询 ${stock.code} ${today} 的数据，${existingQuotes.length} 条`,
+      );
+      if (existingQuotes.length > 0) {
+        // 删除操作
+        console.log(`syncStockQuotesFromAPI 有数据，进行删除操作`);
+        await this.quoteRepository.delete({
+          snapshotDate: Between(
+            new Date(`${today} 00:00:00`),
+            new Date(`${today} 23:59:59`),
+          ),
+          code: stock.code,
+          marketCode: String(stock.marketCode),
+        });
+        console.log(`syncStockQuotesFromAPI 删除操作成功`);
+      }
+
+      await sleepFun(1000); // 延迟1秒
+
+      // 5. 插入行情快照
+      if (trends.length > 0) {
+        console.log(`syncStockQuotesFromAPI 插入行情快照开始`);
+        await this.createQuotes(trends as any[]);
+        console.log(`syncStockQuotesFromAPI 插入行情快照成功`);
+      }
 
       return true;
     } catch (error) {
@@ -293,5 +346,82 @@ export class QuotesService {
       order: { volume: 'DESC' },
       take: limit,
     });
+  }
+
+  /**
+   * 工作日中午12点同步股票快照数据
+   */
+  @Cron('0 0 12 * * 1-5', {
+    name: 'weekday-noon-quotes-sync',
+    timeZone: 'Asia/Shanghai',
+  })
+  async handleWeekdayNoonQuotesSync() {
+    this.logger.log('开始执行工作日中午12点股票快照同步任务...');
+    await this.syncAllStockQuotes();
+  }
+
+  /**
+   * 工作日下午16点同步股票快照数据
+   */
+  @Cron('0 0 16 * * 1-5', {
+    name: 'weekday-afternoon-quotes-sync',
+    timeZone: 'Asia/Shanghai',
+  })
+  async handleWeekdayAfternoonQuotesSync() {
+    this.logger.log('开始执行工作日下午16点股票快照同步任务...');
+    await this.syncAllStockQuotes();
+  }
+
+  /**
+   * 同步所有股票的快照数据
+   */
+  private async syncAllStockQuotes(): Promise<void> {
+    try {
+      // 获取所有股票列表
+      const stocks = await this.stockService.findAll();
+
+      if (stocks.length === 0) {
+        this.logger.warn('没有找到股票数据，跳过同步任务');
+        return;
+      }
+
+      this.logger.log(`找到 ${stocks.length} 只股票，开始同步快照数据...`);
+
+      let successCount = 0;
+      let errorCount = 0;
+
+      // 批量同步股票快照数据
+      for (const stock of stocks) {
+        try {
+          const result = await this.syncStockQuotesFromAPI({
+            code: stock.code,
+            marketCode: stock.marketCode,
+          });
+          if (result) {
+            successCount++;
+            this.logger.debug(
+              `成功同步股票快照: ${stock.code} - ${stock.name}`,
+            );
+          } else {
+            errorCount++;
+            this.logger.warn(
+              `同步股票快照失败: ${stock.code} - ${stock.name} (返回false)`,
+            );
+          }
+        } catch (error) {
+          errorCount++;
+          this.logger.error(
+            `同步股票快照异常: ${stock.code} - ${stock.name}`,
+            error instanceof Error ? error.stack : String(error),
+          );
+        }
+      }
+
+      this.logger.log(
+        `股票快照同步任务完成 - 成功: ${successCount}, 失败: ${errorCount}`,
+      );
+    } catch (error) {
+      this.logger.error('股票快照同步任务执行失败:', error);
+    }
   }
 }

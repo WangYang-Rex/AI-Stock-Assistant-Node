@@ -35,6 +35,16 @@ export class QuotesController {
   }
 
   /**
+   * 同步股票快照
+   */
+  @Post('syncStockQuotesFromAPI')
+  async syncStockQuotesFromAPI(
+    @Body() stock: { code: string; marketCode: number },
+  ) {
+    return await this.quotesService.syncStockQuotesFromAPI(stock);
+  }
+
+  /**
    * 根据ID获取行情快照
    */
   @Post('one')
