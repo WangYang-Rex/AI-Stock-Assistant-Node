@@ -373,12 +373,12 @@ export class QuotesService {
   /**
    * 工作日下午16点同步股票快照数据
    */
-  @Cron('0 0 16 * * 1-5', {
+  @Cron('0 0 15 * * 1-5', {
     name: 'weekday-afternoon-quotes-sync',
     timeZone: 'Asia/Shanghai',
   })
   async handleWeekdayAfternoonQuotesSync() {
-    this.logger.log('开始执行工作日下午16点股票快照同步任务...');
+    this.logger.log('开始执行工作日下午15点股票快照同步任务...');
     await this.syncAllStockQuotes();
   }
 
