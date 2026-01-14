@@ -81,15 +81,15 @@ CREATE TABLE `trading_records` (
   `tradingTime` timestamp NOT NULL COMMENT '成交时间',
   `quantity` bigint NOT NULL COMMENT '交易数量(股)',
   `price` decimal(10,2) NOT NULL COMMENT '成交价格',
-  `fee` decimal(10,2) NOT NULL COMMENT '交易手续费',
-  `openPrice` decimal(10,2) COMMENT '开盘价',
-  `changePercent` decimal(8,4) COMMENT '涨跌幅',
-  `changeAmount` decimal(10,4) COMMENT '涨跌额',
+  `amount` decimal(15,2) NOT NULL COMMENT '交易金额(成交价格×数量)',
+  `relatedTradingId` int COMMENT '关联交易ID(用于关联买入和卖出交易)',
   `remarks` text COMMENT '备注',
   `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
   KEY `idx_symbol` (`symbol`),
   KEY `idx_tradingTime` (`tradingTime`),
-  KEY `idx_symbol_tradingTime` (`symbol`, `tradingTime`)
+  KEY `idx_symbol_tradingTime` (`symbol`, `tradingTime`),
+  KEY `idx_relatedTradingId` (`relatedTradingId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='交易记录表';
+

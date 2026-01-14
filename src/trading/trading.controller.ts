@@ -9,7 +9,7 @@ export class TradingController {
   constructor(
     private readonly tradingService: TradingService,
     private readonly responseService: ResponseService,
-  ) {}
+  ) { }
 
   // 创建交易记录
   @Post('create')
@@ -133,21 +133,6 @@ export class TradingController {
   async deleteTrading(@Body() body: { id: number }) {
     const success = await this.tradingService.deleteTrading(body.id);
     return { success };
-  }
-
-  // 根据涨跌幅范围获取记录
-  @Post('get-by-change-percent-range')
-  async getTradingByChangePercentRange(
-    @Body()
-    body: {
-      minChange: number;
-      maxChange: number;
-    },
-  ) {
-    return await this.tradingService.findByChangePercentRange(
-      body.minChange,
-      body.maxChange,
-    );
   }
 
   // 清理过期数据

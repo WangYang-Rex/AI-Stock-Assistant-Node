@@ -8,7 +8,7 @@ export class TradingService {
   constructor(
     @InjectRepository(Trading)
     private readonly tradingRepository: Repository<Trading>,
-  ) {}
+  ) { }
 
   // 创建交易记录
   async createTrading(tradingData: Partial<Trading>): Promise<Trading> {
@@ -164,19 +164,6 @@ export class TradingService {
   async deleteTrading(id: number): Promise<boolean> {
     const result = await this.tradingRepository.delete(id);
     return result.affected ? result.affected > 0 : false;
-  }
-
-  // 根据涨跌幅范围获取记录
-  async findByChangePercentRange(
-    minChange: number,
-    maxChange: number,
-  ): Promise<Trading[]> {
-    return await this.tradingRepository.find({
-      where: {
-        changePercent: Between(minChange, maxChange),
-      },
-      order: { tradingTime: 'DESC' },
-    });
   }
 
   // 清理过期数据（保留最近N天的数据）

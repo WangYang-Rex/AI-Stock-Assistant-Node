@@ -48,44 +48,22 @@ export class Trading {
   })
   price: number;
 
-  // 交易手续费
+  // 交易金额 (成交价格 × 数量)
   @Column({
     type: 'decimal',
-    precision: 10,
+    precision: 15,
     scale: 2,
-    comment: '交易手续费',
+    comment: '交易金额',
   })
-  fee: number;
+  amount: number;
 
-  // 开盘价
+  // 关联交易ID (用于关联买入和卖出交易)
   @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 2,
+    type: 'int',
     nullable: true,
-    comment: '开盘价',
+    comment: '关联交易ID',
   })
-  openPrice: number;
-
-  // 涨跌幅
-  @Column({
-    type: 'decimal',
-    precision: 8,
-    scale: 4,
-    nullable: true,
-    comment: '涨跌幅',
-  })
-  changePercent: number;
-
-  // 涨跌额
-  @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 4,
-    nullable: true,
-    comment: '涨跌额',
-  })
-  changeAmount: number;
+  relatedTradingId: number;
 
   // 备注
   @Column({ type: 'text', nullable: true, comment: '备注' })
