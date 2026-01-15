@@ -8,7 +8,7 @@ import type {
 
 @Controller('quotes')
 export class QuotesController {
-  constructor(private readonly quotesService: QuotesService) {}
+  constructor(private readonly quotesService: QuotesService) { }
 
   /**
    * 创建行情快照

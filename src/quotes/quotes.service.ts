@@ -52,7 +52,7 @@ export class QuotesService {
     @InjectRepository(Quote)
     private readonly quoteRepository: Repository<Quote>,
     private readonly stockService: StockService,
-  ) {}
+  ) { }
 
   /**
    * 创建行情快照
