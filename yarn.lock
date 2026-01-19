@@ -2507,10 +2507,10 @@ eastasianwidth@^0.2.0:
   resolved "https://registry.npmmirror.com/eastasianwidth/-/eastasianwidth-0.2.0.tgz"
   integrity sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==
 
-eastmoney-data-sdk@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.npmmirror.com/eastmoney-data-sdk/-/eastmoney-data-sdk-1.0.1.tgz"
-  integrity sha512-aRICwEASigxAKbJjLLqNr4xJVjFma8xPiIjZQnHjkSD79HQpYjuR4xviG4bpwnijt9ZdnbE9nOrJZLXfOTXbeQ==
+eastmoney-data-sdk@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.npmmirror.com/eastmoney-data-sdk/-/eastmoney-data-sdk-1.0.3.tgz"
+  integrity sha512-CcbPffSrJAXCAKZXIgJJEI1FMVjYGfVQi+++RN7AeUkTyyyu3TvYrXvHAiHqaXOGRzDBZUEWKYFg2LWWJMsKDQ==
   dependencies:
     axios "^1.6.0"
 
