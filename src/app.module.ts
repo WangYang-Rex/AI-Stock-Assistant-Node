@@ -13,6 +13,7 @@ import { QuotesModule } from './quotes/quotes.module';
 import { CommonModule } from './common/common.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { KlineModule } from './kline/kline.module';
+import { TrendsModule } from './trends/trends.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 
@@ -33,6 +34,7 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
     CommonModule,
     SchedulerModule,
     KlineModule,
+    TrendsModule,
   ],
   controllers: [AppController],
   providers: [

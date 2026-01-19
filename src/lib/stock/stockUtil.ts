@@ -7,20 +7,16 @@ import * as zlib from 'zlib';
 export interface StockInfo {
   code: string;
   name: string;
-  market: string;
-  marketCode: number;
-  latestPrice: number;
-  changePercent: number;
-  changeAmount: number;
-  openPrice: number;
-  highPrice: number;
-  lowPrice: number;
-  previousClosePrice: number;
-  volume: number;
-  volumeAmount: number;
-  pe: number;
-  amplitude: number;
-  turnoverRate: number;
+  market: number; // 市场代码（1-上交所、0-深交所）
+  marketType: string; // 市场类型（SH-上海、SZ-深圳）
+  price: number; // 最新价
+  pct: number; // 涨跌幅(%)
+  change: number; // 涨跌额
+  volume: number; // 成交量(股)
+  amount: number; // 成交额(元)
+  totalMarketCap: number; // 总市值(元)
+  floatMarketCap: number; // 流通市值(元)
+  turnover: number; // 换手率(%)
 }
 
 interface EastMoneyResponse {
@@ -37,10 +33,8 @@ interface EastMoneyResponse {
       f12: string; // 股票代码
       f13: number; // 市场代码
       f14: string; // 股票名称
-      f15: number | null; // 最高价
-      f16: number | null; // 最低价
-      f17: number | null; // 开盘价
-      f18: number | null; // 昨收价
+      f20: number | null; // 总市值
+      f21: number | null; // 流通市值
     }>;
   };
 }
@@ -138,13 +132,13 @@ function fetch(
  * 构建股票数组的API URL（批量查询）
  */
 function buildBatchStockUrl(
-  stocks: Array<{ code: string; marketCode: number }>,
+  stocks: Array<{ code: string; market: number }>,
 ): string {
-  const secids = stocks.map((s) => `${s.marketCode}.${s.code}`).join(',');
+  const secids = stocks.map((s) => `${s.market}.${s.code}`).join(',');
   return (
     `http://push2.eastmoney.com/api/qt/ulist.np/get?` +
     `fltt=2&invt=2&secids=${secids}&` +
-    `fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18&` +
+    `fields=f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f20,f21&` +
     `ut=bd1d9ddb04089700cf9c27f6f7426281`
   );
 }
@@ -179,32 +173,28 @@ function processData(rawData: EastMoneyResponse['data']['diff']): StockInfo[] {
     .map((item) => ({
       code: String(item.f12).padStart(6, '0'),
       name: item.f14 || '未知',
-      market: item.f13 === 1 ? '上交所' : '深交所',
-      marketCode: item.f13,
-      latestPrice: Number(item.f2) || 0,
-      changePercent: Number(item.f3) || 0,
-      changeAmount: Number(item.f4) || 0,
-      openPrice: Number(item.f17) || 0,
-      highPrice: Number(item.f15) || 0,
-      lowPrice: Number(item.f16) || 0,
-      previousClosePrice: Number(item.f18) || 0,
+      market: item.f13,
+      marketType: item.f13 === 1 ? 'SH' : 'SZ',
+      price: Number(item.f2) || 0,
+      pct: Number(item.f3) || 0,
+      change: Number(item.f4) || 0,
       volume: Number(item.f5) || 0,
-      volumeAmount: Number(item.f6) || 0,
-      pe: Number(item.f9) || 0,
-      amplitude: Number(item.f7) || 0,
-      turnoverRate: Number(item.f8) || 0,
+      amount: Number(item.f6) || 0,
+      totalMarketCap: Number(item.f20) || 0,
+      floatMarketCap: Number(item.f21) || 0,
+      turnover: Number(item.f8) || 0,
     }));
 }
 
 /* ========== 主要函数 ========== */
 
 /**
- * 批量获取股票信息（参考 lighthouse.js 实现）
- * @param stocks 股票代码和市场代码数组，格式：[{code: '600588', marketCode: 1}, ...]
+ * 批量获取股票信息
+ * @param stocks 股票代码和市场代码数组，格式：[{code: '600588', market: 1}, ...]
  * @returns Promise<StockInfo[]> 标准化的股票信息数组
  */
 const getStockInfo = async (
-  stocks: Array<{ code: string; marketCode: number }>,
+  stocks: Array<{ code: string; market: number }>,
 ): Promise<StockInfo[]> => {
   try {
     if (!stocks || stocks.length === 0) {
@@ -232,20 +222,16 @@ const getStockInfo = async (
         processedData.map((r) => ({
           代码: r.code,
           名称: r.name,
-          市场: r.market,
-          最新价: r.latestPrice,
-          涨跌幅: `${r.changePercent}%`,
-          涨跌额: r.changeAmount,
+          价格: r.price,
+          涨跌幅: `${r.pct}%`,
+          涨跌额: r.change,
           成交量: r.volume,
-          成交额: r.volumeAmount,
-          振幅: `${r.amplitude}%`,
-          换手率: `${r.turnoverRate}%`,
-          市盈率: r.pe,
-          最高: r.highPrice,
-          最低: r.lowPrice,
-          今开: r.openPrice,
-          昨收: r.previousClosePrice,
-          市场代码: r.marketCode,
+          成交额: r.amount,
+          换手率: `${r.turnover}%`,
+          总市值: r.totalMarketCap,
+          流通市值: r.floatMarketCap,
+          市场代码: r.market,
+          市场类型: r.marketType,
         })),
       );
 
@@ -273,16 +259,16 @@ const getStockInfo = async (
 };
 
 /**
- * 获取单个股票信息（便捷方法）
+ * 获取单个股票信息
  * @param code 股票代码（如：'600588'）
- * @param marketCode 市场代码（1=上交所，0=深交所）
+ * @param market 市场代码（1=上交所，0=深交所）
  * @returns Promise<StockInfo> 标准化的股票信息
  */
 const getSingleStockInfo = async (
   code: string,
-  marketCode: number,
+  market: number,
 ): Promise<StockInfo> => {
-  const stocks = [{ code, marketCode }];
+  const stocks = [{ code, market }];
   const results = await getStockInfo(stocks);
   if (results.length === 0) {
     throw new Error(`未找到股票代码 ${code} 的数据`);

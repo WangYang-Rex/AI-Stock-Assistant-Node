@@ -35,7 +35,7 @@ export class SchedulerService {
         try {
           await this.stockService.syncStockFromAPI(
             stock.code,
-            stock.marketCode,
+            stock.market,
           );
           successCount++;
           this.logger.debug(`成功同步股票: ${stock.code} - ${stock.name}`);

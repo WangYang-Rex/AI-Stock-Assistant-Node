@@ -34,7 +34,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/schedule": "^6.0.1",
     "@nestjs/typeorm": "^11.0.0",
-    "eastmoney-data-sdk": "^1.0.3",
+    "eastmoney-data-sdk": "^1.0.4",
     "mysql2": "^3.15.3",
     "openai": "^6.9.1",
     "reflect-metadata": "^0.2.2",

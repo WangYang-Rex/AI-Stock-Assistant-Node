@@ -8,7 +8,6 @@ CREATE TABLE `klines` (
   `id` int NOT NULL AUTO_INCREMENT,
   `code` varchar(20) NOT NULL COMMENT '股票代码',
   `name` varchar(100) DEFAULT NULL COMMENT '股票名称',
-  `market` varchar(20) DEFAULT NULL COMMENT '市场类型(SH-上海、SZ-深圳)',
   `period` int NOT NULL DEFAULT 101 COMMENT 'K线周期(101=日线, 102=周线, 103=月线, 1/5/15/30/60=分钟线)',
   `date` varchar(30) NOT NULL COMMENT '日期/时间',
   `open` decimal(12,4) NOT NULL COMMENT '开盘价',
@@ -27,7 +26,5 @@ CREATE TABLE `klines` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_code_date_period` (`code`, `date`, `period`),
   KEY `idx_code` (`code`),
-  KEY `idx_date` (`date`),
-  KEY `idx_market` (`market`),
-  KEY `idx_period` (`period`)
+  KEY `idx_date` (`date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='K线数据表';

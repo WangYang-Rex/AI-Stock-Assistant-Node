@@ -10,6 +10,8 @@ import type {
 export class QuotesController {
   constructor(private readonly quotesService: QuotesService) { }
 
+  /* ========== Quote APIs ========== */
+
   /**
    * 创建行情快照
    */
@@ -39,7 +41,7 @@ export class QuotesController {
    */
   @Post('syncStockQuotesFromAPI')
   async syncStockQuotesFromAPI(
-    @Body() stock: { code: string; marketCode: number },
+    @Body() stock: { code: string; market: number },
   ) {
     return await this.quotesService.syncStockQuotesFromAPI(stock);
   }
@@ -66,37 +68,11 @@ export class QuotesController {
   @Post('history')
   async findByCode(
     @Body('code') code: string,
-    @Body('startTime') startTime?: string,
-    @Body('endTime') endTime?: string,
+    @Body('startTime') startTime?: number,
+    @Body('endTime') endTime?: number,
     @Body('limit', ParseIntPipe) limit?: number,
   ) {
-    const start = startTime ? new Date(startTime) : undefined;
-    const end = endTime ? new Date(endTime) : undefined;
-    return await this.quotesService.findByCode(code, start, end, limit);
-  }
-
-  /**
-   * 根据日期获取指定股票的行情
-   */
-  @Post('date-code')
-  async findByCodeAndDate(
-    @Body('code') code: string,
-    @Body('startDate') startDate?: string,
-    @Body('endDate') endDate?: string,
-    @Body('limit', ParseIntPipe) limit?: number,
-  ) {
-    const start = startDate ? new Date(startDate) : undefined;
-    const end = endDate ? new Date(endDate) : undefined;
-    return await this.quotesService.findByCodeAndDate(code, start, end, limit);
-  }
-
-  /**
-   * 获取指定日期的所有行情
-   */
-  @Post('date')
-  async findByDate(@Body('date') date: string) {
-    const targetDate = new Date(date);
-    return await this.quotesService.findByDate(targetDate);
+    return await this.quotesService.findByCode(code, startTime, endTime, limit);
   }
 
   /**
@@ -123,34 +99,10 @@ export class QuotesController {
    */
   @Post('delete-range')
   async removeByTimeRange(
-    @Body('startTime') startTime: string,
-    @Body('endTime') endTime: string,
+    @Body('startTime') startTime: number,
+    @Body('endTime') endTime: number,
   ) {
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    await this.quotesService.removeByTimeRange(start, end);
-  }
-
-  /**
-   * 获取市场统计信息
-   */
-  @Post('stats-market')
-  async getMarketStats(): Promise<
-    {
-      marketCode: string;
-      count: string;
-      avgPrice: string;
-      maxPrice: string;
-      minPrice: string;
-    }[]
-  > {
-    return (await this.quotesService.getMarketStats()) as {
-      marketCode: string;
-      count: string;
-      avgPrice: string;
-      maxPrice: string;
-      minPrice: string;
-    }[];
+    await this.quotesService.removeByTimeRange(startTime, endTime);
   }
 
   /**

@@ -7,110 +7,64 @@ import {
   Index,
 } from 'typeorm';
 
+/**
+ * 股票实体
+ * 用于存储股票的基本信息和市场数据
+ */
 @Entity('stocks')
-@Index(['code'], { unique: true })
-@Index(['market'])
+@Index(['code'], { unique: true }) // 股票代码唯一索引
+@Index(['market']) // 市场代码索引
 export class Stock {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // 股票代码
-  @Column({ type: 'varchar', length: 20, unique: true, comment: '股票代码' })
+  /** 股票代码（如 600519） */
+  @Column({ type: 'varchar', length: 20, comment: '股票代码' })
   code: string;
 
-  // 股票名称
+  /** 股票名称 */
   @Column({ type: 'varchar', length: 100, comment: '股票名称' })
   name: string;
 
-  // 市场类型 (上交所、深交所)
+  /** 市场代码（1-上交所、0-深交所） */
+  @Column({ type: 'int', comment: '市场代码' })
+  market: number;
+
+  /** 市场类型（SH-上海、SZ-深圳） */
   @Column({ type: 'varchar', length: 20, comment: '市场类型' })
-  market: string;
+  marketType: string;
 
-  // 市场代码 (上交所1、深交所0)
-  @Column({ type: 'varchar', length: 20, comment: '市场代码' })
-  marketCode: number;
-
-  // 市盈率
+  /** 最新价 */
   @Column({
     type: 'decimal',
-    precision: 8,
-    scale: 6,
-    nullable: true,
-    comment: '市盈率',
-  })
-  pe: number;
-
-  // 最新价
-  @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 6,
+    precision: 12,
+    scale: 4,
     nullable: true,
     comment: '最新价',
   })
-  latestPrice: number;
+  price: number;
 
-  // 涨跌幅
+  /** 涨跌幅（%） */
   @Column({
     type: 'decimal',
-    precision: 8,
-    scale: 6,
+    precision: 10,
+    scale: 4,
     nullable: true,
     comment: '涨跌幅(%)',
   })
-  changePercent: number;
+  pct: number;
 
-  // 涨跌额
+  /** 涨跌额 */
   @Column({
     type: 'decimal',
-    precision: 10,
-    scale: 6,
+    precision: 12,
+    scale: 4,
     nullable: true,
     comment: '涨跌额',
   })
-  changeAmount: number;
+  change: number;
 
-  // 开盘价
-  @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 6,
-    nullable: true,
-    comment: '开盘价',
-  })
-  openPrice: number;
-
-  // 最高价
-  @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 6,
-    nullable: true,
-    comment: '最高价',
-  })
-  highPrice: number;
-
-  // 最低价
-  @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 6,
-    nullable: true,
-    comment: '最低价',
-  })
-  lowPrice: number;
-
-  // 昨收价
-  @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 6,
-    nullable: true,
-    comment: '昨收价',
-  })
-  previousClosePrice: number;
-
-  // 成交量
+  /** 成交量（股） */
   @Column({
     type: 'bigint',
     nullable: true,
@@ -118,41 +72,51 @@ export class Stock {
   })
   volume: number;
 
-  // 持仓数量
+  /** 成交额（元） */
   @Column({
     type: 'decimal',
-    precision: 15,
-    scale: 0,
+    precision: 20,
+    scale: 4,
     nullable: true,
-    comment: '持仓数量',
+    comment: '成交额(元)',
   })
-  holdingQuantity: number;
+  amount: number;
 
-  // 持仓成本
+  /** 总市值（元） */
+  @Column({
+    type: 'decimal',
+    precision: 20,
+    scale: 4,
+    nullable: true,
+    comment: '总市值(元)',
+  })
+  totalMarketCap: number;
+
+  /** 流通市值（元） */
+  @Column({
+    type: 'decimal',
+    precision: 20,
+    scale: 4,
+    nullable: true,
+    comment: '流通市值(元)',
+  })
+  floatMarketCap: number;
+
+  /** 换手率（%） */
   @Column({
     type: 'decimal',
     precision: 10,
-    scale: 6,
+    scale: 4,
     nullable: true,
-    comment: '持仓成本',
+    comment: '换手率(%)',
   })
-  holdingCost: number;
+  turnover: number;
 
-  // 市值
-  @Column({
-    type: 'decimal',
-    precision: 15,
-    scale: 6,
-    nullable: true,
-    comment: '市值',
-  })
-  marketValue: number;
-
-  // 创建时间
+  /** 创建时间 */
   @CreateDateColumn({ comment: '创建时间' })
   createdAt: Date;
 
-  // 更新时间
+  /** 更新时间 */
   @UpdateDateColumn({ comment: '更新时间' })
   updatedAt: Date;
 }

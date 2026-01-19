@@ -8,103 +8,211 @@ import {
 } from 'typeorm';
 
 @Entity('quotes')
-@Index(['code'], { unique: false })
-@Index(['snapshotTime'])
-@Index(['snapshotDate'])
+@Index(['code'])
+@Index(['updateTime'])
 export class Quote {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ comment: '主键ID' })
   id: number;
 
-  // 股票代码
   @Column({ type: 'varchar', length: 20, comment: '股票代码' })
   code: string;
 
-  // 股票名称
   @Column({ type: 'varchar', length: 100, comment: '股票名称' })
   name: string;
 
-  // 市场代码
-  @Column({ type: 'varchar', length: 20, comment: '市场代码' })
-  marketCode: string;
-
-  // 最新价
   @Column({
     type: 'decimal',
-    precision: 10,
-    scale: 6,
-    nullable: true,
-    comment: '最新价',
-  })
-  latestPrice: number;
-
-  // 涨跌幅
-  @Column({
-    type: 'decimal',
-    precision: 8,
+    precision: 18,
     scale: 4,
     nullable: true,
-    comment: '涨跌幅(%)',
+    comment: '最新价',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : null),
+    },
   })
-  changePercent: number;
+  price: number;
 
-  // 开盘价
   @Column({
     type: 'decimal',
-    precision: 10,
-    scale: 6,
+    precision: 18,
+    scale: 4,
     nullable: true,
-    comment: '开盘价',
+    comment: '今日最高价',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : null),
+    },
   })
-  openPrice: number;
+  high: number;
 
-  // 成交量
+  @Column({
+    type: 'decimal',
+    precision: 18,
+    scale: 4,
+    nullable: true,
+    comment: '今日最低价',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : null),
+    },
+  })
+  low: number;
+
+  @Column({
+    type: 'decimal',
+    precision: 18,
+    scale: 4,
+    nullable: true,
+    comment: '今日开盘价',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : null),
+    },
+  })
+  open: number;
+
+  @Column({
+    type: 'decimal',
+    precision: 18,
+    scale: 4,
+    nullable: true,
+    comment: '昨日收盘价',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : null),
+    },
+  })
+  preClose: number;
+
   @Column({
     type: 'bigint',
     nullable: true,
-    comment: '成交量(股)',
+    comment: '成交量（股）',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseInt(value, 10) : null),
+    },
   })
   volume: number;
 
-  // 成交额
   @Column({
     type: 'decimal',
-    precision: 15,
-    scale: 6,
+    precision: 20,
+    scale: 4,
     nullable: true,
-    comment: '成交额(元)',
+    comment: '成交额（元）',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : null),
+    },
   })
-  volumeAmount: number;
+  amount: number;
 
-  // 昨收价
   @Column({
     type: 'decimal',
     precision: 10,
-    scale: 6,
+    scale: 4,
     nullable: true,
-    comment: '昨收价',
+    comment: '涨跌幅（%）',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : null),
+    },
   })
-  previousClosePrice: number;
+  pct: number;
 
-  // 快照时间
   @Column({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    comment: '快照时间',
+    type: 'decimal',
+    precision: 18,
+    scale: 4,
+    nullable: true,
+    comment: '涨跌额',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : null),
+    },
   })
-  snapshotTime: Date;
+  change: number;
 
-  // 快照日期
   @Column({
-    type: 'date',
-    comment: '快照日期',
+    type: 'decimal',
+    precision: 10,
+    scale: 4,
+    nullable: true,
+    comment: '换手率（%）',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : null),
+    },
   })
-  snapshotDate: Date;
+  turnover: number;
 
-  // 创建时间
-  @CreateDateColumn({ comment: '创建时间' })
+  @Column({
+    type: 'decimal',
+    precision: 24,
+    scale: 4,
+    nullable: true,
+    comment: '总市值',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : null),
+    },
+  })
+  totalMarketCap: number;
+
+  @Column({
+    type: 'decimal',
+    precision: 24,
+    scale: 4,
+    nullable: true,
+    comment: '流通市值',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : null),
+    },
+  })
+  floatMarketCap: number;
+
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 4,
+    nullable: true,
+    comment: '市盈率（动态）',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : null),
+    },
+  })
+  pe: number;
+
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 4,
+    nullable: true,
+    comment: '市净率',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : null),
+    },
+  })
+  pb: number;
+
+  @Column({
+    type: 'bigint',
+    comment: '更新时间戳（Unix 时间戳，秒级）',
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseInt(value, 10) : null),
+    },
+  })
+  updateTime: number;
+
+  @CreateDateColumn({ comment: '系统创建时间' })
   createdAt: Date;
 
-  // 更新时间
-  @UpdateDateColumn({ comment: '更新时间' })
+  @UpdateDateColumn({ comment: '系统更新时间' })
   updatedAt: Date;
 }
