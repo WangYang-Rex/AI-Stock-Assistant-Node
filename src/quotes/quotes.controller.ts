@@ -1,40 +1,12 @@
 import { Controller, Post, Body, ParseIntPipe } from '@nestjs/common';
 import { QuotesService } from './quotes.service';
-import type {
-  CreateQuoteDto,
-  UpdateQuoteDto,
-  QuoteQueryDto,
-} from './quotes.service';
+import type { QuoteQueryDto } from './quotes.service';
 
 @Controller('quotes')
 export class QuotesController {
   constructor(private readonly quotesService: QuotesService) { }
 
   /* ========== Quote APIs ========== */
-
-  /**
-   * 创建行情快照
-   */
-  @Post('add')
-  async create(@Body() createQuoteDto: CreateQuoteDto) {
-    return await this.quotesService.createQuote(createQuoteDto);
-  }
-
-  /**
-   * 批量创建行情快照
-   */
-  @Post('batchAdd')
-  async createBatch(@Body() createQuoteDtos: CreateQuoteDto[]) {
-    return await this.quotesService.createQuotes(createQuoteDtos);
-  }
-
-  /**
-   * 获取所有行情快照
-   */
-  @Post('list')
-  async findAll(@Body() queryDto: QuoteQueryDto) {
-    return await this.quotesService.findAll(queryDto);
-  }
 
   /**
    * 同步股票快照
@@ -47,11 +19,21 @@ export class QuotesController {
   }
 
   /**
-   * 根据ID获取行情快照
+   * 批量同步所有股票快照
+   * 遍历数据库中的所有股票，从东方财富 API 获取最新行情数据并保存
    */
-  @Post('one')
-  async findOne(@Body('id', ParseIntPipe) id: number) {
-    return await this.quotesService.findOne(id);
+  @Post('syncAllStockQuotes')
+  async syncAllStockQuotes() {
+    await this.quotesService.syncAllStockQuotes();
+    return { message: '批量同步任务已启动，请查看日志了解同步进度' };
+  }
+
+  /**
+   * 获取所有行情快照
+   */
+  @Post('list')
+  async findAll(@Body() queryDto: QuoteQueryDto) {
+    return await this.quotesService.findAll(queryDto);
   }
 
   /**
@@ -63,46 +45,11 @@ export class QuotesController {
   }
 
   /**
-   * 获取指定股票的历史行情
-   */
-  @Post('history')
-  async findByCode(
-    @Body('code') code: string,
-    @Body('startTime') startTime?: number,
-    @Body('endTime') endTime?: number,
-    @Body('limit', ParseIntPipe) limit?: number,
-  ) {
-    return await this.quotesService.findByCode(code, startTime, endTime, limit);
-  }
-
-  /**
-   * 更新行情快照
-   */
-  @Post('update')
-  async update(
-    @Body('id', ParseIntPipe) id: number,
-    @Body() updateQuoteDto: UpdateQuoteDto,
-  ) {
-    return await this.quotesService.update(id, updateQuoteDto);
-  }
-
-  /**
    * 删除行情快照
    */
   @Post('delete')
   async remove(@Body('id', ParseIntPipe) id: number) {
     await this.quotesService.remove(id);
-  }
-
-  /**
-   * 批量删除指定时间范围的行情快照
-   */
-  @Post('delete-range')
-  async removeByTimeRange(
-    @Body('startTime') startTime: number,
-    @Body('endTime') endTime: number,
-  ) {
-    await this.quotesService.removeByTimeRange(startTime, endTime);
   }
 
   /**

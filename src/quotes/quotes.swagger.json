@@ -1,0 +1,490 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Quotes API - 行情快照接口",
+    "description": "股票行情快照管理接口，每个股票只保留一条最新的行情记录，通过东方财富 API 自动同步更新",
+    "version": "1.0.0"
+  },
+  "basePath": "/quotes",
+  "tags": [
+    {
+      "name": "数据同步",
+      "description": "行情数据同步相关接口"
+    },
+    {
+      "name": "数据查询",
+      "description": "行情数据查询相关接口"
+    },
+    {
+      "name": "数据管理",
+      "description": "行情数据管理相关接口"
+    },
+    {
+      "name": "排行榜",
+      "description": "市场排行榜相关接口"
+    }
+  ],
+  "paths": {
+    "/syncStockQuotesFromAPI": {
+      "post": {
+        "tags": ["数据同步"],
+        "summary": "同步单只股票行情快照",
+        "description": "从东方财富 API 获取指定股票的实时行情数据并保存到数据库。如果该股票已有行情记录则更新，否则创建新记录（upsert 策略）",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "股票信息",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["code", "market"],
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "description": "股票代码（如 600519）",
+                  "example": "600519"
+                },
+                "market": {
+                  "type": "integer",
+                  "description": "市场代码（1-上交所、0-深交所）",
+                  "example": 1
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "同步成功",
+            "schema": {
+              "type": "boolean",
+              "example": true
+            }
+          },
+          "400": {
+            "description": "请求参数错误"
+          },
+          "500": {
+            "description": "同步失败"
+          }
+        }
+      }
+    },
+    "/syncAllStockQuotes": {
+      "post": {
+        "tags": ["数据同步"],
+        "summary": "批量同步所有股票行情快照",
+        "description": "遍历数据库中的所有股票，从东方财富 API 获取最新行情数据并保存。任务会在后台执行，请查看日志了解同步进度",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "批量同步任务已启动",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "批量同步任务已启动，请查看日志了解同步进度"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "任务启动失败"
+          }
+        }
+      }
+    },
+    "/list": {
+      "post": {
+        "tags": ["数据查询"],
+        "summary": "获取行情快照列表",
+        "description": "查询行情快照列表，支持按股票代码、时间范围筛选，支持分页",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "查询条件",
+            "schema": {
+              "$ref": "#/definitions/QuoteQueryDto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "quotes": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Quote"
+                  }
+                },
+                "total": {
+                  "type": "integer",
+                  "description": "总记录数",
+                  "example": 100
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误"
+          }
+        }
+      }
+    },
+    "/latest": {
+      "post": {
+        "tags": ["数据查询"],
+        "summary": "获取指定股票的最新行情",
+        "description": "获取指定股票的最新行情快照，包含完整的行情信息（价格、成交量、市值、估值等）",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "股票代码",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["code"],
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "description": "股票代码",
+                  "example": "600519"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "schema": {
+              "$ref": "#/definitions/Quote"
+            }
+          },
+          "404": {
+            "description": "未找到该股票的行情数据"
+          }
+        }
+      }
+    },
+    "/delete": {
+      "post": {
+        "tags": ["数据管理"],
+        "summary": "删除行情快照",
+        "description": "根据 ID 删除指定的行情快照记录",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "行情快照 ID",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["id"],
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "行情快照 ID",
+                  "example": 1
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "删除成功"
+          },
+          "404": {
+            "description": "未找到该行情快照"
+          }
+        }
+      }
+    },
+    "/rankings-gainers": {
+      "post": {
+        "tags": ["排行榜"],
+        "summary": "获取涨幅排行榜",
+        "description": "获取涨跌幅最高的股票列表，按涨跌幅降序排列",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "查询参数",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "description": "返回条数，默认 10",
+                  "example": 10
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Quote"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rankings-losers": {
+      "post": {
+        "tags": ["排行榜"],
+        "summary": "获取跌幅排行榜",
+        "description": "获取涨跌幅最低（跌幅最大）的股票列表，按涨跌幅升序排列",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "查询参数",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "description": "返回条数，默认 10",
+                  "example": 10
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Quote"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rankings-volume": {
+      "post": {
+        "tags": ["排行榜"],
+        "summary": "获取成交量排行榜",
+        "description": "获取成交量最高的股票列表，按成交量降序排列",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "查询参数",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "description": "返回条数，默认 10",
+                  "example": 10
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Quote"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Quote": {
+      "type": "object",
+      "description": "行情快照实体",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "主键 ID",
+          "example": 1
+        },
+        "code": {
+          "type": "string",
+          "description": "股票代码（如 600519）",
+          "example": "600519"
+        },
+        "name": {
+          "type": "string",
+          "description": "股票名称",
+          "example": "贵州茅台"
+        },
+        "price": {
+          "type": "number",
+          "format": "double",
+          "description": "最新价（元）",
+          "example": 1850.00
+        },
+        "high": {
+          "type": "number",
+          "format": "double",
+          "description": "今日最高价（元）",
+          "example": 1875.00
+        },
+        "low": {
+          "type": "number",
+          "format": "double",
+          "description": "今日最低价（元）",
+          "example": 1840.00
+        },
+        "open": {
+          "type": "number",
+          "format": "double",
+          "description": "今日开盘价（元）",
+          "example": 1845.00
+        },
+        "preClose": {
+          "type": "number",
+          "format": "double",
+          "description": "昨日收盘价（元）",
+          "example": 1807.00
+        },
+        "volume": {
+          "type": "integer",
+          "format": "int64",
+          "description": "成交量（股）",
+          "example": 1234567
+        },
+        "amount": {
+          "type": "number",
+          "format": "double",
+          "description": "成交额（元）",
+          "example": 228395450.00
+        },
+        "pct": {
+          "type": "number",
+          "format": "double",
+          "description": "涨跌幅（%）",
+          "example": 2.35
+        },
+        "change": {
+          "type": "number",
+          "format": "double",
+          "description": "涨跌额（元）",
+          "example": 43.00
+        },
+        "turnover": {
+          "type": "number",
+          "format": "double",
+          "description": "换手率（%）",
+          "example": 0.98
+        },
+        "totalMarketCap": {
+          "type": "number",
+          "format": "double",
+          "description": "总市值（元）",
+          "example": 2324500000000.00
+        },
+        "floatMarketCap": {
+          "type": "number",
+          "format": "double",
+          "description": "流通市值（元）",
+          "example": 2324500000000.00
+        },
+        "pe": {
+          "type": "number",
+          "format": "double",
+          "description": "市盈率（动态）",
+          "example": 28.50
+        },
+        "pb": {
+          "type": "number",
+          "format": "double",
+          "description": "市净率",
+          "example": 10.25
+        },
+        "updateTime": {
+          "type": "integer",
+          "format": "int64",
+          "description": "更新时间戳（Unix 时间戳，秒级）",
+          "example": 1705852800
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "系统创建时间",
+          "example": "2024-01-21T10:30:00.000Z"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "系统更新时间",
+          "example": "2024-01-21T15:00:00.000Z"
+        }
+      }
+    },
+    "QuoteQueryDto": {
+      "type": "object",
+      "description": "行情查询参数",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "股票代码（可选）",
+          "example": "600519"
+        },
+        "startTime": {
+          "type": "integer",
+          "format": "int64",
+          "description": "开始时间（Unix 时间戳，秒级，可选）",
+          "example": 1705766400
+        },
+        "endTime": {
+          "type": "integer",
+          "format": "int64",
+          "description": "结束时间（Unix 时间戳，秒级，可选）",
+          "example": 1705852800
+        },
+        "page": {
+          "type": "integer",
+          "description": "页码（默认 1）",
+          "example": 1
+        },
+        "limit": {
+          "type": "integer",
+          "description": "每页数量（默认 10）",
+          "example": 10
+        }
+      }
+    }
+  }
+}

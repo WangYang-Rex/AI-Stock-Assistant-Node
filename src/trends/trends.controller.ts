@@ -70,6 +70,29 @@ export class TrendsController {
     @Body('startDatetime') startDatetime: string,
     @Body('endDatetime') endDatetime: string,
   ) {
-    await this.trendsService.removeTrendsByRange(code, startDatetime, endDatetime);
+    await this.trendsService.removeTrendsByRange(
+      code,
+      startDatetime,
+      endDatetime,
+    );
+  }
+
+  /**
+   * 从东方财富 SDK 同步分时数据到数据库（增量更新）
+   * @description 支持同步当日分时（ndays=1）或5日分时（ndays=5）数据到数据库
+   * @param code 股票代码（如：600519）
+   * @param market 市场代码（1-上交所，0-深交所）
+   * @param ndays 获取天数（1-当日分时，5-5日分时，默认为1）
+   * @returns 同步统计信息 { synced, total, newAdded }
+   */
+  @Post('sync-from-api')
+  async syncTrendFromAPI(
+    @Body('code') code: string,
+    @Body('market') market: number,
+    @Body('ndays') ndays?: number,
+  ) {
+    // 参数验证：ndays 只能是 1 或 5
+    const validNdays = ndays === 5 ? 5 : 1;
+    return await this.trendsService.syncTrendFromAPI(code, market, validNdays);
   }
 }

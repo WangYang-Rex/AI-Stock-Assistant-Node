@@ -89,45 +89,4 @@ export class StockController {
       '股票未找到',
     );
   }
-
-  /**
-   * 更新股票信息
-   */
-  @Post('update')
-  async updateStock(
-    @Body()
-    body: {
-      code: string;
-      updateData: Partial<Stock>;
-    },
-  ): Promise<ApiResponse<Stock>> {
-    return this.responseService.handleAsync(
-      async () => {
-        const result = await this.stockService.updateStockByCode(body.code, body.updateData);
-        if (!result) {
-          throw new Error('股票未找到');
-        }
-        return result;
-      },
-      '股票信息更新成功',
-      '股票信息更新失败',
-    );
-  }
-
-  /**
-   * 批量更新股票信息
-   */
-  @Post('batch-update')
-  async batchUpdateStocks(
-    @Body()
-    body: {
-      updates: Array<{ code: string; updateData: Partial<Stock> }>;
-    },
-  ): Promise<ApiResponse<Stock[]>> {
-    return this.responseService.handleAsync(
-      () => this.stockService.batchUpdateStocks(body.updates),
-      '批量更新成功',
-      '批量更新失败',
-    );
-  }
 }
