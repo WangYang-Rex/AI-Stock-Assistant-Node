@@ -20,8 +20,11 @@ export class Trend {
   @Column({ type: 'varchar', length: 100, comment: '股票名称' })
   name: string;
 
-  @Column({ type: 'varchar', length: 20, comment: '日期时间（YYYY-MM-DD HH:mm 格式）' })
-  datetime: string;
+  @Column({
+    type: 'timestamp',
+    comment: '日期时间',
+  })
+  datetime: Date;
 
   @Column({
     type: 'decimal',

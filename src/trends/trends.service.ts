@@ -1,23 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, FindManyOptions } from 'typeorm';
+import { Repository, Between, LessThan, FindManyOptions } from 'typeorm';
+import { Cron } from '@nestjs/schedule';
 import { Trend } from '../entities/trend.entity';
 import { eastmoney } from 'eastmoney-data-sdk';
 
 export interface CreateTrendDto {
   code: string;
   name: string;
-  datetime: string;
-  price?: number;
-  avgPrice?: number;
-  volume?: number;
-  amount?: number;
-  pct?: number;
-}
-
-export interface UpdateTrendDto {
-  name?: string;
-  datetime?: string;
+  datetime: Date;
   price?: number;
   avgPrice?: number;
   volume?: number;
@@ -43,14 +34,6 @@ export class TrendsService {
   ) {}
 
   /**
-   * 创建趋势数据
-   */
-  async createTrend(createTrendDto: CreateTrendDto): Promise<Trend> {
-    const trend = this.trendRepository.create(createTrendDto);
-    return await this.trendRepository.save(trend);
-  }
-
-  /**
    * 批量创建趋势数据
    */
   async createTrends(createTrendDtos: CreateTrendDto[]): Promise<Trend[]> {
@@ -73,7 +56,8 @@ export class TrendsService {
     }
 
     if (startDatetime && endDatetime) {
-      where.datetime = Between(startDatetime, endDatetime);
+      // 将字符串时间转换为 Date 对象
+      where.datetime = Between(new Date(startDatetime), new Date(endDatetime));
     }
 
     const options: FindManyOptions<Trend> = {
@@ -89,31 +73,6 @@ export class TrendsService {
   }
 
   /**
-   * 根据ID获取趋势数据
-   */
-  async findOneTrend(id: number): Promise<Trend | null> {
-    return await this.trendRepository.findOne({ where: { id } });
-  }
-
-  /**
-   * 更新趋势数据
-   */
-  async updateTrend(
-    id: number,
-    updateTrendDto: UpdateTrendDto,
-  ): Promise<Trend | null> {
-    await this.trendRepository.update(id, updateTrendDto);
-    return await this.findOneTrend(id);
-  }
-
-  /**
-   * 删除趋势数据
-   */
-  async removeTrend(id: number): Promise<void> {
-    await this.trendRepository.delete(id);
-  }
-
-  /**
    * 根据代码和日期范围删除趋势数据
    */
   async removeTrendsByRange(
@@ -121,52 +80,14 @@ export class TrendsService {
     startDatetime: string,
     endDatetime: string,
   ): Promise<void> {
+    // 将字符串时间转换为 Date 对象
+    const startDate = new Date(startDatetime);
+    const endDate = new Date(endDatetime);
+
     await this.trendRepository.delete({
       code,
-      datetime: Between(startDatetime, endDatetime),
+      datetime: Between(startDate, endDate),
     });
-  }
-
-  /**
-   * 从东方财富 SDK 获取分时数据（不保存到数据库）
-   * @param code 股票代码
-   * @param market 市场代码（1-上交所、0-深交所）
-   * @param ndays 获取天数（1-当日分时，5-5日分时）
-   * @returns Promise<TrendData[]> 分时数据数组
-   */
-  async fetchTrendFromAPI(
-    code: string,
-    market: number,
-    ndays: number = 1,
-  ): Promise<any> {
-    try {
-      // 1. 构建 secid
-      const secid = `${market}.${code}`;
-      this.logger.log(`📊 开始获取股票 ${code} 的 ${ndays} 日分时数据...`);
-
-      // 2. 调用 SDK 获取分时数据
-      const trendResult = await eastmoney.trend({ secid, ndays });
-
-      if (!trendResult || !trendResult.data || trendResult.data.length === 0) {
-        this.logger.warn(`⚠️  股票 ${code} 未获取到分时数据`);
-        return null;
-      }
-
-      const { code: stockCode, name, preClose, data } = trendResult;
-      this.logger.log(
-        `✅ 获取分时数据成功: ${name}(${stockCode}), 昨收价: ${preClose}, 共 ${data.length} 条`,
-      );
-
-      return trendResult;
-    } catch (error) {
-      this.logger.error(
-        `❌ 获取股票 ${code} 分时数据失败:`,
-        error instanceof Error ? error.stack : String(error),
-      );
-      throw new Error(
-        `获取分时数据失败: ${error instanceof Error ? error.message : error}`,
-      );
-    }
   }
 
   /**
@@ -196,11 +117,11 @@ export class TrendsService {
 
       const { code: stockCode, name, data: trendData } = trendResult;
 
-      // 2. 转换为 Trend 实体格式
+      // 2. 转换为 Trend 实体格式（将字符串时间转换为 Date 对象）
       const trends: CreateTrendDto[] = trendData.map((trend) => ({
         code: stockCode,
         name: name,
-        datetime: trend.datetime,
+        datetime: new Date(trend.datetime), // 转换字符串为 Date
         price: trend.price,
         avgPrice: trend.avgPrice,
         volume: trend.volume,
@@ -225,12 +146,14 @@ export class TrendsService {
         },
       });
 
-      // 4. 构建已存在数据的时间集合（快速查找）
-      const existingDatetimes = new Set(existingTrends.map((t) => t.datetime));
+      // 4. 构建已存在数据的时间集合（快速查找，使用时间戳比较）
+      const existingTimestamps = new Set(
+        existingTrends.map((t) => t.datetime.getTime()),
+      );
 
       // 5. 过滤出需要新增的数据（增量更新策略）
       const newTrends = trends.filter(
-        (trend) => !existingDatetimes.has(trend.datetime),
+        (trend) => !existingTimestamps.has(trend.datetime.getTime()),
       );
 
       this.logger.log(
@@ -258,6 +181,42 @@ export class TrendsService {
       );
       throw new Error(
         `同步分时数据失败: ${error instanceof Error ? error.message : error}`,
+      );
+    }
+  }
+
+  /**
+   * 定时清理15天以前的分时数据
+   * 每天凌晨0点执行
+   */
+  @Cron('0 0 0 * * *', {
+    name: 'daily-cleanup-old-trends',
+    timeZone: 'Asia/Shanghai',
+  })
+  async handleDailyCleanupOldTrends() {
+    try {
+      this.logger.log('🧹 开始执行分时数据清理任务...');
+
+      // 计算15天前的时间
+      const fifteenDaysAgo = new Date();
+      fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+
+      this.logger.log(
+        `📅 清理时间节点: ${fifteenDaysAgo.toISOString()} (15天前)`,
+      );
+
+      // 删除15天以前的数据
+      const result = await this.trendRepository.delete({
+        datetime: LessThan(fifteenDaysAgo),
+      });
+
+      this.logger.log(
+        `✅ 分时数据清理完成 - 删除了 ${result.affected || 0} 条记录`,
+      );
+    } catch (error) {
+      this.logger.error(
+        '❌ 分时数据清理任务执行失败:',
+        error instanceof Error ? error.stack : String(error),
       );
     }
   }
