@@ -1,8 +1,8 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { AiSignalsService } from './aisignals.service';
-import { AiSignal } from '../entities/aisignal.entity';
-import { ResponseService } from '../common/services/response.service';
-import { ApiResponse } from '../common/dto/response.dto';
+import { AiSignal } from '../../entities/aisignal.entity';
+import { ResponseService } from '../../common/services/response.service';
+import { ApiResponse } from '../../common/dto/response.dto';
 
 @Controller('aisignals')
 export class AiSignalsController {

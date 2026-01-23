@@ -1,8 +1,8 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { TradingService } from './trading.service';
-import { Trading } from '../entities/trading.entity';
-import { ResponseService } from '../common/services/response.service';
-import { ApiResponse } from '../common/dto/response.dto';
+import { Trading } from '../../entities/trading.entity';
+import { ResponseService } from '../../common/services/response.service';
+import { ApiResponse } from '../../common/dto/response.dto';
 
 @Controller('trading')
 export class TradingController {

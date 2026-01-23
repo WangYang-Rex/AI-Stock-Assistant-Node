@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, LessThan, MoreThan } from 'typeorm';
-import { AiSignal } from '../entities/aisignal.entity';
+import { AiSignal } from '../../entities/aisignal.entity';
 
 @Injectable()
 export class AiSignalsService {

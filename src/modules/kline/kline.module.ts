@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KlineController } from './kline.controller';
 import { KlineService } from './kline.service';
-import { Kline } from '../entities/kline.entity';
-import { CommonModule } from '../common/common.module';
+import { Kline } from '../../entities/kline.entity';
+import { CommonModule } from '../../common/common.module';
 
 @Module({
   imports: [

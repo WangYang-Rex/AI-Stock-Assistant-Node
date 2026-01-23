@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AiSignal } from '../entities/aisignal.entity';
+import { AiSignal } from '../../entities/aisignal.entity';
 import { AiSignalsController } from './aisignals.controller';
 import { AiSignalsService } from './aisignals.service';
-import { CommonModule } from '../common/common.module';
+import { CommonModule } from '../../common/common.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([AiSignal]), CommonModule],

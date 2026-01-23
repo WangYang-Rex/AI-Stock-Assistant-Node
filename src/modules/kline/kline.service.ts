@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
-import { Kline } from '../entities/kline.entity';
+import { Kline } from '../../entities/kline.entity';
 import {
   eastmoney,
   getKLine,

@@ -16,7 +16,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
-        entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+        entities: [__dirname + '/../../**/*.entity{.ts,.js}'],
         // 🎯 关键：自动同步开关
         synchronize: configService.get('NODE_ENV') === 'development',
         // 📝 显示执行的 SQL（方便调试）
