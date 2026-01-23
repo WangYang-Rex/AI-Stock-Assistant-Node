@@ -5,23 +5,8 @@
     "description": "股票分时数据管理接口，支持从东方财富SDK同步分时数据（增量更新）、查询分时数据列表、批量删除分时数据，以及自动清理15天以前的历史数据",
     "version": "1.0.0"
   },
-  "basePath": "/trends",
-  "tags": [
-    {
-      "name": "数据同步",
-      "description": "分时数据同步相关接口"
-    },
-    {
-      "name": "数据查询",
-      "description": "分时数据查询相关接口"
-    },
-    {
-      "name": "数据管理",
-      "description": "分时数据管理相关接口"
-    }
-  ],
   "paths": {
-    "/sync-from-api": {
+    "/trends/sync-from-api": {
       "post": {
         "tags": ["数据同步"],
         "summary": "从东方财富SDK同步分时数据",
@@ -80,7 +65,7 @@
         }
       }
     },
-    "/list": {
+    "/trends/list": {
       "post": {
         "tags": ["数据查询"],
         "summary": "获取分时数据列表",
@@ -154,11 +139,11 @@
         }
       }
     },
-    "/delete-range": {
+    "/trends/delete-range": {
       "post": {
         "tags": ["数据管理"],
         "summary": "批量删除分时数据",
-        "description": "根据股票代码和时间范围批量删除分时数据。注意：此操作不可恢复，适用于清理错误数据或过期数据",
+        "description": "根据股票代码 and 时间范围批量删除分时数据。注意：此操作不可恢复，适用于清理错误数据或过期数据",
         "consumes": ["application/json"],
         "produces": ["application/json"],
         "parameters": [

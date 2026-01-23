@@ -117,11 +117,11 @@ export class TrendsService {
 
       const { code: stockCode, name, data: trendData } = trendResult;
 
-      // 2. 转换为 Trend 实体格式（将字符串时间转换为 Date 对象）
-      const trends: CreateTrendDto[] = trendData.map((trend) => ({
+      // 2. 转换为 Trend 实体对象
+      const trends = trendData.map((trend) => ({
         code: stockCode,
         name: name,
-        datetime: new Date(trend.datetime), // 转换字符串为 Date
+        datetime: new Date(trend.datetime),
         price: trend.price,
         avgPrice: trend.avgPrice,
         volume: trend.volume,
@@ -130,49 +130,23 @@ export class TrendsService {
       }));
 
       if (trends.length === 0) {
-        this.logger.warn(`⚠️  股票 ${code} 转换后无有效数据`);
         return { synced: 0, total: 0, newAdded: 0 };
       }
 
-      // 3. 查询已存在的数据（用于增量更新）
-      const datetimes = trends.map((t) => t.datetime);
-      const startDatetime = datetimes[0];
-      const endDatetime = datetimes[datetimes.length - 1];
-
-      const existingTrends = await this.trendRepository.find({
-        where: {
-          code: stockCode,
-          datetime: Between(startDatetime, endDatetime),
-        },
-      });
-
-      // 4. 构建已存在数据的时间集合（快速查找，使用时间戳比较）
-      const existingTimestamps = new Set(
-        existingTrends.map((t) => t.datetime.getTime()),
-      );
-
-      // 5. 过滤出需要新增的数据（增量更新策略）
-      const newTrends = trends.filter(
-        (trend) => !existingTimestamps.has(trend.datetime.getTime()),
-      );
-
-      this.logger.log(
-        `📊 数据统计: API返回 ${trends.length} 条, 已存在 ${existingTrends.length} 条, 新增 ${newTrends.length} 条`,
-      );
-
-      // 6. 批量插入新增的分时数据
-      if (newTrends.length > 0) {
-        this.logger.log(`💾 开始插入 ${newTrends.length} 条新分时数据...`);
-        await this.createTrends(newTrends);
-        this.logger.log(`✅ 分时数据插入成功`);
-      } else {
-        this.logger.log(`ℹ️  无新增数据，跳过插入操作`);
+      // 🎯 高性能批量同步 (UPSERT)
+      // 使用 ['code', 'datetime'] 作为冲突判断依据
+      const chunkSize = 500;
+      for (let i = 0; i < trends.length; i += chunkSize) {
+        const chunk = trends.slice(i, i + chunkSize);
+        await this.trendRepository.upsert(chunk, ['code', 'datetime']);
       }
+
+      this.logger.log(`✅ 成功同步 ${trends.length} 条分时数据`);
 
       return {
         synced: trends.length,
-        total: existingTrends.length + newTrends.length,
-        newAdded: newTrends.length,
+        total: trends.length, // upsert 模式下，total 与 synced 一致，表示覆盖后的总数
+        newAdded: trends.length, // 实际上可能是新增或更新，此处沿用同步总数的统计语义
       };
     } catch (error) {
       this.logger.error(

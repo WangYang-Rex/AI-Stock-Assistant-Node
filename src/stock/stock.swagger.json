@@ -5,23 +5,8 @@
     "description": "股票基本信息和实时行情管理接口，每个股票代码唯一，通过东方财富 API 自动同步股票信息，行情数据由 Quotes 模块自动更新",
     "version": "1.0.0"
   },
-  "basePath": "/stocks",
-  "tags": [
-    {
-      "name": "数据同步",
-      "description": "股票信息同步相关接口"
-    },
-    {
-      "name": "数据查询",
-      "description": "股票信息查询相关接口"
-    },
-    {
-      "name": "数据管理",
-      "description": "股票数据管理相关接口"
-    }
-  ],
   "paths": {
-    "/sync": {
+    "/stocks/sync": {
       "post": {
         "tags": ["数据同步"],
         "summary": "同步股票信息",
@@ -74,11 +59,11 @@
         }
       }
     },
-    "/list": {
+    "/stocks/list": {
       "post": {
         "tags": ["数据查询"],
         "summary": "获取股票列表",
-        "description": "获取股票列表，支持按市场代码或市场类型筛选。如果不提供任何筛选条件，返回所有股票",
+        "description": "获取股票列表，支持按市场代码 or 市场类型筛选。如果不提供任何筛选条件，返回所有股票",
         "consumes": ["application/json"],
         "produces": ["application/json"],
         "parameters": [
@@ -125,7 +110,7 @@
         }
       }
     },
-    "/get-by-code": {
+    "/stocks/get-by-code": {
       "post": {
         "tags": ["数据查询"],
         "summary": "根据股票代码获取股票",
@@ -173,7 +158,7 @@
         }
       }
     },
-    "/delete": {
+    "/stocks/delete": {
       "post": {
         "tags": ["数据管理"],
         "summary": "删除股票",

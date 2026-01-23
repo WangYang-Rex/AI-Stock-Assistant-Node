@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 
 @Entity('trends')
+@Index(['code', 'datetime'], { unique: true }) // 复合唯一索引，用于高性能同步
 @Index(['code'])
 @Index(['datetime'])
 export class Trend {

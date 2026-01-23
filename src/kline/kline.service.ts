@@ -77,7 +77,7 @@ export class KlineService {
   constructor(
     @InjectRepository(Kline)
     private klineRepository: Repository<Kline>,
-  ) { }
+  ) {}
 
   /**
    * 将K线周期字符串转换为数值
@@ -198,14 +198,14 @@ export class KlineService {
 
     // 如果需要保存到数据库
     if (saveToDb && klines.length > 0) {
-      await this.batchSaveKlines(klines);
+      await this.klineRepository.save(klines);
     }
 
     return klines;
   }
 
   /**
-   * 同步K线数据到数据库（如果存在则更新，不存在则新增）
+   * 同步K线数据到数据库（高性能批量 UPSERT）
    * @param options - 获取选项
    * @returns 同步结果
    */
@@ -214,77 +214,32 @@ export class KlineService {
   ): Promise<{ synced: number; total: number }> {
     const klines = await this.fetchKlineFromApi({
       ...options,
-      saveToDb: false, // 不使用简单保存，使用upsert
+      saveToDb: false, // 手动控制保存逻辑
     });
 
-    let synced = 0;
-    for (const kline of klines) {
-      try {
-        // 使用upsert逻辑：根据code+date+period判断是否存在
-        const existing = await this.klineRepository.findOne({
-          where: {
-            code: kline.code,
-            date: kline.date,
-            period: kline.period,
-          },
-        });
-
-        if (existing) {
-          // 更新现有记录
-          await this.klineRepository.update(existing.id, {
-            open: kline.open,
-            close: kline.close,
-            high: kline.high,
-            low: kline.low,
-            volume: kline.volume,
-            amount: kline.amount,
-            amplitude: kline.amplitude,
-            pct: kline.pct,
-            change: kline.change,
-            turnover: kline.turnover,
-            name: kline.name,
-            fqType: kline.fqType,
-          });
-        } else {
-          // 创建新记录
-          await this.klineRepository.save(kline);
-        }
-        synced++;
-      } catch (error) {
-        console.error(`同步K线数据失败 [${kline.code} ${kline.date}]:`, error);
-      }
+    if (klines.length === 0) {
+      return { synced: 0, total: 0 };
     }
 
-    return { synced, total: klines.length };
+    try {
+      // 🎯 分批处理（Chunking）: 防止大数据量时生成的 SQL 语句过长
+      const chunkSize = 500;
+      for (let i = 0; i < klines.length; i += chunkSize) {
+        const chunk = klines.slice(i, i + chunkSize);
+        
+        // 🚀 使用 TypeORM 的 upsert 方法进行高性能同步
+        // 根据 ['code', 'date', 'period'] 唯一索引冲突时自动更新其他字段
+        await this.klineRepository.upsert(chunk, ['code', 'date', 'period']);
+      }
+
+      return { synced: klines.length, total: klines.length };
+    } catch (error) {
+      console.error(`❌ 批量同步K线数据失败:`, error);
+      throw new Error(`批量同步K线数据失败: ${error.message}`);
+    }
   }
 
-  // ==================== 数据库 CRUD 操作 ====================
-
-  /**
-   * 创建单条K线记录
-   * @param klineData - K线数据
-   */
-  async create(klineData: Partial<Kline>): Promise<Kline> {
-    const kline = this.klineRepository.create(klineData);
-    return await this.klineRepository.save(kline);
-  }
-
-  /**
-   * 批量保存K线数据
-   * @param klines - K线数据数组
-   */
-  async batchSaveKlines(klines: Kline[]): Promise<Kline[]> {
-    return await this.klineRepository.save(klines);
-  }
-
-  /**
-   * 根据ID查找K线记录
-   * @param id - 记录ID
-   */
-  async findById(id: number): Promise<Kline | null> {
-    return await this.klineRepository.findOne({ where: { id } });
-  }
-
+  // ==================== 数据库查询操作 ====================
   /**
    * 查询K线数据列表
    * @param options - 查询选项
@@ -333,134 +288,6 @@ export class KlineService {
     return { data, total, page, limit };
   }
 
-  /**
-   * 获取指定股票的所有K线数据
-   * @param code - 股票代码
-   * @param period - K线周期
-   */
-  async findByCode(code: string, period?: number): Promise<Kline[]> {
-    const where: { code: string; period?: number } = { code };
-    if (period !== undefined) {
-      where.period = period;
-    }
-    return await this.klineRepository.find({
-      where,
-      order: { date: 'DESC' },
-    });
-  }
-
-  /**
-   * 获取指定日期范围的K线数据
-   * @param code - 股票代码
-   * @param startDate - 开始日期
-   * @param endDate - 结束日期
-   * @param period - K线周期
-   */
-  async findByDateRange(
-    code: string,
-    startDate: string,
-    endDate: string,
-    period: number = 101,
-  ): Promise<Kline[]> {
-    return await this.klineRepository.find({
-      where: {
-        code,
-        period,
-        date: Between(startDate, endDate),
-      },
-      order: { date: 'ASC' },
-    });
-  }
-
-  /**
-   * 获取最新的K线数据
-   * @param code - 股票代码
-   * @param period - K线周期
-   * @param count - 获取数量
-   */
-  async findLatest(
-    code: string,
-    period: number = 101,
-    count: number = 1,
-  ): Promise<Kline[]> {
-    return await this.klineRepository.find({
-      where: { code, period },
-      order: { date: 'DESC' },
-      take: count,
-    });
-  }
-
-  /**
-   * 更新K线记录
-   * @param id - 记录ID
-   * @param updateData - 更新数据
-   */
-  async update(id: number, updateData: Partial<Kline>): Promise<Kline | null> {
-    await this.klineRepository.update(id, updateData);
-    return await this.findById(id);
-  }
-
-  /**
-   * 删除K线记录
-   * @param id - 记录ID
-   */
-  async delete(id: number): Promise<boolean> {
-    const result = await this.klineRepository.delete(id);
-    return result.affected ? result.affected > 0 : false;
-  }
-
-  /**
-   * 批量删除K线记录
-   * @param ids - 记录ID数组
-   */
-  async batchDelete(ids: number[]): Promise<number> {
-    const result = await this.klineRepository.delete(ids);
-    return result.affected || 0;
-  }
-
-  /**
-   * 删除指定股票的所有K线数据
-   * @param code - 股票代码
-   * @param period - K线周期（可选）
-   */
-  async deleteByCode(code: string, period?: number): Promise<number> {
-    const queryBuilder = this.klineRepository
-      .createQueryBuilder()
-      .delete()
-      .where('code = :code', { code });
-
-    if (period !== undefined) {
-      queryBuilder.andWhere('period = :period', { period });
-    }
-
-    const result = await queryBuilder.execute();
-    return result.affected || 0;
-  }
-
-  /**
-   * 删除指定日期范围的K线数据
-   * @param code - 股票代码
-   * @param startDate - 开始日期
-   * @param endDate - 结束日期
-   * @param period - K线周期
-   */
-  async deleteByDateRange(
-    code: string,
-    startDate: string,
-    endDate: string,
-    period: number = 101,
-  ): Promise<number> {
-    const result = await this.klineRepository
-      .createQueryBuilder()
-      .delete()
-      .where('code = :code', { code })
-      .andWhere('period = :period', { period })
-      .andWhere('date BETWEEN :startDate AND :endDate', { startDate, endDate })
-      .execute();
-
-    return result.affected || 0;
-  }
-
   // ==================== 统计和分析方法 ====================
 
   /**
@@ -484,30 +311,5 @@ export class KlineService {
       .getRawOne();
 
     return stats;
-  }
-
-  /**
-   * 获取所有已存储的股票代码列表
-   */
-  async getStoredStockCodes(): Promise<string[]> {
-    const result = await this.klineRepository
-      .createQueryBuilder('kline')
-      .select('DISTINCT kline.code', 'code')
-      .getRawMany();
-
-    return result.map((item) => item.code);
-  }
-
-  /**
-   * 获取指定股票的K线数据数量
-   * @param code - 股票代码
-   * @param period - K线周期
-   */
-  async getKlineCountByCode(code: string, period?: number): Promise<number> {
-    const where: { code: string; period?: number } = { code };
-    if (period !== undefined) {
-      where.period = period;
-    }
-    return await this.klineRepository.count({ where });
   }
 }

@@ -5,27 +5,8 @@
     "description": "股票行情快照管理接口，每个股票只保留一条最新的行情记录，通过东方财富 API 自动同步更新",
     "version": "1.0.0"
   },
-  "basePath": "/quotes",
-  "tags": [
-    {
-      "name": "数据同步",
-      "description": "行情数据同步相关接口"
-    },
-    {
-      "name": "数据查询",
-      "description": "行情数据查询相关接口"
-    },
-    {
-      "name": "数据管理",
-      "description": "行情数据管理相关接口"
-    },
-    {
-      "name": "排行榜",
-      "description": "市场排行榜相关接口"
-    }
-  ],
   "paths": {
-    "/syncStockQuotesFromAPI": {
+    "/quotes/syncStockQuotesFromAPI": {
       "post": {
         "tags": ["数据同步"],
         "summary": "同步单只股票行情快照",
@@ -73,7 +54,7 @@
         }
       }
     },
-    "/syncAllStockQuotes": {
+    "/quotes/syncAllStockQuotes": {
       "post": {
         "tags": ["数据同步"],
         "summary": "批量同步所有股票行情快照",
@@ -99,7 +80,7 @@
         }
       }
     },
-    "/list": {
+    "/quotes/list": {
       "post": {
         "tags": ["数据查询"],
         "summary": "获取行情快照列表",
@@ -142,7 +123,7 @@
         }
       }
     },
-    "/latest": {
+    "/quotes/latest": {
       "post": {
         "tags": ["数据查询"],
         "summary": "获取指定股票的最新行情",
@@ -181,7 +162,7 @@
         }
       }
     },
-    "/delete": {
+    "/quotes/delete": {
       "post": {
         "tags": ["数据管理"],
         "summary": "删除行情快照",
@@ -217,7 +198,7 @@
         }
       }
     },
-    "/rankings-gainers": {
+    "/quotes/rankings-gainers": {
       "post": {
         "tags": ["排行榜"],
         "summary": "获取涨幅排行榜",
@@ -254,7 +235,7 @@
         }
       }
     },
-    "/rankings-losers": {
+    "/quotes/rankings-losers": {
       "post": {
         "tags": ["排行榜"],
         "summary": "获取跌幅排行榜",
@@ -291,7 +272,7 @@
         }
       }
     },
-    "/rankings-volume": {
+    "/quotes/rankings-volume": {
       "post": {
         "tags": ["排行榜"],
         "summary": "获取成交量排行榜",
