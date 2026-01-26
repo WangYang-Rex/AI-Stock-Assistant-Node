@@ -117,7 +117,7 @@ export class TrendsService {
 
       const { code: stockCode, name, data: trendData } = trendResult;
 
-      // 2. 转换为 Trend 实体对象
+      // 3. 转换为 Trend 实体对象
       const trends = trendData.map((trend) => ({
         code: stockCode,
         name: name,
@@ -133,20 +133,41 @@ export class TrendsService {
         return { synced: 0, total: 0, newAdded: 0 };
       }
 
-      // 🎯 高性能批量同步 (UPSERT)
-      // 使用 ['code', 'datetime'] 作为冲突判断依据
+      // 4. 🎯 高性能批量同步 (UPSERT)
+      // 使用 MySQL 原生 INSERT ... ON DUPLICATE KEY UPDATE
       const chunkSize = 500;
       for (let i = 0; i < trends.length; i += chunkSize) {
         const chunk = trends.slice(i, i + chunkSize);
-        await this.trendRepository.upsert(chunk, ['code', 'datetime']);
+
+        const values = chunk
+          .map(
+            (t) =>
+              `('${t.code}', '${t.name}', '${new Date(t.datetime.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ')}', ${t.price ?? 'NULL'}, ${t.avgPrice ?? 'NULL'}, ${t.volume ?? 'NULL'}, ${t.amount ?? 'NULL'}, ${t.pct ?? 'NULL'})`,
+          )
+          .join(',');
+
+        const sql = `
+          INSERT INTO trends (code, name, datetime, price, avgPrice, volume, amount, pct)
+          VALUES ${values}
+          ON DUPLICATE KEY UPDATE
+            name = VALUES(name),
+            price = VALUES(price),
+            avgPrice = VALUES(avgPrice),
+            volume = VALUES(volume),
+            amount = VALUES(amount),
+            pct = VALUES(pct),
+            updatedAt = CURRENT_TIMESTAMP
+        `;
+
+        await this.trendRepository.query(sql);
       }
 
       this.logger.log(`✅ 成功同步 ${trends.length} 条分时数据`);
 
       return {
         synced: trends.length,
-        total: trends.length, // upsert 模式下，total 与 synced 一致，表示覆盖后的总数
-        newAdded: trends.length, // 实际上可能是新增或更新，此处沿用同步总数的统计语义
+        total: trends.length,
+        newAdded: trends.length,
       };
     } catch (error) {
       this.logger.error(

@@ -20,4 +20,14 @@ export class SchedulerController {
       timestamp: new Date().toISOString(),
     };
   }
+
+  // 手动触发分时数据同步
+  @Post('trigger-trend-sync')
+  async triggerTrendSync() {
+    await this.schedulerService.triggerManualTrendSync();
+    return {
+      message: '分时数据同步任务已触发',
+      timestamp: new Date().toISOString(),
+    };
+  }
 }
