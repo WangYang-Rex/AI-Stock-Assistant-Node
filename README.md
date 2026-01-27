@@ -77,6 +77,16 @@ DB_DATABASE=your_database_name
 NODE_ENV=production
 PORT=3000
 ```
+## ECS
+
+### 登录ECS及拉取
+```bash
+ssh wyecs_hz
+cd /usr/code/ai-stock-assistant-node
+git pull
+
+### .ssh/id_rsa: abc
+```
 
 ## PM2 部署与排查
 
