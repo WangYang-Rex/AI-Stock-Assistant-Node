@@ -2,22 +2,22 @@
   "swagger": "2.0",
   "info": {
     "title": "Quotes API - 行情快照接口",
-    "description": "股票行情快照管理接口，每个股票只保留一条最新的行情记录，通过东方财富 API 自动同步更新",
+    "description": "提供股票实时行情快照的同步、查询、排行榜等功能",
     "version": "1.0.0"
   },
   "paths": {
     "/quotes/syncStockQuotesFromAPI": {
       "post": {
-        "tags": ["数据同步"],
-        "summary": "同步单只股票行情快照",
-        "description": "从东方财富 API 获取指定股票的实时行情数据并保存到数据库。如果该股票已有行情记录则更新，否则创建新记录（upsert 策略）",
+        "tags": ["行情管理"],
+        "summary": "同步股票快照",
+        "description": "从第三方 API 获取指定股票的最新实时行情并保存",
         "consumes": ["application/json"],
         "produces": ["application/json"],
         "parameters": [
           {
             "in": "body",
             "name": "body",
-            "description": "股票信息",
+            "description": "同步参数",
             "required": true,
             "schema": {
               "type": "object",
@@ -25,12 +25,12 @@
               "properties": {
                 "code": {
                   "type": "string",
-                  "description": "股票代码（如 600519）",
+                  "description": "股票代码",
                   "example": "600519"
                 },
                 "market": {
                   "type": "integer",
-                  "description": "市场代码（1-上交所、0-深交所）",
+                  "description": "市场代码",
                   "example": 1
                 }
               }
@@ -41,12 +41,22 @@
           "200": {
             "description": "同步成功",
             "schema": {
-              "type": "boolean",
-              "example": true
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ApiResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "boolean",
+                      "description": "是否同步成功",
+                      "example": true
+                    }
+                  }
+                }
+              ]
             }
-          },
-          "400": {
-            "description": "请求参数错误"
           },
           "500": {
             "description": "同步失败"
@@ -56,22 +66,35 @@
     },
     "/quotes/syncAllStockQuotes": {
       "post": {
-        "tags": ["数据同步"],
-        "summary": "批量同步所有股票行情快照",
-        "description": "遍历数据库中的所有股票，从东方财富 API 获取最新行情数据并保存。任务会在后台执行，请查看日志了解同步进度",
+        "tags": ["行情管理"],
+        "summary": "批量同步所有股票快照",
+        "description": "异步启动全量股票行情同步任务",
         "consumes": ["application/json"],
         "produces": ["application/json"],
         "responses": {
           "200": {
-            "description": "批量同步任务已启动",
+            "description": "任务已启动",
             "schema": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "string",
-                  "example": "批量同步任务已启动，请查看日志了解同步进度"
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ApiResponse"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "description": "提示消息",
+                          "example": "批量同步任务已启动，请查看日志了解同步进度"
+                        }
+                      }
+                    }
+                  }
                 }
-              }
+              ]
             }
           },
           "500": {
@@ -82,16 +105,16 @@
     },
     "/quotes/list": {
       "post": {
-        "tags": ["数据查询"],
-        "summary": "获取行情快照列表",
-        "description": "查询行情快照列表，支持按股票代码、时间范围筛选，支持分页",
+        "tags": ["行情查询"],
+        "summary": "获取所有行情快照",
+        "description": "分页查询行情快照列表",
         "consumes": ["application/json"],
         "produces": ["application/json"],
         "parameters": [
           {
             "in": "body",
             "name": "body",
-            "description": "查询条件",
+            "description": "查询参数",
             "schema": {
               "$ref": "#/definitions/QuoteQueryDto"
             }
@@ -99,42 +122,29 @@
         ],
         "responses": {
           "200": {
-            "description": "查询成功",
+            "description": "获取成功",
             "schema": {
-              "type": "object",
-              "properties": {
-                "quotes": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/Quote"
-                  }
-                },
-                "total": {
-                  "type": "integer",
-                  "description": "总记录数",
-                  "example": 100
-                }
-              }
+              "$ref": "#/definitions/QuotePaginatedResponse"
             }
           },
-          "400": {
-            "description": "请求参数错误"
+          "500": {
+            "description": "查询失败"
           }
         }
       }
     },
     "/quotes/latest": {
       "post": {
-        "tags": ["数据查询"],
+        "tags": ["行情查询"],
         "summary": "获取指定股票的最新行情",
-        "description": "获取指定股票的最新行情快照，包含完整的行情信息（价格、成交量、市值、估值等）",
+        "description": "查询指定代码的最新一条行情快照",
         "consumes": ["application/json"],
         "produces": ["application/json"],
         "parameters": [
           {
             "in": "body",
             "name": "body",
-            "description": "股票代码",
+            "description": "查询参数",
             "required": true,
             "schema": {
               "type": "object",
@@ -151,29 +161,32 @@
         ],
         "responses": {
           "200": {
-            "description": "查询成功",
+            "description": "获取成功",
             "schema": {
-              "$ref": "#/definitions/Quote"
+              "$ref": "#/definitions/QuoteResponse"
             }
           },
           "404": {
-            "description": "未找到该股票的行情数据"
+            "description": "行情未找到"
+          },
+          "500": {
+            "description": "查询失败"
           }
         }
       }
     },
     "/quotes/delete": {
       "post": {
-        "tags": ["数据管理"],
+        "tags": ["行情管理"],
         "summary": "删除行情快照",
-        "description": "根据 ID 删除指定的行情快照记录",
+        "description": "根据 ID 删除行情记录",
         "consumes": ["application/json"],
         "produces": ["application/json"],
         "parameters": [
           {
             "in": "body",
             "name": "body",
-            "description": "行情快照 ID",
+            "description": "删除参数",
             "required": true,
             "schema": {
               "type": "object",
@@ -181,7 +194,7 @@
               "properties": {
                 "id": {
                   "type": "integer",
-                  "description": "行情快照 ID",
+                  "description": "行情 ID",
                   "example": 1
                 }
               }
@@ -189,33 +202,37 @@
           }
         ],
         "responses": {
-          "204": {
-            "description": "删除成功"
+          "200": {
+            "description": "删除成功",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
           },
-          "404": {
-            "description": "未找到该行情快照"
+          "500": {
+            "description": "删除失败"
           }
         }
       }
     },
     "/quotes/rankings-gainers": {
       "post": {
-        "tags": ["排行榜"],
+        "tags": ["行情排行"],
         "summary": "获取涨幅排行榜",
-        "description": "获取涨跌幅最高的股票列表，按涨跌幅降序排列",
+        "description": "按照涨幅从高到低排序",
         "consumes": ["application/json"],
         "produces": ["application/json"],
         "parameters": [
           {
             "in": "body",
             "name": "body",
-            "description": "查询参数",
+            "description": "排行参数",
             "schema": {
               "type": "object",
               "properties": {
                 "limit": {
                   "type": "integer",
-                  "description": "返回条数，默认 10",
+                  "description": "返回数量",
+                  "default": 10,
                   "example": 10
                 }
               }
@@ -224,35 +241,36 @@
         ],
         "responses": {
           "200": {
-            "description": "查询成功",
+            "description": "获取成功",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Quote"
-              }
+              "$ref": "#/definitions/QuoteListResponse"
             }
+          },
+          "500": {
+            "description": "获取失败"
           }
         }
       }
     },
     "/quotes/rankings-losers": {
       "post": {
-        "tags": ["排行榜"],
+        "tags": ["行情排行"],
         "summary": "获取跌幅排行榜",
-        "description": "获取涨跌幅最低（跌幅最大）的股票列表，按涨跌幅升序排列",
+        "description": "按照涨幅从低到高排序",
         "consumes": ["application/json"],
         "produces": ["application/json"],
         "parameters": [
           {
             "in": "body",
             "name": "body",
-            "description": "查询参数",
+            "description": "排行参数",
             "schema": {
               "type": "object",
               "properties": {
                 "limit": {
                   "type": "integer",
-                  "description": "返回条数，默认 10",
+                  "description": "返回数量",
+                  "default": 10,
                   "example": 10
                 }
               }
@@ -261,35 +279,36 @@
         ],
         "responses": {
           "200": {
-            "description": "查询成功",
+            "description": "获取成功",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Quote"
-              }
+              "$ref": "#/definitions/QuoteListResponse"
             }
+          },
+          "500": {
+            "description": "获取失败"
           }
         }
       }
     },
     "/quotes/rankings-volume": {
       "post": {
-        "tags": ["排行榜"],
+        "tags": ["行情排行"],
         "summary": "获取成交量排行榜",
-        "description": "获取成交量最高的股票列表，按成交量降序排列",
+        "description": "按照成交量从高到低排序",
         "consumes": ["application/json"],
         "produces": ["application/json"],
         "parameters": [
           {
             "in": "body",
             "name": "body",
-            "description": "查询参数",
+            "description": "排行参数",
             "schema": {
               "type": "object",
               "properties": {
                 "limit": {
                   "type": "integer",
-                  "description": "返回条数，默认 10",
+                  "description": "返回数量",
+                  "default": 10,
                   "example": 10
                 }
               }
@@ -298,13 +317,13 @@
         ],
         "responses": {
           "200": {
-            "description": "查询成功",
+            "description": "获取成功",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Quote"
-              }
+              "$ref": "#/definitions/QuoteListResponse"
             }
+          },
+          "500": {
+            "description": "获取失败"
           }
         }
       }
@@ -313,16 +332,15 @@
   "definitions": {
     "Quote": {
       "type": "object",
-      "description": "行情快照实体",
       "properties": {
         "id": {
           "type": "integer",
-          "description": "主键 ID",
+          "description": "主键ID",
           "example": 1
         },
         "code": {
           "type": "string",
-          "description": "股票代码（如 600519）",
+          "description": "股票代码",
           "example": "600519"
         },
         "name": {
@@ -332,140 +350,198 @@
         },
         "price": {
           "type": "number",
-          "format": "double",
-          "description": "最新价（元）",
-          "example": 1850.00
+          "description": "最新价",
+          "example": 1800.5
         },
         "high": {
           "type": "number",
-          "format": "double",
-          "description": "今日最高价（元）",
-          "example": 1875.00
+          "description": "今日最高价",
+          "example": 1820.0
         },
         "low": {
           "type": "number",
-          "format": "double",
-          "description": "今日最低价（元）",
-          "example": 1840.00
+          "description": "今日最低价",
+          "example": 1790.0
         },
         "open": {
           "type": "number",
-          "format": "double",
-          "description": "今日开盘价（元）",
-          "example": 1845.00
+          "description": "今日开盘价",
+          "example": 1800.0
         },
         "preClose": {
           "type": "number",
-          "format": "double",
-          "description": "昨日收盘价（元）",
-          "example": 1807.00
+          "description": "昨日收盘价",
+          "example": 1795.5
         },
         "volume": {
           "type": "integer",
-          "format": "int64",
-          "description": "成交量（股）",
+          "description": "成交量(股)",
           "example": 1234567
         },
         "amount": {
           "type": "number",
-          "format": "double",
-          "description": "成交额（元）",
-          "example": 228395450.00
+          "description": "成交额(元)",
+          "example": 2222839545.0
         },
         "pct": {
           "type": "number",
-          "format": "double",
-          "description": "涨跌幅（%）",
-          "example": 2.35
+          "description": "涨跌幅(%)",
+          "example": 1.25
         },
         "change": {
           "type": "number",
-          "format": "double",
-          "description": "涨跌额（元）",
-          "example": 43.00
+          "description": "涨跌额",
+          "example": 22.5
         },
         "turnover": {
           "type": "number",
-          "format": "double",
-          "description": "换手率（%）",
-          "example": 0.98
+          "description": "换手率(%)",
+          "example": 0.8
         },
         "totalMarketCap": {
           "type": "number",
-          "format": "double",
-          "description": "总市值（元）",
-          "example": 2324500000000.00
+          "description": "总市值(元)",
+          "example": 2262500000000.0
         },
         "floatMarketCap": {
           "type": "number",
-          "format": "double",
-          "description": "流通市值（元）",
-          "example": 2324500000000.00
+          "description": "流通市值(元)",
+          "example": 2262500000000.0
         },
         "pe": {
           "type": "number",
-          "format": "double",
-          "description": "市盈率（动态）",
-          "example": 28.50
+          "description": "市盈率(动态)",
+          "example": 32.5
         },
         "pb": {
           "type": "number",
-          "format": "double",
           "description": "市净率",
-          "example": 10.25
+          "example": 8.2
         },
         "updateTime": {
           "type": "integer",
-          "format": "int64",
-          "description": "更新时间戳（Unix 时间戳，秒级）",
-          "example": 1705852800
+          "description": "更新时间戳（秒）",
+          "example": 1672531200
         },
         "createdAt": {
           "type": "string",
           "format": "date-time",
-          "description": "系统创建时间",
-          "example": "2024-01-21T10:30:00.000Z"
+          "description": "创建时间"
         },
         "updatedAt": {
           "type": "string",
           "format": "date-time",
-          "description": "系统更新时间",
-          "example": "2024-01-21T15:00:00.000Z"
+          "description": "更新时间"
         }
       }
     },
     "QuoteQueryDto": {
       "type": "object",
-      "description": "行情查询参数",
       "properties": {
         "code": {
           "type": "string",
-          "description": "股票代码（可选）",
-          "example": "600519"
+          "description": "股票代码"
         },
         "startTime": {
           "type": "integer",
-          "format": "int64",
-          "description": "开始时间（Unix 时间戳，秒级，可选）",
-          "example": 1705766400
+          "description": "开始时间戳（秒）"
         },
         "endTime": {
           "type": "integer",
-          "format": "int64",
-          "description": "结束时间（Unix 时间戳，秒级，可选）",
-          "example": 1705852800
+          "description": "结束时间戳（秒）"
         },
         "page": {
           "type": "integer",
-          "description": "页码（默认 1）",
-          "example": 1
+          "description": "页码",
+          "default": 1
         },
         "limit": {
           "type": "integer",
-          "description": "每页数量（默认 10）",
-          "example": 10
+          "description": "每页数量",
+          "default": 10
         }
       }
+    },
+    "ApiResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "响应消息",
+          "example": "操作成功"
+        },
+        "result": {
+          "type": "integer",
+          "description": "状态码（100 表示成功）",
+          "example": 100
+        },
+        "success": {
+          "type": "boolean",
+          "description": "是否成功",
+          "example": true
+        }
+      }
+    },
+    "QuoteResponse": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ApiResponse"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "$ref": "#/definitions/Quote"
+            }
+          }
+        }
+      ]
+    },
+    "QuoteListResponse": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ApiResponse"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Quote"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "QuotePaginatedResponse": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/ApiResponse"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "object",
+              "properties": {
+                "quotes": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Quote"
+                  }
+                },
+                "total": {
+                  "type": "integer",
+                  "description": "总数",
+                  "example": 100
+                }
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }

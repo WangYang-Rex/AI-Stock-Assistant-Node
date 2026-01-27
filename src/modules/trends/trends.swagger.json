@@ -1,65 +1,73 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "Trends API - 分时数据管理接口",
-    "description": "股票分时数据管理接口，支持从东方财富SDK同步分时数据（增量更新）、查询分时数据列表、批量删除分时数据，以及自动清理15天以前的历史数据",
+    "title": "Trends API",
+    "description": "股票分时数据相关接口",
     "version": "1.0.0"
   },
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "Trends",
+      "description": "股票分时数据管理"
+    }
+  ],
   "paths": {
     "/trends/sync-from-api": {
       "post": {
-        "tags": ["数据同步"],
-        "summary": "从东方财富SDK同步分时数据",
-        "description": "从东方财富SDK获取股票分时数据并同步到数据库（增量更新策略）。支持同步当日分时（ndays=1）或5日分时（ndays=5）数据，只插入数据库中不存在的新数据，避免重复插入",
-        "consumes": ["application/json"],
-        "produces": ["application/json"],
+        "tags": [
+          "Trends"
+        ],
+        "summary": "从东方财富 SDK 同步分时数据到数据库",
+        "description": "支持同步当日分时（ndays=1）或5日分时（ndays=5）数据到数据库（增量更新）",
         "parameters": [
           {
             "in": "body",
             "name": "body",
-            "description": "同步参数",
             "required": true,
             "schema": {
               "type": "object",
-              "required": ["code", "market"],
+              "required": [
+                "code",
+                "market"
+              ],
               "properties": {
                 "code": {
                   "type": "string",
-                  "description": "股票代码（如 600519）",
-                  "example": "600519"
+                  "description": "股票代码（如：600519）"
                 },
                 "market": {
                   "type": "integer",
-                  "description": "市场代码（1-上交所，0-深交所）",
-                  "example": 1
+                  "description": "市场代码（1-上交所，0-深交所）"
                 },
                 "ndays": {
                   "type": "integer",
-                  "description": "获取天数（1=当日分时，5=5日分时，默认为1）",
-                  "enum": [1, 5],
-                  "example": 1
+                  "description": "获取天数（1-当日分时，5-5日分时，默认为1）",
+                  "default": 1
                 }
               }
             }
           }
         ],
         "responses": {
-          "200": {
-            "description": "同步成功",
+          "201": {
+            "description": "同步结果",
             "schema": {
-              "$ref": "#/definitions/SyncTrendResponse"
-            }
-          },
-          "400": {
-            "description": "请求参数错误",
-            "schema": {
-              "$ref": "#/definitions/ErrorResponse"
-            }
-          },
-          "500": {
-            "description": "同步失败",
-            "schema": {
-              "$ref": "#/definitions/ErrorResponse"
+              "type": "object",
+              "properties": {
+                "synced": {
+                  "type": "integer",
+                  "description": "已同步条数"
+                },
+                "total": {
+                  "type": "integer",
+                  "description": "总条数"
+                },
+                "newAdded": {
+                  "type": "integer",
+                  "description": "新增加条数"
+                }
+              }
             }
           }
         }
@@ -67,49 +75,44 @@
     },
     "/trends/list": {
       "post": {
-        "tags": ["数据查询"],
+        "tags": [
+          "Trends"
+        ],
         "summary": "获取分时数据列表",
-        "description": "获取分时数据列表，支持按股票代码、时间范围过滤，支持分页查询。可使用 ndays 参数自动计算时间范围，或手动指定 startDatetime 和 endDatetime",
-        "consumes": ["application/json"],
-        "produces": ["application/json"],
+        "description": "支持分页、股票代码过滤及时间范围过滤",
         "parameters": [
           {
             "in": "body",
             "name": "body",
-            "description": "查询条件",
+            "required": true,
             "schema": {
               "type": "object",
               "properties": {
                 "code": {
                   "type": "string",
-                  "description": "股票代码（可选）",
-                  "example": "600519"
+                  "description": "股票代码（可选）"
                 },
                 "ndays": {
                   "type": "integer",
-                  "description": "获取最近N天的数据（可选，1或5，优先级高于手动时间范围）",
-                  "enum": [1, 5],
-                  "example": 1
+                  "description": "获取最近 N 天的数据（可选，1 或 5）"
                 },
                 "startDatetime": {
                   "type": "string",
-                  "description": "开始时间（可选，格式：YYYY-MM-DD HH:mm，优先级低于ndays）",
-                  "example": "2026-01-21 09:30"
+                  "description": "开始时间（可选，格式：YYYY-MM-DD HH:mm）"
                 },
                 "endDatetime": {
                   "type": "string",
-                  "description": "结束时间（可选，格式：YYYY-MM-DD HH:mm，优先级低于ndays）",
-                  "example": "2026-01-21 15:00"
+                  "description": "结束时间（可选，格式：YYYY-MM-DD HH:mm）"
                 },
                 "page": {
                   "type": "integer",
-                  "description": "页码（可选，默认1）",
-                  "example": 1
+                  "description": "页码",
+                  "default": 1
                 },
                 "limit": {
                   "type": "integer",
-                  "description": "每页数量（可选，默认10，建议不超过1000）",
-                  "example": 100
+                  "description": "每页数量",
+                  "default": 10
                 }
               }
             }
@@ -117,21 +120,21 @@
         ],
         "responses": {
           "200": {
-            "description": "查询成功",
+            "description": "成功获取分时数据列表",
             "schema": {
-              "$ref": "#/definitions/TrendListResponse"
-            }
-          },
-          "400": {
-            "description": "请求参数错误",
-            "schema": {
-              "$ref": "#/definitions/ErrorResponse"
-            }
-          },
-          "500": {
-            "description": "查询失败",
-            "schema": {
-              "$ref": "#/definitions/ErrorResponse"
+              "type": "object",
+              "properties": {
+                "trends": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Trend"
+                  }
+                },
+                "total": {
+                  "type": "integer",
+                  "description": "总记录数"
+                }
+              }
             }
           }
         }
@@ -139,58 +142,42 @@
     },
     "/trends/delete-range": {
       "post": {
-        "tags": ["数据管理"],
-        "summary": "批量删除分时数据",
-        "description": "根据股票代码 and 时间范围批量删除分时数据。注意：此操作不可恢复，适用于清理错误数据或过期数据",
-        "consumes": ["application/json"],
-        "produces": ["application/json"],
+        "tags": [
+          "Trends"
+        ],
+        "summary": "根据代码和日期范围批量删除分时数据",
         "parameters": [
           {
             "in": "body",
             "name": "body",
-            "description": "删除条件",
             "required": true,
             "schema": {
               "type": "object",
-              "required": ["code", "startDatetime", "endDatetime"],
+              "required": [
+                "code",
+                "startDatetime",
+                "endDatetime"
+              ],
               "properties": {
                 "code": {
                   "type": "string",
-                  "description": "股票代码",
-                  "example": "600519"
+                  "description": "股票代码"
                 },
                 "startDatetime": {
                   "type": "string",
-                  "description": "开始时间（格式：YYYY-MM-DD HH:mm）",
-                  "example": "2026-01-15 09:30"
+                  "description": "开始时间（格式：YYYY-MM-DD HH:mm）"
                 },
                 "endDatetime": {
                   "type": "string",
-                  "description": "结束时间（格式：YYYY-MM-DD HH:mm）",
-                  "example": "2026-01-15 15:00"
+                  "description": "结束时间（格式：YYYY-MM-DD HH:mm）"
                 }
               }
             }
           }
         ],
         "responses": {
-          "200": {
-            "description": "删除成功",
-            "schema": {
-              "$ref": "#/definitions/DeleteTrendResponse"
-            }
-          },
-          "400": {
-            "description": "请求参数错误",
-            "schema": {
-              "$ref": "#/definitions/ErrorResponse"
-            }
-          },
-          "500": {
-            "description": "删除失败",
-            "schema": {
-              "$ref": "#/definitions/ErrorResponse"
-            }
+          "201": {
+            "description": "删除成功"
           }
         }
       }
@@ -199,145 +186,52 @@
   "definitions": {
     "Trend": {
       "type": "object",
-      "description": "分时数据实体",
       "properties": {
         "id": {
           "type": "integer",
-          "description": "主键ID",
-          "example": 1
+          "description": "主键ID"
         },
         "code": {
           "type": "string",
-          "description": "股票代码（如 600519）",
-          "example": "600519"
+          "description": "股票代码"
         },
         "name": {
           "type": "string",
-          "description": "股票名称",
-          "example": "贵州茅台"
+          "description": "股票名称"
         },
         "datetime": {
           "type": "string",
-          "description": "日期时间（YYYY-MM-DD HH:mm 格式）",
-          "example": "2026-01-21 09:30"
+          "description": "日期时间（YYYY-MM-DD HH:mm 格式）"
         },
         "price": {
           "type": "number",
-          "format": "double",
-          "description": "当前价格（元）",
-          "example": 1850.50
+          "description": "当前价格"
         },
         "avgPrice": {
           "type": "number",
-          "format": "double",
-          "description": "均价（元）",
-          "example": 1850.50
+          "description": "均价"
         },
         "volume": {
           "type": "integer",
-          "format": "int64",
-          "description": "成交量（股）",
-          "example": 12500
+          "description": "成交量（股）"
         },
         "amount": {
           "type": "number",
-          "format": "double",
-          "description": "成交额（元）",
-          "example": 23131250.00
+          "description": "成交额（元）"
         },
         "pct": {
           "type": "number",
-          "format": "double",
-          "description": "涨跌幅（%）",
-          "example": 0.50
+          "description": "涨跌幅（%）"
         },
         "createdAt": {
           "type": "string",
           "format": "date-time",
-          "description": "系统创建时间",
-          "example": "2026-01-21T14:30:00.000Z"
+          "description": "系统创建时间"
         },
         "updatedAt": {
           "type": "string",
           "format": "date-time",
-          "description": "系统更新时间",
-          "example": "2026-01-21T14:30:00.000Z"
-        }
-      }
-    },
-    "SyncTrendResponse": {
-      "type": "object",
-      "description": "同步分时数据响应",
-      "properties": {
-        "synced": {
-          "type": "integer",
-          "description": "API返回的数据总数",
-          "example": 240
-        },
-        "total": {
-          "type": "integer",
-          "description": "数据库中该时间范围内的总数据量",
-          "example": 240
-        },
-        "newAdded": {
-          "type": "integer",
-          "description": "本次新增的数据条数",
-          "example": 50
-        }
-      }
-    },
-    "TrendListResponse": {
-      "type": "object",
-      "description": "分时数据列表响应",
-      "properties": {
-        "trends": {
-          "type": "array",
-          "description": "分时数据列表",
-          "items": {
-            "$ref": "#/definitions/Trend"
-          }
-        },
-        "total": {
-          "type": "integer",
-          "description": "总记录数",
-          "example": 240
-        }
-      }
-    },
-    "DeleteTrendResponse": {
-      "type": "object",
-      "description": "删除分时数据响应",
-      "properties": {
-        "success": {
-          "type": "boolean",
-          "description": "是否删除成功",
-          "example": true
-        },
-        "message": {
-          "type": "string",
-          "description": "响应消息",
-          "example": "分时数据删除成功"
-        }
-      }
-    },
-    "ErrorResponse": {
-      "type": "object",
-      "description": "错误响应",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "description": "错误状态码",
-          "example": 400
-        },
-        "message": {
-          "type": "string",
-          "description": "错误消息",
-          "example": "请求参数错误"
-        },
-        "data": {
-          "type": "null",
-          "description": "数据为空",
-          "example": null
+          "description": "系统更新时间"
         }
       }
     }
