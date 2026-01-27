@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
+import { Cron } from '@nestjs/schedule';
+import { StockService } from '../stock/stock.service';
 import { Kline } from '../../entities/kline.entity';
 import {
   eastmoney,
@@ -13,6 +15,7 @@ import {
   KLINE_PERIOD,
   FQ_TYPE,
 } from 'eastmoney-data-sdk';
+import { formatToMysqlDateTime } from '../../common/utils/date.utils';
 
 /**
  * K线周期类型
@@ -74,9 +77,12 @@ export interface QueryKlineOptions {
 
 @Injectable()
 export class KlineService {
+  private readonly logger = new Logger(KlineService.name);
+
   constructor(
     @InjectRepository(Kline)
     private klineRepository: Repository<Kline>,
+    private stockService: StockService,
   ) {}
 
   /**
@@ -181,7 +187,7 @@ export class KlineService {
       kline.code = code;
       kline.name = stockName;
       kline.period = periodNum;
-      kline.date = item.date;
+      kline.date = new Date(item.date);
       kline.open = item.open;
       kline.close = item.close;
       kline.high = item.high;
@@ -222,14 +228,39 @@ export class KlineService {
     }
 
     try {
-      // 🎯 分批处理（Chunking）: 防止大数据量时生成的 SQL 语句过长
+      // 🎯 高性能批量同步 (UPSERT)
+      // 使用 MySQL 原生 INSERT ... ON DUPLICATE KEY UPDATE
       const chunkSize = 500;
       for (let i = 0; i < klines.length; i += chunkSize) {
         const chunk = klines.slice(i, i + chunkSize);
-        
-        // 🚀 使用 TypeORM 的 upsert 方法进行高性能同步
-        // 根据 ['code', 'date', 'period'] 唯一索引冲突时自动更新其他字段
-        await this.klineRepository.upsert(chunk, ['code', 'date', 'period']);
+
+        const values = chunk
+          .map(
+            (k) =>
+              `('${k.code}', '${k.name.replace(/'/g, "''")}', ${k.period}, '${formatToMysqlDateTime(k.date)}', ${k.open ?? 'NULL'}, ${k.close ?? 'NULL'}, ${k.high ?? 'NULL'}, ${k.low ?? 'NULL'}, ${k.volume ?? 'NULL'}, ${k.amount ?? 'NULL'}, ${k.amplitude ?? 'NULL'}, ${k.pct ?? 'NULL'}, ${k.change ?? 'NULL'}, ${k.turnover ?? 'NULL'}, ${k.fqType ?? 'NULL'})`,
+          )
+          .join(',');
+
+        const sql = `
+          INSERT INTO klines (code, name, period, date, open, close, high, low, volume, amount, amplitude, pct, \`change\`, turnover, fqType)
+          VALUES ${values}
+          ON DUPLICATE KEY UPDATE
+            name = VALUES(name),
+            open = VALUES(open),
+            close = VALUES(close),
+            high = VALUES(high),
+            low = VALUES(low),
+            volume = VALUES(volume),
+            amount = VALUES(amount),
+            amplitude = VALUES(amplitude),
+            pct = VALUES(pct),
+            \`change\` = VALUES(\`change\`),
+            turnover = VALUES(turnover),
+            fqType = VALUES(fqType),
+            updatedAt = CURRENT_TIMESTAMP
+        `;
+
+        await this.klineRepository.query(sql);
       }
 
       return { synced: klines.length, total: klines.length };
@@ -268,13 +299,17 @@ export class KlineService {
     // 日期范围筛选
     if (startDate && endDate) {
       queryBuilder.andWhere('kline.date BETWEEN :startDate AND :endDate', {
-        startDate,
-        endDate,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
       });
     } else if (startDate) {
-      queryBuilder.andWhere('kline.date >= :startDate', { startDate });
+      queryBuilder.andWhere('kline.date >= :startDate', {
+        startDate: new Date(startDate),
+      });
     } else if (endDate) {
-      queryBuilder.andWhere('kline.date <= :endDate', { endDate });
+      queryBuilder.andWhere('kline.date <= :endDate', {
+        endDate: new Date(endDate),
+      });
     }
 
     // 排序和分页
@@ -311,5 +346,43 @@ export class KlineService {
       .getRawOne();
 
     return stats;
+  }
+
+  // ==================== 定时任务 ====================
+
+  /**
+   * 定时任务：每天凌晨 0点0分0秒 同步所有股票的日线 K线数据
+   * 获取 daily 数据，fqType=1 (前复权)，limit=1000
+   */
+  @Cron('0 0 0 * * *', {
+    name: 'daily-sync-all-stocks-klines',
+    timeZone: 'Asia/Shanghai',
+  })
+  async handleDailySyncAllStocksKlines() {
+    try {
+      this.logger.log('⏰ 开始执行每日所有股票 K 线数据同步任务...');
+      const stocks = await this.stockService.findAll();
+
+      this.logger.log(`📊 共需同步 ${stocks.length} 只股票`);
+
+      let totalSynced = 0;
+      for (const stock of stocks) {
+        try {
+          const result = await this.syncKlineData({
+            code: stock.code,
+            period: 'daily',
+            fqType: 1,
+            limit: 1000,
+          });
+          totalSynced += result.synced;
+        } catch (error) {
+          this.logger.error(`❌ 同步股票 ${stock.code} (${stock.name}) K 线数据失败: ${error.message}`);
+        }
+      }
+
+      this.logger.log(`✅ 每日 K 线同步任务完成，共同步 ${totalSynced} 条数据`);
+    } catch (error) {
+      this.logger.error('❌ 执行每日 K 线同步任务失败:', error.stack);
+    }
   }
 }

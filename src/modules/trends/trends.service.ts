@@ -4,6 +4,7 @@ import { Repository, Between, LessThan, FindManyOptions } from 'typeorm';
 import { Cron } from '@nestjs/schedule';
 import { Trend } from '../../entities/trend.entity';
 import { eastmoney } from 'eastmoney-data-sdk';
+import { formatToMysqlDateTime } from '../../common/utils/date.utils';
 
 export interface CreateTrendDto {
   code: string;
@@ -142,7 +143,7 @@ export class TrendsService {
         const values = chunk
           .map(
             (t) =>
-              `('${t.code}', '${t.name}', '${new Date(t.datetime.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ')}', ${t.price ?? 'NULL'}, ${t.avgPrice ?? 'NULL'}, ${t.volume ?? 'NULL'}, ${t.amount ?? 'NULL'}, ${t.pct ?? 'NULL'})`,
+              `('${t.code}', '${t.name}', '${formatToMysqlDateTime(t.datetime)}', ${t.price ?? 'NULL'}, ${t.avgPrice ?? 'NULL'}, ${t.volume ?? 'NULL'}, ${t.amount ?? 'NULL'}, ${t.pct ?? 'NULL'})`,
           )
           .join(',');
 
