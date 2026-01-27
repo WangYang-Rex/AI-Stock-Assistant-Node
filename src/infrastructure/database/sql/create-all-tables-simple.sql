@@ -88,7 +88,7 @@ CREATE TABLE `trends` (
   PRIMARY KEY (`id`),
   KEY `idx_code` (`code`),
   KEY `idx_datetime` (`datetime`),
-  KEY `idx_code_datetime` (`code`, `datetime`)
+  UNIQUE KEY `idx_code_datetime` (`code`, `datetime`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='分时趋势表';
 
 -- 5. 交易记录表
@@ -119,7 +119,7 @@ CREATE TABLE `klines` (
   `name` varchar(100) DEFAULT NULL COMMENT '股票名称',
   `market` varchar(20) DEFAULT NULL COMMENT '市场类型(SH-上海、SZ-深圳)',
   `period` int NOT NULL DEFAULT 101 COMMENT 'K线周期(101=日线, 102=周线, 103=月线, 1/5/15/30/60=分钟线)',
-  `date` varchar(30) NOT NULL COMMENT '日期/时间',
+  `date` varchar(20) NOT NULL COMMENT '日期时间（YYYY-MM-DD HH:mm:ss 格式或 YYYY-MM-DD）',
   `open` decimal(12,4) NOT NULL COMMENT '开盘价',
   `close` decimal(12,4) NOT NULL COMMENT '收盘价',
   `high` decimal(12,4) NOT NULL COMMENT '最高价',

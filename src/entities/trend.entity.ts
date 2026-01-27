@@ -22,10 +22,11 @@ export class Trend {
   name: string;
 
   @Column({
-    type: 'timestamp',
-    comment: '日期时间',
+    type: 'varchar',
+    length: 20,
+    comment: '日期时间（YYYY-MM-DD HH:mm 格式）',
   })
-  datetime: Date;
+  datetime: string;
 
   @Column({
     type: 'decimal',

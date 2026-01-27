@@ -4,12 +4,12 @@ import { Repository, Between, LessThan, FindManyOptions } from 'typeorm';
 import { Cron } from '@nestjs/schedule';
 import { Trend } from '../../entities/trend.entity';
 import { eastmoney } from 'eastmoney-data-sdk';
-import { formatToMysqlDateTime } from '../../common/utils/date.utils';
+import { formatToMysqlDateTime, formatToTrendDateTime } from '../../common/utils/date.utils';
 
 export interface CreateTrendDto {
   code: string;
   name: string;
-  datetime: Date;
+  datetime: string;
   price?: number;
   avgPrice?: number;
   volume?: number;
@@ -57,8 +57,8 @@ export class TrendsService {
     }
 
     if (startDatetime && endDatetime) {
-      // 将字符串时间转换为 Date 对象
-      where.datetime = Between(new Date(startDatetime), new Date(endDatetime));
+      // 存储为字符串后，可以直接进行字符串范围比较（YYYY-MM-DD HH:mm 格式天然支持）
+      where.datetime = Between(startDatetime, endDatetime);
     }
 
     const options: FindManyOptions<Trend> = {
@@ -81,13 +81,9 @@ export class TrendsService {
     startDatetime: string,
     endDatetime: string,
   ): Promise<void> {
-    // 将字符串时间转换为 Date 对象
-    const startDate = new Date(startDatetime);
-    const endDate = new Date(endDatetime);
-
     await this.trendRepository.delete({
       code,
-      datetime: Between(startDate, endDate),
+      datetime: Between(startDatetime, endDatetime),
     });
   }
 
@@ -122,7 +118,7 @@ export class TrendsService {
       const trends = trendData.map((trend) => ({
         code: stockCode,
         name: name,
-        datetime: new Date(trend.datetime),
+        datetime: formatToTrendDateTime(new Date(trend.datetime)),
         price: trend.price,
         avgPrice: trend.avgPrice,
         volume: trend.volume,
@@ -143,7 +139,7 @@ export class TrendsService {
         const values = chunk
           .map(
             (t) =>
-              `('${t.code}', '${t.name}', '${formatToMysqlDateTime(t.datetime)}', ${t.price ?? 'NULL'}, ${t.avgPrice ?? 'NULL'}, ${t.volume ?? 'NULL'}, ${t.amount ?? 'NULL'}, ${t.pct ?? 'NULL'})`,
+              `('${t.code}', '${t.name}', '${t.datetime}', ${t.price ?? 'NULL'}, ${t.avgPrice ?? 'NULL'}, ${t.volume ?? 'NULL'}, ${t.amount ?? 'NULL'}, ${t.pct ?? 'NULL'})`,
           )
           .join(',');
 
@@ -193,17 +189,18 @@ export class TrendsService {
     try {
       this.logger.log('🧹 开始执行分时数据清理任务...');
 
-      // 计算15天前的时间
+      // 计算15天前的时间字符串
       const fifteenDaysAgo = new Date();
       fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+      const fifteenDaysAgoStr = formatToTrendDateTime(fifteenDaysAgo);
 
       this.logger.log(
-        `📅 清理时间节点: ${fifteenDaysAgo.toISOString()} (15天前)`,
+        `📅 清理时间节点: ${fifteenDaysAgoStr} (15天前)`,
       );
 
       // 删除15天以前的数据
       const result = await this.trendRepository.delete({
-        datetime: LessThan(fifteenDaysAgo),
+        datetime: LessThan(fifteenDaysAgoStr),
       });
 
       this.logger.log(

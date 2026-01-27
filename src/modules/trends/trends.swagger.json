@@ -93,13 +93,11 @@
                 },
                 "startDatetime": {
                   "type": "string",
-                  "format": "date-time",
                   "description": "开始时间（可选，格式：YYYY-MM-DD HH:mm，优先级低于ndays）",
                   "example": "2026-01-21 09:30"
                 },
                 "endDatetime": {
                   "type": "string",
-                  "format": "date-time",
                   "description": "结束时间（可选，格式：YYYY-MM-DD HH:mm，优先级低于ndays）",
                   "example": "2026-01-21 15:00"
                 },
@@ -163,13 +161,11 @@
                 },
                 "startDatetime": {
                   "type": "string",
-                  "format": "date-time",
                   "description": "开始时间（格式：YYYY-MM-DD HH:mm）",
                   "example": "2026-01-15 09:30"
                 },
                 "endDatetime": {
                   "type": "string",
-                  "format": "date-time",
                   "description": "结束时间（格式：YYYY-MM-DD HH:mm）",
                   "example": "2026-01-15 15:00"
                 }
@@ -222,9 +218,8 @@
         },
         "datetime": {
           "type": "string",
-          "format": "date-time",
-          "description": "分时数据的日期时间",
-          "example": "2026-01-21T09:30:00.000Z"
+          "description": "日期时间（YYYY-MM-DD HH:mm 格式）",
+          "example": "2026-01-21 09:30"
         },
         "price": {
           "type": "number",

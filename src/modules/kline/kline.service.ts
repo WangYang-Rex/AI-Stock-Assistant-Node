@@ -15,7 +15,6 @@ import {
   KLINE_PERIOD,
   FQ_TYPE,
 } from 'eastmoney-data-sdk';
-import { formatToMysqlDateTime } from '../../common/utils/date.utils';
 
 /**
  * K线周期类型
@@ -187,7 +186,7 @@ export class KlineService {
       kline.code = code;
       kline.name = stockName;
       kline.period = periodNum;
-      kline.date = new Date(item.date);
+      kline.date = item.date; // Use string date directly from SDK
       kline.open = item.open;
       kline.close = item.close;
       kline.high = item.high;
@@ -237,7 +236,7 @@ export class KlineService {
         const values = chunk
           .map(
             (k) =>
-              `('${k.code}', '${k.name.replace(/'/g, "''")}', ${k.period}, '${formatToMysqlDateTime(k.date)}', ${k.open ?? 'NULL'}, ${k.close ?? 'NULL'}, ${k.high ?? 'NULL'}, ${k.low ?? 'NULL'}, ${k.volume ?? 'NULL'}, ${k.amount ?? 'NULL'}, ${k.amplitude ?? 'NULL'}, ${k.pct ?? 'NULL'}, ${k.change ?? 'NULL'}, ${k.turnover ?? 'NULL'}, ${k.fqType ?? 'NULL'})`,
+              `('${k.code}', '${k.name.replace(/'/g, "''")}', ${k.period}, '${k.date}', ${k.open ?? 'NULL'}, ${k.close ?? 'NULL'}, ${k.high ?? 'NULL'}, ${k.low ?? 'NULL'}, ${k.volume ?? 'NULL'}, ${k.amount ?? 'NULL'}, ${k.amplitude ?? 'NULL'}, ${k.pct ?? 'NULL'}, ${k.change ?? 'NULL'}, ${k.turnover ?? 'NULL'}, ${k.fqType ?? 'NULL'})`,
           )
           .join(',');
 
@@ -296,19 +295,19 @@ export class KlineService {
       .where('kline.code = :code', { code })
       .andWhere('kline.period = :period', { period });
 
-    // 日期范围筛选
+    // 日期范围筛选 - 字符串直接比较
     if (startDate && endDate) {
       queryBuilder.andWhere('kline.date BETWEEN :startDate AND :endDate', {
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
+        startDate,
+        endDate,
       });
     } else if (startDate) {
       queryBuilder.andWhere('kline.date >= :startDate', {
-        startDate: new Date(startDate),
+        startDate,
       });
     } else if (endDate) {
       queryBuilder.andWhere('kline.date <= :endDate', {
-        endDate: new Date(endDate),
+        endDate,
       });
     }
 

@@ -1,5 +1,6 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { TrendsService } from './trends.service';
+import { formatToTrendDateTime } from '../../common/utils/date.utils';
 
 @Controller('trends')
 export class TrendsController {
@@ -48,18 +49,8 @@ export class TrendsController {
       const start = new Date();
       start.setDate(now.getDate() - ndays);
 
-      // 格式化为 YYYY-MM-DD HH:mm 格式
-      const formatDate = (date: Date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        return `${year}-${month}-${day} ${hours}:${minutes}`;
-      };
-
-      startDatetime = formatDate(start);
-      endDatetime = formatDate(now);
+      startDatetime = formatToTrendDateTime(start);
+      endDatetime = formatToTrendDateTime(now);
     }
 
     return await this.trendsService.findAllTrends({
@@ -70,6 +61,7 @@ export class TrendsController {
       limit,
     });
   }
+
   /**
    * 根据代码和日期范围批量删除分时数据
    */

@@ -33,10 +33,11 @@ export class Kline {
 
   /** 日期/时间（如 2024-01-15 或 2024-01-15 09:30） */
   @Column({
-    type: 'timestamp',
-    comment: '日期时间',
+    type: 'varchar',
+    length: 20,
+    comment: '日期时间（YYYY-MM-DD HH:mm:ss 格式或 YYYY-MM-DD）',
   })
-  date: Date;
+  date: string;
 
   /** 开盘价 */
   @Column({
