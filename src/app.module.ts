@@ -4,14 +4,16 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { DatabaseModule } from './database/database.module';
-import { HealthModule } from './health/health.module';
-import { StockModule } from './stock/stock.module';
-import { TradingModule } from './trading/trading.module';
-import { AiSignalsModule } from './aisignals/aisignals.module';
-import { QuotesModule } from './quotes/quotes.module';
+import { DatabaseModule } from './infrastructure/database/database.module';
+import { HealthModule } from './modules/health/health.module';
+import { StockModule } from './modules/stock/stock.module';
+import { TradingModule } from './modules/trading/trading.module';
+import { AiSignalsModule } from './modules/aisignals/aisignals.module';
+import { QuotesModule } from './modules/quotes/quotes.module';
 import { CommonModule } from './common/common.module';
-import { SchedulerModule } from './scheduler/scheduler.module';
+import { SchedulerModule } from './modules/scheduler/scheduler.module';
+import { KlineModule } from './modules/kline/kline.module';
+import { TrendsModule } from './modules/trends/trends.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 
@@ -31,6 +33,8 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
     QuotesModule,
     CommonModule,
     SchedulerModule,
+    KlineModule,
+    TrendsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -45,4 +49,4 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

@@ -1,0 +1,421 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Stock API - 股票管理接口",
+    "description": "股票基本信息和实时行情管理接口，每个股票代码唯一，通过东方财富 API 自动同步股票信息，行情数据由 Quotes 模块自动更新",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/stocks/sync": {
+      "post": {
+        "tags": ["数据同步"],
+        "summary": "同步股票信息",
+        "description": "通过东方财富 API 获取股票基本信息，如果股票不存在则新增，存在则返回现有记录（upsert 策略）",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "股票信息",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["code", "market"],
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "description": "股票代码（如 600519）",
+                  "example": "600519"
+                },
+                "market": {
+                  "type": "integer",
+                  "description": "市场代码（1-上交所、0-深交所）",
+                  "example": 1
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "同步成功",
+            "schema": {
+              "$ref": "#/definitions/SyncStockResponse"
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "同步失败",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/stocks/list": {
+      "post": {
+        "tags": ["数据查询"],
+        "summary": "获取股票列表",
+        "description": "获取股票列表，支持按市场代码 or 市场类型筛选。如果不提供任何筛选条件，返回所有股票",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "筛选条件",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "market": {
+                  "type": "integer",
+                  "description": "市场代码（可选，1-上交所、0-深交所）",
+                  "example": 1
+                },
+                "marketType": {
+                  "type": "string",
+                  "description": "市场类型（可选，SH-上海、SZ-深圳）",
+                  "example": "SH"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "schema": {
+              "$ref": "#/definitions/StockListResponse"
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "查询失败",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/stocks/get-by-code": {
+      "post": {
+        "tags": ["数据查询"],
+        "summary": "根据股票代码获取股票",
+        "description": "根据股票代码获取单个股票的详细信息，包含基本信息和实时行情数据",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "股票代码",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["code"],
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "description": "股票代码",
+                  "example": "600519"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "schema": {
+              "$ref": "#/definitions/StockResponse"
+            }
+          },
+          "404": {
+            "description": "股票未找到",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "查询失败",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/stocks/delete": {
+      "post": {
+        "tags": ["数据管理"],
+        "summary": "删除股票",
+        "description": "根据 ID 删除指定的股票记录。注意：删除股票会影响相关的行情、分时、K线数据",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "股票 ID",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["id"],
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "股票 ID",
+                  "example": 1
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "schema": {
+              "$ref": "#/definitions/DeleteStockResponse"
+            }
+          },
+          "404": {
+            "description": "股票未找到",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "删除失败",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Stock": {
+      "type": "object",
+      "description": "股票实体",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "主键 ID",
+          "example": 1
+        },
+        "code": {
+          "type": "string",
+          "description": "股票代码（如 600519）",
+          "example": "600519"
+        },
+        "name": {
+          "type": "string",
+          "description": "股票名称",
+          "example": "贵州茅台"
+        },
+        "market": {
+          "type": "integer",
+          "description": "市场代码（1-上交所、0-深交所）",
+          "example": 1
+        },
+        "marketType": {
+          "type": "string",
+          "description": "市场类型（SH-上海、SZ-深圳）",
+          "example": "SH"
+        },
+        "price": {
+          "type": "number",
+          "format": "double",
+          "description": "最新价（元）",
+          "example": 1850.00
+        },
+        "pct": {
+          "type": "number",
+          "format": "double",
+          "description": "涨跌幅（%）",
+          "example": 2.35
+        },
+        "change": {
+          "type": "number",
+          "format": "double",
+          "description": "涨跌额（元）",
+          "example": 43.00
+        },
+        "volume": {
+          "type": "integer",
+          "format": "int64",
+          "description": "成交量（股）",
+          "example": 1234567
+        },
+        "amount": {
+          "type": "number",
+          "format": "double",
+          "description": "成交额（元）",
+          "example": 228395450.00
+        },
+        "totalMarketCap": {
+          "type": "number",
+          "format": "double",
+          "description": "总市值（元）",
+          "example": 2324500000000.00
+        },
+        "floatMarketCap": {
+          "type": "number",
+          "format": "double",
+          "description": "流通市值（元）",
+          "example": 2324500000000.00
+        },
+        "turnover": {
+          "type": "number",
+          "format": "double",
+          "description": "换手率（%）",
+          "example": 0.98
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "创建时间",
+          "example": "2024-01-21T10:30:00.000Z"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "更新时间",
+          "example": "2024-01-21T15:00:00.000Z"
+        }
+      }
+    },
+    "SyncStockResponse": {
+      "type": "object",
+      "description": "同步股票响应",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "description": "响应状态码",
+          "example": 200
+        },
+        "message": {
+          "type": "string",
+          "description": "响应消息",
+          "example": "股票信息同步成功"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "stock": {
+              "$ref": "#/definitions/Stock"
+            },
+            "isNew": {
+              "type": "boolean",
+              "description": "是否为新增股票（true-新增，false-已存在）",
+              "example": false
+            }
+          }
+        }
+      }
+    },
+    "StockListResponse": {
+      "type": "object",
+      "description": "股票列表响应",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "description": "响应状态码",
+          "example": 200
+        },
+        "message": {
+          "type": "string",
+          "description": "响应消息",
+          "example": "股票列表获取成功"
+        },
+        "data": {
+          "type": "array",
+          "description": "股票列表",
+          "items": {
+            "$ref": "#/definitions/Stock"
+          }
+        }
+      }
+    },
+    "StockResponse": {
+      "type": "object",
+      "description": "单个股票响应",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "description": "响应状态码",
+          "example": 200
+        },
+        "message": {
+          "type": "string",
+          "description": "响应消息",
+          "example": "股票信息获取成功"
+        },
+        "data": {
+          "$ref": "#/definitions/Stock"
+        }
+      }
+    },
+    "DeleteStockResponse": {
+      "type": "object",
+      "description": "删除股票响应",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "description": "响应状态码",
+          "example": 200
+        },
+        "message": {
+          "type": "string",
+          "description": "响应消息",
+          "example": "股票删除成功"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "type": "boolean",
+              "description": "是否删除成功",
+              "example": true
+            }
+          }
+        }
+      }
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "description": "错误响应",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "description": "错误状态码",
+          "example": 400
+        },
+        "message": {
+          "type": "string",
+          "description": "错误消息",
+          "example": "请求参数错误"
+        },
+        "data": {
+          "type": "null",
+          "description": "数据为空",
+          "example": null
+        }
+      }
+    }
+  }
+}

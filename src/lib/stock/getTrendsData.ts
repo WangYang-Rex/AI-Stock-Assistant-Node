@@ -13,7 +13,6 @@ const CONFIG = {
   REQUEST_DELAY: 1000, // 请求间隔(毫秒)
 };
 
-// 类型定义
 interface TrendItem {
   time: string;
   price: string;
@@ -26,14 +25,21 @@ interface TrendItem {
 interface QuoteData {
   code: string;
   name: string;
-  marketCode: string;
-  previousClosePrice: number;
-  snapshotTime: string;
-  snapshotDate: string;
-  latestPrice?: number;
-  changePercent?: number;
+  price?: number;
+  open?: number;
+  high?: number;
+  low?: number;
+  preClose?: number;
   volume: number;
-  volumeAmount: number;
+  amount: number;
+  pct?: number;
+  change?: number;
+  turnover?: number;
+  totalMarketCap?: number;
+  floatMarketCap?: number;
+  pe?: number;
+  pb?: number;
+  updateTime: number;
 }
 
 interface TrendsResponse {
@@ -41,6 +47,7 @@ interface TrendsResponse {
   preClose: number;
   trends: QuoteData[];
 }
+
 
 interface EastMoneyResponse {
   rc: number;
@@ -80,40 +87,31 @@ const convertToTrendsData = (
   date: string,
   stockCode: string,
   stockName: string,
-  marketCode: string,
   preClose: number,
 ): QuoteData[] => {
   // 转换数据
   const quotes = trends.map((trend) => {
     // 构建快照时间: 2025-11-10T09:15:00
-    const snapshotTime = `${date}T${trend.time}`;
+    const snapshotStr = `${date}T${trend.time}`;
+    const updateTime = Math.floor(new Date(snapshotStr).getTime() / 1000);
 
     // 转换数据类型
-    const latestPrice = parseFloat(trend.price);
-    const changePercent = parseFloat(trend.change);
+    const price = parseFloat(trend.price);
+    const pct = parseFloat(trend.change);
     const volume = parseInt(trend.volume) || 0;
     // amount 单位是万元，需要转换为元
-    // 从代码看，amount 在数据处理1中被转换为万元，所以这里需要转换回元
-    const volumeAmount = parseFloat(trend.amount) * 10000 || 0;
+    const amount = parseFloat(trend.amount) * 10000 || 0;
 
     const quote: QuoteData = {
       code: stockCode,
       name: stockName,
-      marketCode: marketCode,
-      previousClosePrice: preClose,
-      snapshotTime: snapshotTime,
-      snapshotDate: date,
+      price: !isNaN(price) ? price : undefined,
+      preClose: preClose,
       volume: volume,
-      volumeAmount: volumeAmount,
+      amount: amount,
+      pct: !isNaN(pct) ? pct : undefined,
+      updateTime: updateTime,
     };
-
-    // 添加数值字段（如果有效）
-    if (!isNaN(latestPrice)) {
-      quote.latestPrice = latestPrice;
-    }
-    if (!isNaN(changePercent)) {
-      quote.changePercent = changePercent;
-    }
 
     return quote;
   });
@@ -171,7 +169,6 @@ export const getTrendsData = async (
         date,
         stockCode,
         stockName,
-        marketCode,
         preClose,
       );
 
