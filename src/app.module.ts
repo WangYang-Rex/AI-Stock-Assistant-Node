@@ -8,6 +8,7 @@ import { DatabaseModule } from './infrastructure/database/database.module';
 import { HealthModule } from './modules/health/health.module';
 import { MarketModule } from './modules/market/market.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
+import { StrategyModule } from './modules/strategies/strategies.module';
 import { CommonModule } from './common/common.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
@@ -24,6 +25,7 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
     HealthModule,
     MarketModule,
     SchedulerModule,
+    StrategyModule,
     CommonModule,
   ],
   controllers: [AppController],

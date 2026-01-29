@@ -1,0 +1,203 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Strategies API",
+    "version": "1.0.0",
+    "description": "API for stock market strategies"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/strategies/close-auction/evaluate": {
+      "post": {
+        "tags": [
+          "Strategies"
+        ],
+        "summary": "根据K线数据评估尾盘策略",
+        "description": "输入股票分时K线数据，判断是否符合尾盘买入策略",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EvaluateCloseAuctionDto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "评估结果",
+            "schema": {
+              "$ref": "#/definitions/StrategySignalDto"
+            }
+          }
+        }
+      }
+    },
+    "/strategies/close-auction/evaluate-by-symbol": {
+      "post": {
+        "tags": [
+          "Strategies"
+        ],
+        "summary": "根据股票代码自动评估尾盘策略",
+        "description": "输入股票代码，系统自动获取分时数据并进行评估",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "symbol"
+              ],
+              "properties": {
+                "symbol": {
+                  "type": "string",
+                  "description": "股票代码 (如 588080)",
+                  "example": "588080"
+                },
+                "market": {
+                  "type": "integer",
+                  "description": "市场代码 (1-上海, 0-深圳)",
+                  "default": 1,
+                  "example": 1
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "评估结果",
+            "schema": {
+              "$ref": "#/definitions/StrategySignalDto"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "MinuteBar": {
+      "type": "object",
+      "required": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume"
+      ],
+      "properties": {
+        "time": {
+          "type": "string",
+          "description": "时间 (HH:mm)",
+          "example": "14:45"
+        },
+        "open": {
+          "type": "number",
+          "description": "开盘价"
+        },
+        "high": {
+          "type": "number",
+          "description": "最高价"
+        },
+        "low": {
+          "type": "number",
+          "description": "最低价"
+        },
+        "close": {
+          "type": "number",
+          "description": "收盘价"
+        },
+        "volume": {
+          "type": "number",
+          "description": "成交量"
+        }
+      }
+    },
+    "EvaluateCloseAuctionDto": {
+      "type": "object",
+      "required": [
+        "symbol",
+        "tradeDate",
+        "minuteBars"
+      ],
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "description": "股票代码",
+          "example": "588080"
+        },
+        "tradeDate": {
+          "type": "string",
+          "description": "交易日期 (YYYY-MM-DD)",
+          "example": "2026-01-28"
+        },
+        "minuteBars": {
+          "type": "array",
+          "description": "分时K线数据列表",
+          "items": {
+            "$ref": "#/definitions/MinuteBar"
+          }
+        },
+        "componentStrength": {
+          "type": "number",
+          "description": "成分股强度 (0-100)",
+          "example": 70
+        }
+      }
+    },
+    "StrategySignalDto": {
+      "type": "object",
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "description": "策略代码",
+          "enum": [
+            "CLOSE_AUCTION_T1"
+          ],
+          "example": "CLOSE_AUCTION_T1"
+        },
+        "symbol": {
+          "type": "string",
+          "description": "股票代码",
+          "example": "588080"
+        },
+        "allow": {
+          "type": "boolean",
+          "description": "是否符合信号"
+        },
+        "confidence": {
+          "type": "integer",
+          "description": "置信度 (0-100)",
+          "minimum": 0,
+          "maximum": 100,
+          "example": 85
+        },
+        "reasons": {
+          "type": "array",
+          "description": "触发理由或拒绝理由",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "价格站上VWAP",
+            "尾盘成交结构健康"
+          ]
+        },
+        "evaluatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "评估时间"
+        }
+      }
+    }
+  }
+}

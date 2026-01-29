@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { StockService } from '../market/stock/stock.service';
 import { TrendsService } from '../market/trends/trends.service';
+import { CloseAuctionService } from '../strategies/close-auction/close-auction.service';
+import { formatToTrendDateTime } from '../../common/utils/date.utils';
 
 @Injectable()
 export class SchedulerService {
@@ -10,6 +12,7 @@ export class SchedulerService {
   constructor(
     private readonly stockService: StockService,
     private readonly trendsService: TrendsService,
+    private readonly closeAuctionService: CloseAuctionService,
   ) {}
 
   // 每周工作日早上9:30执行股票数据同步（北京时间）
@@ -168,7 +171,40 @@ export class SchedulerService {
           cron: '0 10 15 * * 1-5',
           description: '工作日收盘分时数据同步',
         },
+        {
+          name: 'close-auction-strategy-check',
+          cron: '0 35-50 14 * * 1-5',
+          description: '尾盘战法自动执行任务',
+        },
       ],
     };
+  }
+
+  /**
+   * 尾盘战法自动执行任务
+   * 每天 14:35 - 14:50 每分钟执行一次
+   */
+  @Cron('0 35-50 14 * * 1-5', {
+    name: 'close-auction-strategy-check',
+    timeZone: 'Asia/Shanghai',
+  })
+  async handleCloseAuctionStrategyCheck() {
+    const symbol = '588080';
+    const market = 1; // 上交所
+    this.logger.log(`[尾盘战法] 开始执行检查: ${symbol}`);
+
+    try {
+      // 使用 Service 中封装好的方法：同步数据 -> 转换格式 -> 执行评估
+      const result = await this.closeAuctionService.evaluateBySymbol(
+        symbol,
+        market,
+      );
+
+      this.logger.log(
+        `[尾盘战法] 评估完成: allow=${result.allow}, confidence=${result.confidence}, reasons=${result.reasons.join(',')}`,
+      );
+    } catch (error) {
+      this.logger.error('[尾盘战法] 自动任务执行失败:', error);
+    }
   }
 }

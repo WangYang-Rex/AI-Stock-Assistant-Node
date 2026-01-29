@@ -122,3 +122,43 @@ CREATE TABLE `klines` (
   KEY `idx_market` (`market`),
   KEY `idx_period` (`period`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='K线数据表';
+-- 7. 策略信号表
+CREATE TABLE `strategy_signal` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '策略信号ID',
+  `strategy_code` varchar(50) NOT NULL COMMENT '策略编码，如 CLOSE_AUCTION_T1',
+  `symbol` varchar(20) NOT NULL COMMENT '标的代码，如 588080',
+  `trade_date` date NOT NULL COMMENT '信号所属交易日',
+  `allow` tinyint NOT NULL COMMENT '是否允许交易 1是0否',
+  `confidence` int NOT NULL COMMENT '信心分 0-100',
+  `reasons` json DEFAULT NULL COMMENT '策略判断原因列表',
+  `eval_time` datetime NOT NULL COMMENT '策略评估时间',
+  `price` decimal(10,4) DEFAULT NULL COMMENT '评估时价格',
+  `vwap` decimal(10,4) DEFAULT NULL COMMENT '当日VWAP',
+  `volume` bigint DEFAULT NULL COMMENT '当日成交量',
+  `extra` json DEFAULT NULL COMMENT '扩展字段（成分股强度、指数状态等）',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '系统创建时间',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '系统更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_strategy_day` (`strategy_code`, `symbol`, `trade_date`),
+  KEY `idx_symbol` (`symbol`),
+  KEY `idx_trade_date` (`trade_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='策略信号表';
+
+-- 8. 策略执行结果表
+CREATE TABLE `strategy_result` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '结果ID',
+  `signal_id` int NOT NULL COMMENT '关联策略信号ID',
+  `symbol` varchar(20) NOT NULL COMMENT '标的代码',
+  `buy_price` decimal(10,4) DEFAULT NULL COMMENT '假设买入价（尾盘）',
+  `sell_price` decimal(10,4) DEFAULT NULL COMMENT '卖出价（次日）',
+  `sell_time` datetime DEFAULT NULL COMMENT '卖出时间（如次日09:35）',
+  `return_pct` decimal(8,4) DEFAULT NULL COMMENT '收益率 %',
+  `max_gain_pct` decimal(8,4) DEFAULT NULL COMMENT '次日最大浮盈 %',
+  `max_drawdown_pct` decimal(8,4) DEFAULT NULL COMMENT '次日最大回撤 %',
+  `win` tinyint DEFAULT NULL COMMENT '是否盈利',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '系统创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_signal_id` (`signal_id`),
+  KEY `idx_symbol` (`symbol`),
+  CONSTRAINT `fk_strategy_result_signal` FOREIGN KEY (`signal_id`) REFERENCES `strategy_signal` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='策略执行结果表';
