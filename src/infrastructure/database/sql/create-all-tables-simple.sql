@@ -2,25 +2,7 @@
 -- 简化版建表SQL - 仅包含表结构
 -- =============================================
 
--- 1. AI信号表
-CREATE TABLE `ai_signals` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `symbol` varchar(20) NOT NULL COMMENT '股票代码',
-  `signalTime` timestamp NOT NULL COMMENT '信号时间',
-  `signalType` enum('buy','sell','hold') NOT NULL COMMENT 'AI信号类型',
-  `confidence` int NOT NULL COMMENT '信号置信度(0-100)',
-  `modelVersion` varchar(50) NOT NULL COMMENT 'AI模型版本号',
-  `description` text COMMENT '信号说明或模型解释',
-  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '系统创建时间',
-  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '系统更新时间',
-  PRIMARY KEY (`id`),
-  KEY `idx_symbol` (`symbol`),
-  KEY `idx_signalTime` (`signalTime`),
-  KEY `idx_signalType` (`signalType`),
-  KEY `idx_modelVersion` (`modelVersion`),
-  KEY `idx_symbol_signalTime` (`symbol`, `signalTime`),
-  KEY `idx_signalType_signalTime` (`signalType`, `signalTime`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='AI信号表';
+
 
 -- 2. 股票基础信息表
 CREATE TABLE `stocks` (

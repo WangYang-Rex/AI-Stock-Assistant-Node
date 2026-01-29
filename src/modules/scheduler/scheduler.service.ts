@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { StockService } from '../stock/stock.service';
-import { TrendsService } from '../trends/trends.service';
+import { StockService } from '../market/stock/stock.service';
+import { TrendsService } from '../market/trends/trends.service';
 
 @Injectable()
 export class SchedulerService {

@@ -2,9 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, LessThan, FindManyOptions } from 'typeorm';
 import { Cron } from '@nestjs/schedule';
-import { Trend } from '../../entities/trend.entity';
+import { Trend } from '../../../entities/trend.entity';
 import { eastmoney } from 'eastmoney-data-sdk';
-import { formatToMysqlDateTime, formatToTrendDateTime } from '../../common/utils/date.utils';
+import { formatToMysqlDateTime, formatToTrendDateTime } from '../../../common/utils/date.utils';
 
 export interface CreateTrendDto {
   code: string;

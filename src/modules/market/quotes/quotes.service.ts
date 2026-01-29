@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, FindManyOptions } from 'typeorm';
 import { Cron } from '@nestjs/schedule';
-import { Quote } from '../../entities/quote.entity';
+import { Quote } from '../../../entities/quote.entity';
 import { eastmoney } from 'eastmoney-data-sdk';
 import { StockService } from '../stock/stock.service';
 

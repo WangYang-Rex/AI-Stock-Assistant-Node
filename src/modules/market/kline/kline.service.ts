@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { Cron } from '@nestjs/schedule';
 import { StockService } from '../stock/stock.service';
-import { Kline } from '../../entities/kline.entity';
+import { Kline } from '../../../entities/kline.entity';
 import {
   eastmoney,
   getKLine,

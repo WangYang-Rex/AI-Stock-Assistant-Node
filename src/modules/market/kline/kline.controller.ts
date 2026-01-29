@@ -1,8 +1,8 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { KlineService, KlinePeriodType, FqTypeValue } from './kline.service';
-import { Kline } from '../../entities/kline.entity';
-import { ResponseService } from '../../common/services/response.service';
-import { ApiResponse } from '../../common/dto/response.dto';
+import { Kline } from '../../../entities/kline.entity';
+import { ResponseService } from '../../../common/services/response.service';
+import { ApiResponse } from '../../../common/dto/response.dto';
 
 @Controller('klines')
 export class KlineController {

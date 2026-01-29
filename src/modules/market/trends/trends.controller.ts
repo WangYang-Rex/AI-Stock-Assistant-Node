@@ -1,6 +1,6 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { TrendsService } from './trends.service';
-import { formatToTrendDateTime } from '../../common/utils/date.utils';
+import { formatToTrendDateTime } from '../../../common/utils/date.utils';
 
 @Controller('trends')
 export class TrendsController {
