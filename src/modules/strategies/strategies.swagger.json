@@ -3,7 +3,7 @@
   "info": {
     "title": "Strategies API",
     "version": "1.0.0",
-    "description": "API for stock market strategies"
+    "description": "API for stock market strategies management and evaluation"
   },
   "consumes": [
     "application/json"
@@ -12,34 +12,113 @@
     "application/json"
   ],
   "paths": {
-    "/strategies/close-auction/evaluate": {
+    "/api/strategies/detail": {
       "post": {
         "tags": [
           "Strategies"
         ],
-        "summary": "根据K线数据评估尾盘策略",
-        "description": "输入股票分时K线数据，判断是否符合尾盘买入策略",
+        "summary": "获取策略聚合详情",
+        "description": "一次性获取策略基本信息、配置参数、性能指标、K线行情、交易信号及净值曲线",
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/EvaluateCloseAuctionDto"
+              "type": "object",
+              "required": ["id"],
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "策略ID"
+                }
+              }
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "评估结果",
+            "description": "成功返回策略聚合详情",
             "schema": {
-              "$ref": "#/definitions/StrategySignalDto"
+              "$ref": "#/definitions/StrategyDetailDto"
             }
           }
         }
       }
     },
-    "/strategies/close-auction/evaluate-by-symbol": {
+    "/api/strategies/signals/query": {
+      "post": {
+        "tags": ["Strategies"],
+        "summary": "分页查询策略信号",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/QuerySignalDto" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "信号列表",
+            "schema": { "$ref": "#/definitions/SignalListResponseDto" }
+          }
+        }
+      }
+    },
+    "/api/strategies/signals/latest": {
+      "post": {
+        "tags": ["Strategies"],
+        "summary": "获取最新策略信号",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/LatestSignalDto" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "信号列表",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/StrategySignal" }
+            }
+          }
+        }
+      }
+    },
+    "/api/strategies/signals/detail": {
+      "post": {
+        "tags": ["Strategies"],
+        "summary": "获取信号详情",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["id"],
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "信号ID"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "信号详情",
+            "schema": { "$ref": "#/definitions/StrategySignal" }
+          }
+        }
+      }
+    },
+    "/api/strategies/close-auction/evaluate-by-symbol": {
       "post": {
         "tags": [
           "Strategies"
@@ -84,119 +163,161 @@
     }
   },
   "definitions": {
+    "StrategyDetailDto": {
+      "type": "object",
+      "properties": {
+        "strategy": {
+          "$ref": "#/definitions/StrategyInfoDto"
+        },
+        "metrics": {
+          "$ref": "#/definitions/StrategyMetricsDto"
+        },
+        "priceSeries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PricePointDto"
+          }
+        },
+        "trades": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TradePointDto"
+          }
+        },
+        "equityCurve": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EquityCurvePointDto"
+          }
+        }
+      }
+    },
+    "StrategyInfoDto": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "symbol": { "type": "string" },
+        "status": { "type": "string" },
+        "params": { "type": "object" }
+      }
+    },
+    "StrategyMetricsDto": {
+      "type": "object",
+      "properties": {
+        "totalReturn": { "type": "number" },
+        "annualReturn": { "type": "number" },
+        "maxDrawdown": { "type": "number" },
+        "winRate": { "type": "number" },
+        "tradeCount": { "type": "integer" }
+      }
+    },
+    "PricePointDto": {
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "close": { "type": "number" }
+      }
+    },
+    "TradePointDto": {
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "price": { "type": "number" },
+        "side": { "type": "string", "enum": ["BUY", "SELL"] },
+        "allow": { "type": "boolean" }
+      }
+    },
+    "EquityCurvePointDto": {
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "equity": { "type": "number" }
+      }
+    },
     "MinuteBar": {
       "type": "object",
-      "required": [
-        "time",
-        "open",
-        "high",
-        "low",
-        "close",
-        "volume"
-      ],
+      "required": ["time", "open", "high", "low", "close", "volume"],
       "properties": {
-        "time": {
-          "type": "string",
-          "description": "时间 (HH:mm)",
-          "example": "14:45"
-        },
-        "open": {
-          "type": "number",
-          "description": "开盘价"
-        },
-        "high": {
-          "type": "number",
-          "description": "最高价"
-        },
-        "low": {
-          "type": "number",
-          "description": "最低价"
-        },
-        "close": {
-          "type": "number",
-          "description": "收盘价"
-        },
-        "volume": {
-          "type": "number",
-          "description": "成交量"
-        }
+        "time": { "type": "string", "example": "14:45" },
+        "open": { "type": "number" },
+        "high": { "type": "number" },
+        "low": { "type": "number" },
+        "close": { "type": "number" },
+        "volume": { "type": "number" }
       }
     },
     "EvaluateCloseAuctionDto": {
       "type": "object",
-      "required": [
-        "symbol",
-        "tradeDate",
-        "minuteBars"
-      ],
+      "required": ["symbol", "tradeDate", "minuteBars"],
       "properties": {
-        "symbol": {
-          "type": "string",
-          "description": "股票代码",
-          "example": "588080"
-        },
-        "tradeDate": {
-          "type": "string",
-          "description": "交易日期 (YYYY-MM-DD)",
-          "example": "2026-01-28"
-        },
+        "symbol": { "type": "string", "example": "588080" },
+        "tradeDate": { "type": "string", "example": "2026-01-28" },
         "minuteBars": {
           "type": "array",
-          "description": "分时K线数据列表",
-          "items": {
-            "$ref": "#/definitions/MinuteBar"
-          }
+          "items": { "$ref": "#/definitions/MinuteBar" }
         },
-        "componentStrength": {
-          "type": "number",
-          "description": "成分股强度 (0-100)",
-          "example": 70
-        }
+        "componentStrength": { "type": "number", "default": 70 }
       }
     },
     "StrategySignalDto": {
       "type": "object",
       "properties": {
-        "strategy": {
-          "type": "string",
-          "description": "策略代码",
-          "enum": [
-            "CLOSE_AUCTION_T1"
-          ],
-          "example": "CLOSE_AUCTION_T1"
-        },
-        "symbol": {
-          "type": "string",
-          "description": "股票代码",
-          "example": "588080"
-        },
-        "allow": {
-          "type": "boolean",
-          "description": "是否符合信号"
-        },
-        "confidence": {
-          "type": "integer",
-          "description": "置信度 (0-100)",
-          "minimum": 0,
-          "maximum": 100,
-          "example": 85
-        },
-        "reasons": {
-          "type": "array",
-          "description": "触发理由或拒绝理由",
-          "items": {
-            "type": "string"
-          },
-          "example": [
-            "价格站上VWAP",
-            "尾盘成交结构健康"
-          ]
-        },
-        "evaluatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "评估时间"
-        }
+        "strategy": { "type": "string" },
+        "symbol": { "type": "string" },
+        "allow": { "type": "boolean" },
+        "confidence": { "type": "integer" },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "evaluatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "QuerySignalDto": {
+      "type": "object",
+      "properties": {
+        "strategyCode": { "type": "string" },
+        "symbol": { "type": "string" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "allowOnly": { "type": "boolean" },
+        "minConfidence": { "type": "number" },
+        "page": { "type": "integer" },
+        "pageSize": { "type": "integer" }
+      }
+    },
+    "SignalListResponseDto": {
+      "type": "object",
+      "properties": {
+        "list": { "type": "array", "items": { "$ref": "#/definitions/StrategySignal" } },
+        "total": { "type": "integer" },
+        "page": { "type": "integer" },
+        "pageSize": { "type": "integer" }
+      }
+    },
+    "LatestSignalDto": {
+      "type": "object",
+      "properties": {
+        "limit": { "type": "integer" },
+        "strategyCode": { "type": "string" },
+        "symbol": { "type": "string" },
+        "allowOnly": { "type": "boolean" }
+      }
+    },
+    "StrategySignal": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "strategyCode": { "type": "string" },
+        "symbol": { "type": "string" },
+        "tradeDate": { "type": "string" },
+        "allow": { "type": "integer" },
+        "confidence": { "type": "integer" },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "evalTime": { "type": "string", "format": "date-time" },
+        "price": { "type": "number" },
+        "vwap": { "type": "number" },
+        "volume": { "type": "integer" },
+        "extra": { "type": "object" }
       }
     }
   }

@@ -162,3 +162,55 @@ CREATE TABLE `strategy_result` (
   KEY `idx_symbol` (`symbol`),
   CONSTRAINT `fk_strategy_result_signal` FOREIGN KEY (`signal_id`) REFERENCES `strategy_signal` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='策略执行结果表';
+
+-- 9. 策略定义表
+CREATE TABLE `strategies` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '策略ID',
+  `name` varchar(100) NOT NULL COMMENT '策略名称',
+  `code` varchar(50) NOT NULL COMMENT '策略编码',
+  `symbol` varchar(20) NOT NULL COMMENT '默认标的',
+  `status` varchar(20) NOT NULL DEFAULT 'ACTIVE' COMMENT '状态: ACTIVE, PAUSED',
+  `description` text COMMENT '策略描述',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='策略定义表';
+
+-- 10. 策略参数表
+CREATE TABLE `strategy_params` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `strategy_id` int NOT NULL COMMENT '策略ID',
+  `params` json NOT NULL COMMENT '策略参数详情',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_strategy_id` (`strategy_id`),
+  CONSTRAINT `fk_strategy_params_id` FOREIGN KEY (`strategy_id`) REFERENCES `strategies` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='策略参数表';
+
+-- 11. 策略指标表
+CREATE TABLE `strategy_metrics` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `strategy_id` int NOT NULL COMMENT '策略ID',
+  `total_return` decimal(10,4) DEFAULT '0.0000' COMMENT '总收益率',
+  `annual_return` decimal(10,4) DEFAULT '0.0000' COMMENT '年化收益率',
+  `max_drawdown` decimal(10,4) DEFAULT '0.0000' COMMENT '最大回撤',
+  `win_rate` decimal(10,4) DEFAULT '0.0000' COMMENT '胜率',
+  `trade_count` int DEFAULT '0' COMMENT '交易总数',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_strategy_id` (`strategy_id`),
+  CONSTRAINT `fk_strategy_metrics_id` FOREIGN KEY (`strategy_id`) REFERENCES `strategies` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='策略指标表';
+
+-- 12. 策略净值曲线表
+CREATE TABLE `strategy_equity_curve` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `strategy_id` int NOT NULL COMMENT '策略ID',
+  `date` date NOT NULL COMMENT '日期',
+  `equity` decimal(18,4) NOT NULL COMMENT '当日净值',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_strategy_date` (`strategy_id`, `date`),
+  CONSTRAINT `fk_strategy_equity_curve_id` FOREIGN KEY (`strategy_id`) REFERENCES `strategies` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='策略净值曲线表';
