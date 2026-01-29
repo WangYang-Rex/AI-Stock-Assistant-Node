@@ -47,7 +47,10 @@ export class TrendsController {
     if (ndays) {
       const now = new Date();
       const start = new Date();
+      // 设置为 ndays 天前的 23:59:59
+      // 比如 ndays=1，就是昨天 23:59:59，从而包含今天的全部数据
       start.setDate(now.getDate() - ndays);
+      start.setHours(23, 59, 59, 999);
 
       startDatetime = formatToTrendDateTime(start);
       endDatetime = formatToTrendDateTime(now);
