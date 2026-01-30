@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 /**
  * 火山引擎豆包 API 调用方法
  * 将 curl 命令转换为 Node.js 方法
@@ -37,30 +39,21 @@ async function chatCompletions({
   };
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
+    const response = await axios.post(url, requestBody, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify(requestBody)
+      }
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API request failed: ${response.status} ${response.statusText}. ${errorText}`);
-    }
-
-    const data = await response.json();
-    return data;
+    return response.data;
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
+    if (error.response) {
+      throw new Error(`API request failed: ${error.response.status} ${error.response.statusText}. ${JSON.stringify(error.response.data)}`);
     }
     throw new Error(`Network error: ${error.message || error}`);
   }
 }
-
 
 export { chatCompletions };
 export default chatCompletions;

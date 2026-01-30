@@ -1,13 +1,12 @@
+import axios from 'axios';
+
 /**
- * 火山引擎豆包 API 调用方法
- * 将 curl 命令转换为 Node.js 方法
+ * 七牛云 API 调用方法 (已配置为 deepseek 等模型)
  */
 
 /**
- * 调用火山引擎豆包 API
+ * 调用 API
  * @param {Object} options - 配置选项
- * @param {string} options.apiKey - API Key (从环境变量 ARK_API_KEY 获取，或直接传入)
- * @param {string} options.model - 模型名称，默认为 "doubao-1-5-pro-32k-250115"
  * @param {Array} options.messages - 消息数组
  * @param {Object} options.extraParams - 额外的请求参数
  * @returns {Promise<Object>} API 响应结果
@@ -36,30 +35,21 @@ async function chatCompletions({
   };
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
+    const response = await axios.post(url, requestBody, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${QINIU_API_KEY}`
-      },
-      body: JSON.stringify(requestBody)
+      }
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API request failed: ${response.status} ${response.statusText}. ${errorText}`);
-    }
-
-    const data = await response.json();
-    return data;
+    return response.data;
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
+    if (error.response) {
+      throw new Error(`API request failed: ${error.response.status} ${error.response.statusText}. ${JSON.stringify(error.response.data)}`);
     }
     throw new Error(`Network error: ${error.message || error}`);
   }
 }
-
 
 export { chatCompletions };
 export default chatCompletions;
