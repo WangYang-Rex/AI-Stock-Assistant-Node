@@ -76,22 +76,23 @@ CREATE TABLE `trends` (
 -- 5. 交易记录表
 CREATE TABLE `trading_records` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `symbol` varchar(20) NOT NULL COMMENT '股票代码',
-  `name` varchar(100) NOT NULL COMMENT '股票名称',
-  `type` enum('buy','sell') NOT NULL COMMENT '交易类型',
-  `tradingTime` timestamp NOT NULL COMMENT '成交时间',
-  `quantity` bigint NOT NULL COMMENT '交易数量(股)',
-  `price` decimal(10,2) NOT NULL COMMENT '成交价格',
-  `amount` decimal(15,2) NOT NULL COMMENT '交易金额(成交价格×数量)',
-  `relatedTradingId` int COMMENT '关联交易ID(用于关联买入和卖出交易)',
+  `code` varchar(20) NOT NULL COMMENT '股票代码',
+  `name` varchar(100) DEFAULT NULL COMMENT '股票名称',
+  `buy_date` timestamp NOT NULL COMMENT '买入时间',
+  `buy_price` decimal(10,2) NOT NULL COMMENT '买入价格',
+  `buy_volume` bigint NOT NULL COMMENT '买入数量',
+  `sell_date` timestamp NULL DEFAULT NULL COMMENT '卖出时间',
+  `sell_price` decimal(10,2) NULL DEFAULT NULL COMMENT '卖出价格',
+  `sell_volume` bigint NULL DEFAULT NULL COMMENT '卖出数量',
+  `profit` decimal(15,2) DEFAULT NULL COMMENT '收益金额',
+  `profit_rate` decimal(10,4) DEFAULT NULL COMMENT '收益率',
   `remarks` text COMMENT '备注',
   `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '系统创建时间',
   `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '系统更新时间',
   PRIMARY KEY (`id`),
-  KEY `idx_symbol` (`symbol`),
-  KEY `idx_tradingTime` (`tradingTime`),
-  KEY `idx_symbol_tradingTime` (`symbol`, `tradingTime`),
-  KEY `idx_relatedTradingId` (`relatedTradingId`)
+  KEY `idx_code` (`code`),
+  KEY `idx_buy_date` (`buy_date`),
+  KEY `idx_sell_date` (`sell_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='交易记录表';
 
 -- 6. K线数据表

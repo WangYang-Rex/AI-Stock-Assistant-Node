@@ -1,5 +1,28 @@
 import { EastmoneyClient, buildSecid } from 'eastmoney-data-sdk';
 
+const stockMaps = [
+  {
+    code: '000001',
+    name: '上证指数',
+    secid: '1.000001',
+  },
+  {
+    code: '399001',
+    name: '深证成指',
+    secid: '1.399001',
+  },
+  {
+    code: '399006',
+    name: '创业板指',
+    secid: '1.399006',
+  },
+  {
+    code: '000688',
+    name: '科创50',
+    secid: '1.000688',
+  },
+];
+
 /**
  * Eastmoney Data SDK - 测试脚本
  */
@@ -9,8 +32,8 @@ async function main() {
 
   const client = new EastmoneyClient();
 
-  const code = '588080';
-  const secid = '1.588080'; // buildSecid(code);
+  const code = stockMaps[0].code; // '588080';
+  const secid = stockMaps[0].secid; // '1.588080'; // buildSecid(code);
   // 测试构建 secid
   console.log('📌 测试构建 secid:');
   console.log(`  ${code} => ${secid}`);
