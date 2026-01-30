@@ -17,9 +17,120 @@ export interface TrendResult {
   score: number; // -100 ~ +100
   strength: 'WEAK' | 'MEDIUM' | 'STRONG';
   reasons: string[]; // 告诉你为什么是这个趋势
+  // 快照数据
+  snapshot?: {
+    ma5: number;
+    ma10: number;
+    ma20: number;
+    ma60: number;
+    ema20: number;
+    ema20Slope: number;
+    macd: { dif: number; dea: number; hist: number };
+    rsi: number;
+    volumeRatio: number;
+    price: number;
+  };
+}
+
+export interface RiskResult {
+  shouldStop: boolean;
+  stopPrice: number;
+  reason: string;
+  // 快照数据
+  snapshot?: {
+    atr14: number;
+    ma10: number;
+    ma20: number;
+  };
+}
+
+export interface PositionResult {
+  suggestedRatio: number; // 建议仓位 (0 ~ 1.0)
+  action: 'BUY' | 'SELL' | 'HOLD' | 'REDUCE' | 'NONE';
+  message: string;
+}
+
+export interface PositionDecision {
+  action: 'ADD' | 'REDUCE' | 'HOLD' | 'STOP';
+  percent: number; // 仓位变化百分数，如 20 代表加仓总资金的 20%
+  reason: string;
 }
 
 /* ---------- 技术指标工具函数 ---------- */
+
+/**
+ * 真实波动范围 (ATR)
+ * 用于衡量市场波动性，常用于设置止损。
+ */
+export function ATR(klines: Kline[], period = 14): number {
+  if (klines.length < period) return 0;
+
+  const trs: number[] = [];
+  for (let i = 1; i < klines.length; i++) {
+    const high = klines[i].high;
+    const low = klines[i].low;
+    const prevClose = klines[i - 1].close;
+
+    const tr1 = high - low;
+    const tr2 = Math.abs(high - prevClose);
+    const tr3 = Math.abs(low - prevClose);
+
+    trs.push(Math.max(tr1, tr2, tr3));
+  }
+
+  if (trs.length === 0) return 0;
+  return SMA(trs.slice(-period), period);
+}
+
+/**
+ * 核心风险检查函数 (参考 README/single/02.md)
+ */
+export function checkRisk(klines: Kline[]): RiskResult {
+  if (klines.length < 20) {
+    return {
+      shouldStop: false,
+      stopPrice: 0,
+      reason: '数据不足，跳过风险检查',
+    };
+  }
+
+  const closes = klines.map((k) => Number(k.close));
+  const lastClose = closes[closes.length - 1];
+  const prevClose = closes[closes.length - 2];
+
+  const ma10 = SMA(closes, 10);
+  const ma20 = SMA(closes, 20);
+
+  const ema20 = EMA(closes.slice(-25), 20);
+  const atr = ATR(klines, 14);
+
+  // 1. ATR 止损位：EMA20 - 2 * ATR
+  const stopPrice = ema20 - 2 * atr;
+
+  let shouldStop = false;
+  let reason = '趋势及风险状态正常';
+
+  // 2. 趋势破坏规则：MA10 < MA20
+  if (ma10 < ma20) {
+    shouldStop = true;
+    reason = 'MA10 下穿 MA20，趋势破坏';
+  } else if (lastClose < stopPrice && prevClose < stopPrice) {
+    // 3. ATR 硬止损 (连续两日收盘跌破)
+    shouldStop = true;
+    reason = '连续两日跌破 ATR 止损位';
+  }
+
+  return {
+    shouldStop,
+    stopPrice: parseFloat(stopPrice.toFixed(2)),
+    reason,
+    snapshot: {
+      atr14: atr,
+      ma10,
+      ma20,
+    },
+  };
+}
 
 /**
  * 简单移动平均线 (SMA)
@@ -201,5 +312,172 @@ export function calcTrend(klines: Kline[]): TrendResult {
     score,
     strength,
     reasons,
+    snapshot: {
+      ma5,
+      ma10,
+      ma20,
+      ma60,
+      ema20,
+      ema20Slope: emaSlope,
+      macd: {
+        dif: macd.dif,
+        dea: macd.dea,
+        hist: macd.hist,
+      },
+      rsi,
+      volumeRatio,
+      price: latestClose,
+    },
+  };
+}
+
+/**
+ * 仓位管理计算
+ * @param trend 趋势评估结果
+ * @param risk 风险评估结果
+ */
+export function calcPosition(
+  trend: TrendResult,
+  risk: RiskResult,
+): PositionResult {
+  // 1. 风险优先级最高：如果触发止损，直接清仓
+  if (risk.shouldStop) {
+    return {
+      suggestedRatio: 0,
+      action: 'SELL',
+      message: `风险触发: ${risk.reason}，建议清仓`,
+    };
+  }
+
+  // 2. 根据趋势强度分配仓位
+  if (trend.trend === 'UP') {
+    if (trend.strength === 'STRONG') {
+      return {
+        suggestedRatio: 1.0,
+        action: 'BUY',
+        message: '极强趋势，建议重仓或满仓持有',
+      };
+    }
+    if (trend.strength === 'MEDIUM') {
+      return {
+        suggestedRatio: 0.6,
+        action: 'BUY',
+        message: '趋势确认，建议半仓或中等仓位',
+      };
+    }
+    return {
+      suggestedRatio: 0.3,
+      action: 'HOLD',
+      message: '弱势上涨，建议轻仓试探',
+    };
+  }
+
+  // 3. 趋势转弱但未触发止损 (SIDEWAYS)
+  if (trend.trend === 'SIDEWAYS') {
+    return {
+      suggestedRatio: 0.1,
+      action: 'REDUCE',
+      message: '进入震荡区，建议减仓规避波动',
+    };
+  }
+
+  // 4. 下跌趋势
+  return {
+    suggestedRatio: 0,
+    action: 'NONE',
+    message: '下跌趋势中，建议空仓观望',
+  };
+}
+
+/**
+ * 趋势内动态调仓决策
+ * @param trend 趋势评估结果
+ * @param risk 风险评估结果
+ * @param klines K线数据
+ * @param currentPosition 当前持仓比例 (0~100)
+ */
+export function calcPositionAction(
+  trend: TrendResult,
+  risk: RiskResult,
+  klines: Kline[],
+  currentPosition: number,
+): PositionDecision {
+  // 0. 风险止损优先级最高
+  if (risk.shouldStop) {
+    return {
+      action: 'STOP',
+      percent: currentPosition, // 全部减掉
+      reason: `触发离场: ${risk.reason}`,
+    };
+  }
+
+  const closes = klines.map((k) => k.close);
+  const highs = klines.map((k) => k.high);
+  const ema20 = EMA(closes.slice(-25), 20);
+  const lastClose = closes[closes.length - 1];
+  const prevClose = closes[closes.length - 2];
+  const volumeRatio = trend.snapshot?.volumeRatio || 1;
+
+  // 1. 加仓逻辑
+  if (
+    trend.trend === 'UP' &&
+    trend.strength === 'STRONG' &&
+    currentPosition < 100
+  ) {
+    // A. 突破 20 日新高
+    const highest20 = Math.max(...highs.slice(-21, -1)); // 不含最后一根
+    if (lastClose > highest20) {
+      return {
+        action: 'ADD',
+        percent: 20,
+        reason: '趋势极强 + 突破20日新高，加仓吃肉',
+      };
+    }
+
+    // B. 回踩 EMA20 指标
+    if (prevClose < ema20 && lastClose > ema20) {
+      return {
+        action: 'ADD',
+        percent: 10,
+        reason: '回踩EMA20企稳，趋势修复加仓',
+      };
+    }
+  }
+
+  // 2. 减仓逻辑
+  if (currentPosition > 0) {
+    // A. 趋势走弱
+    if (trend.strength === 'MEDIUM' && trend.trend === 'UP') {
+      // 如果之前是 STRONG 现在变 MEDIUM
+      return {
+        action: 'REDUCE',
+        percent: 20,
+        reason: '趋势强度减弱，部分落袋为安',
+      };
+    }
+
+    // B. 放量滞涨
+    if (volumeRatio > 1.5 && (lastClose - prevClose) / prevClose < 0.01) {
+      return {
+        action: 'REDUCE',
+        percent: 20,
+        reason: '放量滞涨，警惕主力派发',
+      };
+    }
+
+    // C. 跌破 EMA20
+    if (lastClose < ema20) {
+      return {
+        action: 'REDUCE',
+        percent: 30,
+        reason: '收盘价跌破EMA20，保护盈利',
+      };
+    }
+  }
+
+  return {
+    action: 'HOLD',
+    percent: 0,
+    reason: '维持现有仓位，等待新信号',
   };
 }

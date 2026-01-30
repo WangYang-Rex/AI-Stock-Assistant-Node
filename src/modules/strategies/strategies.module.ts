@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CloseAuctionModule } from './close-auction/close-auction.module';
+import { RuleTrendModule } from './rule-trend/rule-trend.module';
 import { StrategyAggregateService } from './strategies.service';
 import { StrategyBacktestService } from './backtest.service';
 import { StrategiesController } from './strategies.controller';
@@ -24,6 +25,7 @@ import { Kline } from '../../entities/kline.entity';
       Kline,
     ]),
     CloseAuctionModule,
+    RuleTrendModule,
   ],
   providers: [StrategyAggregateService, StrategyBacktestService],
   controllers: [StrategiesController],

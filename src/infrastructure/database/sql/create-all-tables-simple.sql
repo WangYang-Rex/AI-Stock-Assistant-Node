@@ -215,3 +215,49 @@ CREATE TABLE `strategy_equity_curve` (
   UNIQUE KEY `uk_strategy_date` (`strategy_id`, `date`),
   CONSTRAINT `fk_strategy_equity_curve_id` FOREIGN KEY (`strategy_id`) REFERENCES `strategies` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='策略净值曲线表';
+
+-- 13. 股票趋势信号快照表
+CREATE TABLE `trend_signals` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `code` varchar(10) NOT NULL COMMENT '股票代码',
+  `trade_date` varchar(20) NOT NULL COMMENT '交易日',
+  `trend` enum('UP','DOWN','SIDEWAYS') NOT NULL COMMENT '趋势方向',
+  `score` int NOT NULL COMMENT '趋势评分(-100~100)',
+  `strength` enum('WEAK','MEDIUM','STRONG') NOT NULL COMMENT '趋势强度',
+  `ma5` decimal(10,4) DEFAULT NULL COMMENT 'MA5',
+  `ma10` decimal(10,4) DEFAULT NULL COMMENT 'MA10',
+  `ma20` decimal(10,4) DEFAULT NULL COMMENT 'MA20',
+  `ma60` decimal(10,4) DEFAULT NULL COMMENT 'MA60',
+  `ema20` decimal(10,4) DEFAULT NULL COMMENT 'EMA20',
+  `ema20Slope` decimal(10,6) DEFAULT NULL COMMENT 'EMA20斜率',
+  `macdDif` decimal(10,6) DEFAULT NULL COMMENT 'MACD DIF',
+  `macdDea` decimal(10,6) DEFAULT NULL COMMENT 'MACD DEA',
+  `macdHist` decimal(10,6) DEFAULT NULL COMMENT 'MACD柱',
+  `rsi14` decimal(6,2) DEFAULT NULL COMMENT 'RSI14',
+  `price` decimal(10,4) DEFAULT NULL COMMENT '当前价格',
+  `volumeRatio` decimal(6,2) DEFAULT NULL COMMENT '量比',
+  `reasons` json DEFAULT NULL COMMENT '趋势判断原因',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '系统创建时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_code_date` (`code`, `trade_date`),
+  KEY `idx_code` (`code`),
+  KEY `idx_trade_date` (`trade_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='股票趋势信号表';
+
+-- 14. 趋势风控快照表
+CREATE TABLE `trend_risks` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `code` varchar(10) NOT NULL COMMENT '股票代码',
+  `trade_date` varchar(20) NOT NULL COMMENT '交易日',
+  `atr14` decimal(10,4) NOT NULL COMMENT 'ATR14',
+  `stopPrice` decimal(10,4) NOT NULL COMMENT 'ATR止损价',
+  `ma10` decimal(10,4) NOT NULL COMMENT 'MA10',
+  `ma20` decimal(10,4) NOT NULL COMMENT 'MA20',
+  `stop_triggered` tinyint(1) NOT NULL COMMENT '是否触发止损',
+  `stop_reason` varchar(100) DEFAULT NULL COMMENT '止损原因',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '系统创建时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_code_date` (`code`, `trade_date`),
+  KEY `idx_code` (`code`),
+  KEY `idx_trade_date` (`trade_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='趋势风控结果表';
