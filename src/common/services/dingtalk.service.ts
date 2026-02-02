@@ -98,10 +98,14 @@ export class DingtalkService {
     const url = `${this.baseUrl}?access_token=${accessToken}`;
 
     try {
+      this.logger.debug(
+        `正在发送钉钉消息，Node 版本: ${process.version}, 适配器: http`,
+      );
       const response = await axios.post<DingtalkResponse>(url, payload, {
         headers: {
           'Content-Type': 'application/json',
         },
+        adapter: 'http', // 显式强制使用 http 适配器，避免 axios 在某些环境下尝试调用 fetch（Node 18 以下或某些特定 build）
       });
 
       const result = response.data;
@@ -114,9 +118,11 @@ export class DingtalkService {
 
       return result;
     } catch (error: any) {
-      this.logger.error('请求钉钉机器人接口出错', error.message);
-      if (error.response) {
-        this.logger.error('响应数据:', JSON.stringify(error.response.data));
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      this.logger.error('请求钉钉机器人接口出错', errorMessage);
+      if (error && typeof error === 'object' && 'response' in error) {
+        this.logger.error('响应数据:', JSON.stringify(error.response?.data));
       }
       throw error;
     }

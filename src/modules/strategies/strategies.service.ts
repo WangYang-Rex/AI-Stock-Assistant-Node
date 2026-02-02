@@ -115,10 +115,13 @@ export class StrategyAggregateService {
       queryBuilder.andWhere('signal.symbol = :symbol', { symbol });
     }
     if (startDate && endDate) {
-      queryBuilder.andWhere('signal.tradeDate BETWEEN :startDate AND :endDate', {
-        startDate,
-        endDate,
-      });
+      queryBuilder.andWhere(
+        'signal.tradeDate BETWEEN :startDate AND :endDate',
+        {
+          startDate,
+          endDate,
+        },
+      );
     } else if (startDate) {
       queryBuilder.andWhere('signal.tradeDate >= :startDate', { startDate });
     } else if (endDate) {

@@ -375,7 +375,9 @@ export class KlineService {
           });
           totalSynced += result.synced;
         } catch (error) {
-          this.logger.error(`❌ 同步股票 ${stock.code} (${stock.name}) K 线数据失败: ${error.message}`);
+          this.logger.error(
+            `❌ 同步股票 ${stock.code} (${stock.name}) K 线数据失败: ${error.message}`,
+          );
         }
       }
 

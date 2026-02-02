@@ -8,7 +8,9 @@ async function testDingtalk() {
   // 1. 测试发送文本消息
   console.log('\n1. 正在发送文本消息...');
   try {
-    const textResult = await dingtalkService.sendText('这是一条来自 NestJS 单元测试的文本消息 小A同志');
+    const textResult = await dingtalkService.sendText(
+      '这是一条来自 NestJS 单元测试的文本消息 小A同志',
+    );
     console.log('文本消息发送结果:', textResult);
   } catch (err) {
     console.error('文本消息发送失败:', err);

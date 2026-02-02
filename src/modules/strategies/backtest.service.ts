@@ -50,7 +50,9 @@ export class StrategyBacktestService {
       });
 
       if (!nextDayKline) {
-        this.logger.debug(`信号 ${signal.id} (${signal.symbol}) 暂无次日行情，跳过`);
+        this.logger.debug(
+          `信号 ${signal.id} (${signal.symbol}) 暂无次日行情，跳过`,
+        );
         continue;
       }
 
@@ -70,7 +72,9 @@ export class StrategyBacktestService {
       resultData.win = returnPct > 0 ? 1 : 0;
 
       await this.resultRepo.save(resultData);
-      this.logger.log(`信号 ${signal.id} 结算完成: 收益率 ${returnPct.toFixed(2)}%`);
+      this.logger.log(
+        `信号 ${signal.id} 结算完成: 收益率 ${returnPct.toFixed(2)}%`,
+      );
     }
 
     this.logger.log('策略信号归因结算结束');

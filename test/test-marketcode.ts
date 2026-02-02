@@ -1,6 +1,6 @@
 /**
  * 测试 Kline 实体的 marketCode 字段功能
- * 
+ *
  * 此脚本用于验证：
  * 1. marketCode 字段是否正确从 secid 中提取
  * 2. 数据同步时是否正确处理 marketCode
@@ -37,7 +37,7 @@ async function testMarketCode() {
       console.log(`   - 市场代码: ${firstKline.marketCode} (期望值: 1)`);
       console.log(`   - 日期: ${firstKline.date}`);
       console.log(`   - 收盘价: ${firstKline.close}`);
-      
+
       if (firstKline.marketCode === 1 && firstKline.market === 'SH') {
         console.log('✅ 上交所 marketCode 验证通过!\n');
       } else {
@@ -65,7 +65,7 @@ async function testMarketCode() {
       console.log(`   - 市场代码: ${firstKline.marketCode} (期望值: 0)`);
       console.log(`   - 日期: ${firstKline.date}`);
       console.log(`   - 收盘价: ${firstKline.close}`);
-      
+
       if (firstKline.marketCode === 0 && firstKline.market === 'SZ') {
         console.log('✅ 深交所 marketCode 验证通过!\n');
       } else {
@@ -86,7 +86,7 @@ async function testMarketCode() {
     console.log('✅ 同步完成:');
     console.log(`   - 总数据量: ${syncResult.total}`);
     console.log(`   - 同步成功: ${syncResult.synced}`);
-    
+
     if (syncResult.synced === syncResult.total) {
       console.log('✅ 数据同步验证通过!\n');
     } else {
@@ -96,7 +96,7 @@ async function testMarketCode() {
     // 测试4: 查询数据库中的数据
     console.log('📊 测试4: 从数据库查询K线数据');
     const dbKlines = await klineService.findByCode('600519', 101);
-    
+
     if (dbKlines.length > 0) {
       const firstDbKline = dbKlines[0];
       console.log('✅ 成功查询数据:');
@@ -104,7 +104,7 @@ async function testMarketCode() {
       console.log(`   - 股票代码: ${firstDbKline.code}`);
       console.log(`   - 市场代码: ${firstDbKline.marketCode}`);
       console.log(`   - 市场类型: ${firstDbKline.market}`);
-      
+
       if (firstDbKline.marketCode === 1) {
         console.log('✅ 数据库查询验证通过!\n');
       } else {
@@ -115,7 +115,6 @@ async function testMarketCode() {
     }
 
     console.log('🎉 所有测试完成!');
-
   } catch (error) {
     console.error('❌ 测试过程中出现错误:', error);
   } finally {

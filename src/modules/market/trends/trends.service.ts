@@ -4,7 +4,10 @@ import { Repository, Between, LessThan, FindManyOptions } from 'typeorm';
 import { Cron } from '@nestjs/schedule';
 import { Trend } from '../../../entities/trend.entity';
 import { eastmoney } from 'eastmoney-data-sdk';
-import { formatToMysqlDateTime, formatToTrendDateTime } from '../../../common/utils/date.utils';
+import {
+  formatToMysqlDateTime,
+  formatToTrendDateTime,
+} from '../../../common/utils/date.utils';
 
 export interface CreateTrendDto {
   code: string;
@@ -194,9 +197,7 @@ export class TrendsService {
       fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
       const fifteenDaysAgoStr = formatToTrendDateTime(fifteenDaysAgo);
 
-      this.logger.log(
-        `📅 清理时间节点: ${fifteenDaysAgoStr} (15天前)`,
-      );
+      this.logger.log(`📅 清理时间节点: ${fifteenDaysAgoStr} (15天前)`);
 
       // 删除15天以前的数据
       const result = await this.trendRepository.delete({

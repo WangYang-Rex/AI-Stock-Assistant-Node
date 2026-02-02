@@ -4,7 +4,7 @@ import type { QuoteQueryDto } from './quotes.service';
 
 @Controller('quotes')
 export class QuotesController {
-  constructor(private readonly quotesService: QuotesService) { }
+  constructor(private readonly quotesService: QuotesService) {}
 
   /* ========== Quote APIs ========== */
 
