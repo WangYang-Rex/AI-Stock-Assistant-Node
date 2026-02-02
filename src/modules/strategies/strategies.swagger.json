@@ -14,11 +14,8 @@
   "paths": {
     "/api/strategies/detail": {
       "post": {
-        "tags": [
-          "Strategies"
-        ],
+        "tags": ["General"],
         "summary": "获取策略聚合详情",
-        "description": "一次性获取策略基本信息、配置参数、性能指标、K线行情、交易信号及净值曲线",
         "parameters": [
           {
             "name": "body",
@@ -28,27 +25,22 @@
               "type": "object",
               "required": ["id"],
               "properties": {
-                "id": {
-                  "type": "integer",
-                  "description": "策略ID"
-                }
+                "id": { "type": "integer", "description": "策略ID" }
               }
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "成功返回策略聚合详情",
-            "schema": {
-              "$ref": "#/definitions/StrategyDetailDto"
-            }
+            "description": "成功",
+            "schema": { "$ref": "#/definitions/StrategyDetailDto" }
           }
         }
       }
     },
     "/api/strategies/signals/query": {
       "post": {
-        "tags": ["Strategies"],
+        "tags": ["Signals"],
         "summary": "分页查询策略信号",
         "parameters": [
           {
@@ -68,7 +60,7 @@
     },
     "/api/strategies/signals/latest": {
       "post": {
-        "tags": ["Strategies"],
+        "tags": ["Signals"],
         "summary": "获取最新策略信号",
         "parameters": [
           {
@@ -80,7 +72,7 @@
         ],
         "responses": {
           "200": {
-            "description": "信号列表",
+            "description": "成功",
             "schema": {
               "type": "array",
               "items": { "$ref": "#/definitions/StrategySignal" }
@@ -91,7 +83,7 @@
     },
     "/api/strategies/signals/detail": {
       "post": {
-        "tags": ["Strategies"],
+        "tags": ["Signals"],
         "summary": "获取信号详情",
         "parameters": [
           {
@@ -102,60 +94,79 @@
               "type": "object",
               "required": ["id"],
               "properties": {
-                "id": {
-                  "type": "integer",
-                  "description": "信号ID"
-                }
+                "id": { "type": "integer", "description": "信号ID" }
               }
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "信号详情",
+            "description": "成功",
             "schema": { "$ref": "#/definitions/StrategySignal" }
           }
         }
       }
     },
-    "/api/strategies/close-auction/evaluate-by-symbol": {
+    "/api/strategies/close-auction/evaluate": {
       "post": {
-        "tags": [
-          "Strategies"
-        ],
-        "summary": "根据股票代码自动评估尾盘策略",
-        "description": "输入股票代码，系统自动获取分时数据并进行评估",
+        "tags": ["Close Auction"],
+        "summary": "触发尾盘战法评估",
+        "description": "传入标的代码，系统自动同步分时数据并计算尾盘买入信号",
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "required": true,
-            "schema": {
-              "type": "object",
-              "required": [
-                "symbol"
-              ],
-              "properties": {
-                "symbol": {
-                  "type": "string",
-                  "description": "股票代码 (如 588080)",
-                  "example": "588080"
-                },
-                "market": {
-                  "type": "integer",
-                  "description": "市场代码 (1-上海, 0-深圳)",
-                  "default": 1,
-                  "example": 1
-                }
-              }
-            }
+            "schema": { "$ref": "#/definitions/EvaluateBySymbolDto" }
           }
         ],
         "responses": {
           "200": {
-            "description": "评估结果",
+            "description": "成功",
+            "schema": { "$ref": "#/definitions/StrategySignalDto" }
+          }
+        }
+      }
+    },
+    "/api/strategies/rule-trend/evaluate": {
+      "post": {
+        "tags": ["Rule Trend"],
+        "summary": "触发规则趋势评估",
+        "description": "传入股票代码，计算其趋势方向、风险状态及建议仓位动作",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/EvaluateRuleTrendDto" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "schema": { "$ref": "#/definitions/EvaluationResult" }
+          }
+        }
+      }
+    },
+    "/api/strategies/rule-trend/batch-evaluate": {
+      "post": {
+        "tags": ["Rule Trend"],
+        "summary": "批量触发规则趋势评估",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/EvaluateRuleTrendBatchDto" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
             "schema": {
-              "$ref": "#/definitions/StrategySignalDto"
+              "type": "array",
+              "items": { "$ref": "#/definitions/EvaluationResult" }
             }
           }
         }
@@ -166,29 +177,19 @@
     "StrategyDetailDto": {
       "type": "object",
       "properties": {
-        "strategy": {
-          "$ref": "#/definitions/StrategyInfoDto"
-        },
-        "metrics": {
-          "$ref": "#/definitions/StrategyMetricsDto"
-        },
+        "strategy": { "$ref": "#/definitions/StrategyInfoDto" },
+        "metrics": { "$ref": "#/definitions/StrategyMetricsDto" },
         "priceSeries": {
           "type": "array",
-          "items": {
-            "$ref": "#/definitions/PricePointDto"
-          }
+          "items": { "$ref": "#/definitions/PricePointDto" }
         },
         "trades": {
           "type": "array",
-          "items": {
-            "$ref": "#/definitions/TradePointDto"
-          }
+          "items": { "$ref": "#/definitions/TradePointDto" }
         },
         "equityCurve": {
           "type": "array",
-          "items": {
-            "$ref": "#/definitions/EquityCurvePointDto"
-          }
+          "items": { "$ref": "#/definitions/EquityCurvePointDto" }
         }
       }
     },
@@ -236,42 +237,6 @@
         "equity": { "type": "number" }
       }
     },
-    "MinuteBar": {
-      "type": "object",
-      "required": ["time", "open", "high", "low", "close", "volume"],
-      "properties": {
-        "time": { "type": "string", "example": "14:45" },
-        "open": { "type": "number" },
-        "high": { "type": "number" },
-        "low": { "type": "number" },
-        "close": { "type": "number" },
-        "volume": { "type": "number" }
-      }
-    },
-    "EvaluateCloseAuctionDto": {
-      "type": "object",
-      "required": ["symbol", "tradeDate", "minuteBars"],
-      "properties": {
-        "symbol": { "type": "string", "example": "588080" },
-        "tradeDate": { "type": "string", "example": "2026-01-28" },
-        "minuteBars": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/MinuteBar" }
-        },
-        "componentStrength": { "type": "number", "default": 70 }
-      }
-    },
-    "StrategySignalDto": {
-      "type": "object",
-      "properties": {
-        "strategy": { "type": "string" },
-        "symbol": { "type": "string" },
-        "allow": { "type": "boolean" },
-        "confidence": { "type": "integer" },
-        "reasons": { "type": "array", "items": { "type": "string" } },
-        "evaluatedAt": { "type": "string", "format": "date-time" }
-      }
-    },
     "QuerySignalDto": {
       "type": "object",
       "properties": {
@@ -281,14 +246,17 @@
         "endDate": { "type": "string" },
         "allowOnly": { "type": "boolean" },
         "minConfidence": { "type": "number" },
-        "page": { "type": "integer" },
-        "pageSize": { "type": "integer" }
+        "page": { "type": "integer", "default": 1 },
+        "pageSize": { "type": "integer", "default": 20 }
       }
     },
     "SignalListResponseDto": {
       "type": "object",
       "properties": {
-        "list": { "type": "array", "items": { "$ref": "#/definitions/StrategySignal" } },
+        "list": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/StrategySignal" }
+        },
         "total": { "type": "integer" },
         "page": { "type": "integer" },
         "pageSize": { "type": "integer" }
@@ -297,7 +265,7 @@
     "LatestSignalDto": {
       "type": "object",
       "properties": {
-        "limit": { "type": "integer" },
+        "limit": { "type": "integer", "default": 10 },
         "strategyCode": { "type": "string" },
         "symbol": { "type": "string" },
         "allowOnly": { "type": "boolean" }
@@ -318,6 +286,125 @@
         "vwap": { "type": "number" },
         "volume": { "type": "integer" },
         "extra": { "type": "object" }
+      }
+    },
+    "EvaluateBySymbolDto": {
+      "type": "object",
+      "required": ["symbol"],
+      "properties": {
+        "symbol": { "type": "string", "example": "588080" },
+        "market": { "type": "integer", "description": "1-SH, 0-SZ", "default": 1 }
+      }
+    },
+    "StrategySignalDto": {
+      "type": "object",
+      "properties": {
+        "strategy": { "type": "string" },
+        "symbol": { "type": "string" },
+        "allow": { "type": "boolean" },
+        "confidence": { "type": "number" },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "evaluatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "EvaluateRuleTrendDto": {
+      "type": "object",
+      "required": ["code"],
+      "properties": {
+        "code": { "type": "string", "example": "000001" }
+      }
+    },
+    "EvaluateRuleTrendBatchDto": {
+      "type": "object",
+      "required": ["codes"],
+      "properties": {
+        "codes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "example": ["000001", "600519"]
+        }
+      }
+    },
+    "EvaluationResult": {
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "success": { "type": "boolean" },
+        "result": { "$ref": "#/definitions/TrendResult" },
+        "risk": { "$ref": "#/definitions/RiskResult" },
+        "position": { "$ref": "#/definitions/PositionResult" },
+        "decision": { "$ref": "#/definitions/PositionDecision" },
+        "message": { "type": "string" },
+        "error": { "type": "string" }
+      }
+    },
+    "TrendResult": {
+      "type": "object",
+      "properties": {
+        "trend": { "type": "string", "enum": ["UP", "DOWN", "SIDEWAYS"] },
+        "score": { "type": "number" },
+        "strength": { "type": "string", "enum": ["WEAK", "MEDIUM", "STRONG"] },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "snapshot": { "$ref": "#/definitions/TrendSnapshot" }
+      }
+    },
+    "TrendSnapshot": {
+      "type": "object",
+      "properties": {
+        "ma5": { "type": "number" },
+        "ma10": { "type": "number" },
+        "ma20": { "type": "number" },
+        "ma60": { "type": "number" },
+        "ema20": { "type": "number" },
+        "ema20Slope": { "type": "number" },
+        "macd": { "$ref": "#/definitions/MacdSnapshot" },
+        "rsi": { "type": "number" },
+        "volumeRatio": { "type": "number" },
+        "price": { "type": "number" }
+      }
+    },
+    "MacdSnapshot": {
+      "type": "object",
+      "properties": {
+        "dif": { "type": "number" },
+        "dea": { "type": "number" },
+        "hist": { "type": "number" }
+      }
+    },
+    "RiskResult": {
+      "type": "object",
+      "properties": {
+        "shouldStop": { "type": "boolean" },
+        "stopPrice": { "type": "number" },
+        "reason": { "type": "string" },
+        "snapshot": { "$ref": "#/definitions/RiskSnapshot" }
+      }
+    },
+    "RiskSnapshot": {
+      "type": "object",
+      "properties": {
+        "atr14": { "type": "number" },
+        "ma10": { "type": "number" },
+        "ma20": { "type": "number" }
+      }
+    },
+    "PositionResult": {
+      "type": "object",
+      "properties": {
+        "suggestedRatio": { "type": "number" },
+        "action": {
+          "type": "string",
+          "enum": ["BUY", "SELL", "HOLD", "REDUCE", "NONE"]
+        },
+        "message": { "type": "string" }
+      }
+    },
+    "PositionDecision": {
+      "type": "object",
+      "properties": {
+        "action": { "type": "string", "enum": ["ADD", "REDUCE", "HOLD", "STOP"] },
+        "percent": { "type": "number" },
+        "reason": { "type": "string" }
       }
     }
   }
