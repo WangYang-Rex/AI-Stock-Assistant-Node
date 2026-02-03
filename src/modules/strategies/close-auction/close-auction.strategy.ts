@@ -28,7 +28,7 @@ export function evaluateCloseAuctionStrategy(
 
   // ① 时间窗口
   const START_TIME = '14:40';
-  const END_TIME = '14:55';
+  const END_TIME = '15:00';
   if (lastTime < START_TIME || lastTime > END_TIME) {
     reasons.push(
       `非尾盘时间: ${lastTime} (策略设定范围: ${START_TIME}-${END_TIME})`,
@@ -65,6 +65,29 @@ export function evaluateCloseAuctionStrategy(
   } else {
     reasons.push(`成分股共振良好 (当前强度:${componentStrength})`);
   }
+
+  // ⑤ 量能
+  // const volume = lastBar.volume;
+  // if (volume < 100000) {
+  //   allow = false;
+  //   reasons.push(`量能不足 (当前:${volume})`);
+  // } else {
+  //   reasons.push(`量能充足 (当前:${volume})`);
+  // }
+
+  // ⑥ 量比
+  // const volumeRatio = lastBar.volume / vwap;
+  // if (volumeRatio < 1) {
+  //   allow = false;
+  //   reasons.push(`量比不足 (当前:${volumeRatio})`);
+  // } else {
+  //   reasons.push(`量比充足 (当前:${volumeRatio})`);
+  // }
+
+  // ⑦ 增加提示
+  reasons.push(
+    `提示: 尾盘战法只通过当日分时线、成分股共振来判断, 实际噪音太大，仅做参考`,
+  );
 
   // 信心分计算
   const confidence = Math.min(
