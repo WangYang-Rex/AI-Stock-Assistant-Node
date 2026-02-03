@@ -30,7 +30,6 @@ export function evaluateCloseAuctionStrategy(
   const START_TIME = '14:40';
   const END_TIME = '14:55';
   if (lastTime < START_TIME || lastTime > END_TIME) {
-    allow = false;
     reasons.push(
       `非尾盘时间: ${lastTime} (策略设定范围: ${START_TIME}-${END_TIME})`,
     );
