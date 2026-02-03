@@ -48,6 +48,16 @@ export interface PositionDecision {
     percent: number;
     reason: string;
 }
+export interface ExecSignal {
+    allow: boolean;
+    action: 'BUY' | 'ADD' | 'HOLD';
+    percent: number;
+    reason: string;
+}
+export interface IntradayData {
+    klines5m: Kline[];
+    klines1m?: Kline[];
+}
 export declare function ATR(klines: Kline[], period?: number): number;
 export declare function checkRisk(klines: Kline[]): RiskResult;
 export declare function SMA(values: number[], period: number): number;
@@ -61,3 +71,5 @@ export declare function MACD(values: number[]): {
 export declare function calcTrend(klines: Kline[]): TrendResult;
 export declare function calcPosition(trend: TrendResult, risk: RiskResult): PositionResult;
 export declare function calcPositionAction(trend: TrendResult, risk: RiskResult, klines: Kline[], currentPosition: number): PositionDecision;
+export declare function intradayExecute(trend: TrendResult, risk: RiskResult, intraday: IntradayData): ExecSignal;
+export declare function calcVWAP(klines: Kline[]): number;

@@ -56,6 +56,18 @@ export interface PositionDecision {
   reason: string;
 }
 
+export interface ExecSignal {
+  allow: boolean;
+  action: 'BUY' | 'ADD' | 'HOLD';
+  percent: number;
+  reason: string;
+}
+
+export interface IntradayData {
+  klines5m: Kline[]; // 5分钟K线
+  klines1m?: Kline[]; // 1分钟K线 (可选，用于更精细的VWAP)
+}
+
 /* ---------- 技术指标工具函数 ---------- */
 
 /**
@@ -446,7 +458,21 @@ export function calcPositionAction(
 
   // 2. 减仓逻辑
   if (currentPosition > 0) {
-    // A. 趋势走弱
+    // A. 趋势不再上涨 (转为震荡或下跌)
+    if (trend.trend !== 'UP') {
+      const targetPos = trend.trend === 'SIDEWAYS' ? 10 : 0;
+      const reducePercent = Math.max(30, currentPosition - targetPos);
+
+      if (reducePercent > 0) {
+        return {
+          action: 'REDUCE',
+          percent: reducePercent,
+          reason: `趋势转为 ${trend.trend === 'SIDEWAYS' ? '震荡' : '下跌'}，减仓至 ${targetPos}% 防御`,
+        };
+      }
+    }
+
+    // B. 趋势强度减弱
     if (trend.strength === 'MEDIUM' && trend.trend === 'UP') {
       // 如果之前是 STRONG 现在变 MEDIUM
       return {
@@ -456,7 +482,7 @@ export function calcPositionAction(
       };
     }
 
-    // B. 放量滞涨
+    // C. 放量滞涨
     if (volumeRatio > 1.5 && (lastClose - prevClose) / prevClose < 0.01) {
       return {
         action: 'REDUCE',
@@ -465,7 +491,7 @@ export function calcPositionAction(
       };
     }
 
-    // C. 跌破 EMA20
+    // D. 跌破 EMA20
     if (lastClose < ema20) {
       return {
         action: 'REDUCE',
@@ -480,4 +506,120 @@ export function calcPositionAction(
     percent: 0,
     reason: '维持现有仓位，等待新信号',
   };
+}
+
+/**
+ * 核心执行层计算 (分时/5分钟级)
+ * @param trend 趋势评估结果 (来自日线/60min)
+ * @param risk 风险评估结果 (来自日线/60min)
+ * @param intraday 分时数据
+ */
+export function intradayExecute(
+  trend: TrendResult,
+  risk: RiskResult,
+  intraday: IntradayData,
+): ExecSignal {
+  const { klines5m } = intraday;
+  if (klines5m.length < 20) {
+    return {
+      allow: false,
+      action: 'HOLD',
+      percent: 0,
+      reason: '分时数据不足',
+    };
+  }
+
+  const last5m = klines5m[klines5m.length - 1];
+  const closes5m = klines5m.map((k) => k.close);
+  const volumes5m = klines5m.map((k) => k.volume);
+  const currentPrice = last5m.close;
+
+  // 1. 前置硬条件：趋势层一票否决
+  if (trend.trend !== 'UP' || trend.strength === 'WEAK' || risk.shouldStop) {
+    return {
+      allow: false,
+      action: 'HOLD',
+      percent: 0,
+      reason: `趋势层禁止执行: ${trend.trend === 'UP' ? '强度弱' : '非上涨趋势'} 或 触发风险`,
+    };
+  }
+
+  // --- 信号 1: VWAP 回踩 ---
+  // 计算今日 VWAP (成交量加权平均价)
+  // 假设传入的是当日至今的所有 5min K线
+  const vwapValue = calcVWAP(klines5m);
+  const isVWAPPullback =
+    currentPrice < vwapValue * 1.003 &&
+    currentPrice > vwapValue * 0.997 &&
+    last5m.volume < SMA(volumes5m.slice(-6, -1), 5) * 0.8;
+
+  if (isVWAPPullback) {
+    return {
+      allow: true,
+      action: 'ADD',
+      percent: 10,
+      reason: '分时 VWAP 回踩企稳 (成交量萎缩)',
+    };
+  }
+
+  // --- 信号 2: 5分钟缩量回踩 EMA20 ---
+  const ema20_5m = EMA(closes5m, 20);
+  const avgVol5 = SMA(volumes5m.slice(-6, -1), 5); // 前 5 根均量
+
+  const isEMA20Pullback =
+    last5m.low <= ema20_5m &&
+    last5m.close >= ema20_5m &&
+    last5m.volume < avgVol5;
+
+  if (isEMA20Pullback) {
+    return {
+      allow: true,
+      action: 'ADD',
+      percent: 15,
+      reason: '5分钟缩量回踩 EMA20',
+    };
+  }
+
+  // --- 信号 3: 5分钟放量突破 ---
+  // 只用于 STRONG 趋势的后半段 (这里简化为 STRONG 即可)
+  if (trend.strength === 'STRONG') {
+    const last30minKlines = klines5m.slice(-6); // 6 * 5min = 30min
+    const closes30 = last30minKlines.map((k) => k.close).slice(0, -1);
+    const maxClose30 = Math.max(...closes30);
+    const minClose30 = Math.min(...closes30);
+    const range = (maxClose30 - minClose30) / minClose30;
+
+    if (
+      range < 0.01 &&
+      last5m.close > maxClose30 &&
+      last5m.volume > avgVol5 * 1.5
+    ) {
+      return {
+        allow: true,
+        action: 'ADD',
+        percent: 20,
+        reason: '5分钟平台放量向上突破',
+      };
+    }
+  }
+
+  return {
+    allow: false,
+    action: 'HOLD',
+    percent: 0,
+    reason: '等待更优执行点 (VWAP/EMA20/突破)',
+  };
+}
+
+/**
+ * 计算成交量加权平均价 (VWAP)
+ */
+export function calcVWAP(klines: Kline[]): number {
+  let totalPV = 0;
+  let totalV = 0;
+  for (const k of klines) {
+    totalPV += k.close * k.volume;
+    totalV += k.volume;
+  }
+  return totalV === 0 ? 0 : totalPV / totalV;
 }

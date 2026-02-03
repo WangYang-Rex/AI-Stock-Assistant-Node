@@ -3,7 +3,6 @@ import { Cron } from '@nestjs/schedule';
 import { StockService } from '../market/stock/stock.service';
 import { TrendsService } from '../market/trends/trends.service';
 import { CloseAuctionService } from '../strategies/close-auction/close-auction.service';
-import { formatToTrendDateTime } from '../../common/utils/date.utils';
 
 @Injectable()
 export class SchedulerService {
@@ -173,8 +172,8 @@ export class SchedulerService {
         },
         {
           name: 'close-auction-strategy-check',
-          cron: '0 35-50 14 * * 1-5',
-          description: '尾盘战法自动执行任务',
+          cron: '0 50 14 * * 1-5',
+          description: '尾盘战法每日 14:50 执行一次',
         },
       ],
     };
@@ -182,9 +181,9 @@ export class SchedulerService {
 
   /**
    * 尾盘战法自动执行任务
-   * 每天 14:35 - 14:50 每分钟执行一次
+   * 每天 14:50 执行一次
    */
-  @Cron('0 35-50 14 * * 1-5', {
+  @Cron('0 50 14 * * 1-5', {
     name: 'close-auction-strategy-check',
     timeZone: 'Asia/Shanghai',
   })

@@ -4,7 +4,7 @@ import { StrategySignal } from '../../../entities/strategy-signal.entity';
 import { TrendSignal } from '../../../entities/trend-signal.entity';
 import { TrendRisk } from '../../../entities/trend-risk.entity';
 import { Trading } from '../../../entities/trading.entity';
-import { TrendResult, RiskResult, PositionResult, PositionDecision } from '../../../lib/stock/ruleTrendModel';
+import { TrendResult, RiskResult, PositionResult, PositionDecision, ExecSignal } from '../../../lib/stock/ruleTrendModel';
 export interface EvaluationResult {
     code?: string;
     success: boolean;
@@ -12,6 +12,7 @@ export interface EvaluationResult {
     risk?: RiskResult;
     position?: PositionResult;
     decision?: PositionDecision;
+    exec?: ExecSignal;
     message?: string;
     error?: string;
 }

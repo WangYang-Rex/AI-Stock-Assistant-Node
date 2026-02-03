@@ -9,6 +9,8 @@ exports.MACD = MACD;
 exports.calcTrend = calcTrend;
 exports.calcPosition = calcPosition;
 exports.calcPositionAction = calcPositionAction;
+exports.intradayExecute = intradayExecute;
+exports.calcVWAP = calcVWAP;
 function ATR(klines, period = 14) {
     if (klines.length < period)
         return 0;
@@ -300,6 +302,17 @@ function calcPositionAction(trend, risk, klines, currentPosition) {
         }
     }
     if (currentPosition > 0) {
+        if (trend.trend !== 'UP') {
+            const targetPos = trend.trend === 'SIDEWAYS' ? 10 : 0;
+            const reducePercent = Math.max(30, currentPosition - targetPos);
+            if (reducePercent > 0) {
+                return {
+                    action: 'REDUCE',
+                    percent: reducePercent,
+                    reason: `趋势转为 ${trend.trend === 'SIDEWAYS' ? '震荡' : '下跌'}，减仓至 ${targetPos}% 防御`,
+                };
+            }
+        }
         if (trend.strength === 'MEDIUM' && trend.trend === 'UP') {
             return {
                 action: 'REDUCE',
@@ -327,5 +340,85 @@ function calcPositionAction(trend, risk, klines, currentPosition) {
         percent: 0,
         reason: '维持现有仓位，等待新信号',
     };
+}
+function intradayExecute(trend, risk, intraday) {
+    const { klines5m } = intraday;
+    if (klines5m.length < 20) {
+        return {
+            allow: false,
+            action: 'HOLD',
+            percent: 0,
+            reason: '分时数据不足',
+        };
+    }
+    const last5m = klines5m[klines5m.length - 1];
+    const closes5m = klines5m.map((k) => k.close);
+    const volumes5m = klines5m.map((k) => k.volume);
+    const currentPrice = last5m.close;
+    if (trend.trend !== 'UP' || trend.strength === 'WEAK' || risk.shouldStop) {
+        return {
+            allow: false,
+            action: 'HOLD',
+            percent: 0,
+            reason: `趋势层禁止执行: ${trend.trend === 'UP' ? '强度弱' : '非上涨趋势'} 或 触发风险`,
+        };
+    }
+    const vwapValue = calcVWAP(klines5m);
+    const isVWAPPullback = currentPrice < vwapValue * 1.003 &&
+        currentPrice > vwapValue * 0.997 &&
+        last5m.volume < SMA(volumes5m.slice(-6, -1), 5) * 0.8;
+    if (isVWAPPullback) {
+        return {
+            allow: true,
+            action: 'ADD',
+            percent: 10,
+            reason: '分时 VWAP 回踩企稳 (成交量萎缩)',
+        };
+    }
+    const ema20_5m = EMA(closes5m, 20);
+    const avgVol5 = SMA(volumes5m.slice(-6, -1), 5);
+    const isEMA20Pullback = last5m.low <= ema20_5m &&
+        last5m.close >= ema20_5m &&
+        last5m.volume < avgVol5;
+    if (isEMA20Pullback) {
+        return {
+            allow: true,
+            action: 'ADD',
+            percent: 15,
+            reason: '5分钟缩量回踩 EMA20',
+        };
+    }
+    if (trend.strength === 'STRONG') {
+        const last30minKlines = klines5m.slice(-6);
+        const closes30 = last30minKlines.map((k) => k.close).slice(0, -1);
+        const maxClose30 = Math.max(...closes30);
+        const minClose30 = Math.min(...closes30);
+        const range = (maxClose30 - minClose30) / minClose30;
+        if (range < 0.01 &&
+            last5m.close > maxClose30 &&
+            last5m.volume > avgVol5 * 1.5) {
+            return {
+                allow: true,
+                action: 'ADD',
+                percent: 20,
+                reason: '5分钟平台放量向上突破',
+            };
+        }
+    }
+    return {
+        allow: false,
+        action: 'HOLD',
+        percent: 0,
+        reason: '等待更优执行点 (VWAP/EMA20/突破)',
+    };
+}
+function calcVWAP(klines) {
+    let totalPV = 0;
+    let totalV = 0;
+    for (const k of klines) {
+        totalPV += k.close * k.volume;
+        totalV += k.volume;
+    }
+    return totalV === 0 ? 0 : totalPV / totalV;
 }
 //# sourceMappingURL=ruleTrendModel.js.map

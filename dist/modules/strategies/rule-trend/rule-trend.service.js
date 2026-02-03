@@ -35,16 +35,17 @@ let RuleTrendService = RuleTrendService_1 = class RuleTrendService {
     }
     async evaluateTrend(code) {
         this.logger.log(`🔍 正在评估股票 ${code} 的趋势与风险...`);
-        const { data: klines } = await this.klineService.findKlines({
+        const { data: klinesRaw } = await this.klineService.findKlines({
             code,
             period: 101,
-            limit: 100,
-            orderBy: 'ASC',
+            limit: 1000,
+            orderBy: 'DESC',
         });
-        if (klines.length < 60) {
-            this.logger.warn(`⚠️ 股票 ${code} K线数据不足 (当前: ${klines.length})`);
+        if (klinesRaw.length < 60) {
+            this.logger.warn(`⚠️ 股票 ${code} K线数据不足 (当前: ${klinesRaw.length})`);
             return { success: false, message: '数据不足' };
         }
+        const klines = klinesRaw.reverse();
         const modelKlines = klines.map((k) => ({
             date: k.date,
             open: Number(k.open),
@@ -61,11 +62,40 @@ let RuleTrendService = RuleTrendService_1 = class RuleTrendService {
         });
         const currentPos = openRecords.length > 0 ? 40 : 0;
         const decision = (0, ruleTrendModel_1.calcPositionAction)(result, risk, modelKlines, currentPos);
+        let execResult;
+        if (result.trend === 'UP' &&
+            result.strength !== 'WEAK' &&
+            !risk.shouldStop) {
+            try {
+                const klines5m = await this.klineService.fetchKlineFromApi({
+                    code,
+                    period: '5min',
+                    limit: 100,
+                });
+                if (klines5m && klines5m.length > 0) {
+                    const modelKlines5m = klines5m.map((k) => ({
+                        date: k.date,
+                        open: Number(k.open),
+                        high: Number(k.high),
+                        low: Number(k.low),
+                        close: Number(k.close),
+                        volume: Number(k.volume),
+                    }));
+                    execResult = (0, ruleTrendModel_1.intradayExecute)(result, risk, {
+                        klines5m: modelKlines5m,
+                    });
+                }
+            }
+            catch (err) {
+                this.logger.error(`获取分时数据失败 [${code}]:`, err.message);
+            }
+        }
         const latestKline = klines[klines.length - 1];
+        const tradeDate = latestKline.date.substring(0, 10);
         const signal = new strategy_signal_entity_1.StrategySignal();
         signal.strategyCode = this.STRATEGY_CODE;
         signal.symbol = code;
-        signal.tradeDate = latestKline.date;
+        signal.tradeDate = tradeDate;
         signal.allow = position.suggestedRatio > 0 ? 1 : 0;
         signal.confidence = Math.abs(result.score);
         signal.reasons = [
@@ -73,6 +103,7 @@ let RuleTrendService = RuleTrendService_1 = class RuleTrendService {
             risk.reason,
             position.message,
             decision.reason,
+            execResult?.reason || '无需分时执行',
         ];
         signal.evalTime = new Date();
         signal.price = latestKline.close;
@@ -96,10 +127,11 @@ let RuleTrendService = RuleTrendService_1 = class RuleTrendService {
                 percent: decision.percent,
                 reason: decision.reason,
             },
+            exec: execResult,
         };
         const tSignal = new trend_signal_entity_1.TrendSignal();
         tSignal.code = code;
-        tSignal.tradeDate = latestKline.date;
+        tSignal.tradeDate = tradeDate;
         tSignal.trend = result.trend;
         tSignal.score = result.score;
         tSignal.strength = result.strength;
@@ -120,7 +152,7 @@ let RuleTrendService = RuleTrendService_1 = class RuleTrendService {
         }
         const tRisk = new trend_risk_entity_1.TrendRisk();
         tRisk.code = code;
-        tRisk.tradeDate = latestKline.date;
+        tRisk.tradeDate = tradeDate;
         tRisk.stopTriggered = risk.shouldStop;
         tRisk.stopPrice = risk.stopPrice;
         tRisk.stopReason = risk.reason;
@@ -129,21 +161,118 @@ let RuleTrendService = RuleTrendService_1 = class RuleTrendService {
             tRisk.ma10 = risk.snapshot.ma10;
             tRisk.ma20 = risk.snapshot.ma20;
         }
+        else {
+            tRisk.atr14 = 0;
+            tRisk.ma10 = 0;
+            tRisk.ma20 = 0;
+        }
         try {
             await Promise.all([
-                this.signalRepo.upsert(signal, {
-                    conflictPaths: ['strategyCode', 'symbol', 'tradeDate'],
-                    skipUpdateIfNoValuesChanged: true,
-                }),
-                this.trendSignalRepo.upsert(tSignal, {
-                    conflictPaths: ['code', 'tradeDate'],
-                }),
-                this.trendRiskRepo.upsert(tRisk, {
-                    conflictPaths: ['code', 'tradeDate'],
-                }),
+                this.signalRepo
+                    .createQueryBuilder()
+                    .insert()
+                    .into(strategy_signal_entity_1.StrategySignal)
+                    .values({
+                    strategyCode: signal.strategyCode,
+                    symbol: signal.symbol,
+                    tradeDate: signal.tradeDate,
+                    allow: signal.allow,
+                    confidence: signal.confidence,
+                    reasons: signal.reasons,
+                    evalTime: signal.evalTime,
+                    price: signal.price,
+                    volume: signal.volume,
+                    extra: signal.extra,
+                })
+                    .orUpdate([
+                    'allow',
+                    'confidence',
+                    'reasons',
+                    'eval_time',
+                    'price',
+                    'volume',
+                    'extra',
+                ], ['strategy_code', 'symbol', 'trade_date'])
+                    .updateEntity(false)
+                    .execute(),
+                this.trendSignalRepo
+                    .createQueryBuilder()
+                    .insert()
+                    .into(trend_signal_entity_1.TrendSignal)
+                    .values({
+                    code: tSignal.code,
+                    tradeDate: tSignal.tradeDate,
+                    trend: tSignal.trend,
+                    score: tSignal.score,
+                    strength: tSignal.strength,
+                    ma5: tSignal.ma5,
+                    ma10: tSignal.ma10,
+                    ma20: tSignal.ma20,
+                    ma60: tSignal.ma60,
+                    ema20: tSignal.ema20,
+                    ema20Slope: tSignal.ema20Slope,
+                    macdDif: tSignal.macdDif,
+                    macdDea: tSignal.macdDea,
+                    macdHist: tSignal.macdHist,
+                    rsi14: tSignal.rsi14,
+                    price: tSignal.price,
+                    volumeRatio: tSignal.volumeRatio,
+                    reasons: tSignal.reasons,
+                })
+                    .orUpdate([
+                    'trend',
+                    'score',
+                    'strength',
+                    'ma5',
+                    'ma10',
+                    'ma20',
+                    'ma60',
+                    'ema20',
+                    'ema20Slope',
+                    'macdDif',
+                    'macdDea',
+                    'macdHist',
+                    'rsi14',
+                    'price',
+                    'volumeRatio',
+                    'reasons',
+                ], ['code', 'trade_date'])
+                    .updateEntity(false)
+                    .execute(),
+                this.trendRiskRepo
+                    .createQueryBuilder()
+                    .insert()
+                    .into(trend_risk_entity_1.TrendRisk)
+                    .values({
+                    code: tRisk.code,
+                    tradeDate: tRisk.tradeDate,
+                    atr14: tRisk.atr14,
+                    stopPrice: tRisk.stopPrice,
+                    ma10: tRisk.ma10,
+                    ma20: tRisk.ma20,
+                    stopTriggered: tRisk.stopTriggered,
+                    stopReason: tRisk.stopReason,
+                })
+                    .orUpdate([
+                    'atr14',
+                    'stopPrice',
+                    'ma10',
+                    'ma20',
+                    'stop_triggered',
+                    'stop_reason',
+                ], ['code', 'trade_date'])
+                    .updateEntity(false)
+                    .execute(),
             ]);
-            this.logger.log(`✅ 股票 ${code} 评估完成: ${result.trend} | 建议操作: ${decision.action} (${decision.percent}%) | ${decision.reason}`);
-            return { success: true, result, risk, position, decision };
+            this.logger.log(`✅ 股票 ${code} 评估完成: ${result.trend} | 建议操作: ${decision.action} (${decision.percent}%) | 执行建议: ${execResult?.action || 'HOLD'} | ${decision.reason}`);
+            return {
+                success: true,
+                result,
+                risk,
+                position,
+                decision,
+                exec: execResult,
+            };
         }
         catch (err) {
             const error = err;

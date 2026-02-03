@@ -124,8 +124,8 @@ let SchedulerService = SchedulerService_1 = class SchedulerService {
                 },
                 {
                     name: 'close-auction-strategy-check',
-                    cron: '0 35-50 14 * * 1-5',
-                    description: '尾盘战法自动执行任务',
+                    cron: '0 50 14 * * 1-5',
+                    description: '尾盘战法每日 14:50 执行一次',
                 },
             ],
         };
@@ -172,7 +172,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SchedulerService.prototype, "handleWeekdayTrendSyncAfternoon", null);
 __decorate([
-    (0, schedule_1.Cron)('0 35-50 14 * * 1-5', {
+    (0, schedule_1.Cron)('0 50 14 * * 1-5', {
         name: 'close-auction-strategy-check',
         timeZone: 'Asia/Shanghai',
     }),
