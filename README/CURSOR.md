@@ -7,6 +7,7 @@
 
 #### 整理Swagger所需的json
 ```
+整理所有模块的api接口，并更新或生成相关的swagger.json文件，请按照一个模块一个模块执行
 整理所有的API接口, 并生成Swagger 2.0 数据格式的 JSON文件
 
 整理quotes的API接口, 按照Swagger 2.0 数据格式写入@quotes.swagger.json  注意不要basePath, 接口路径需要完整

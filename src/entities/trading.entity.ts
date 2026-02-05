@@ -27,7 +27,7 @@ export class Trading {
   @Column({
     type: 'decimal',
     precision: 10,
-    scale: 2,
+    scale: 3,
     comment: '买入价格',
   })
   buy_price: number;
@@ -41,7 +41,7 @@ export class Trading {
   @Column({
     type: 'decimal',
     precision: 10,
-    scale: 2,
+    scale: 3,
     nullable: true,
     comment: '卖出价格',
   })
@@ -53,7 +53,7 @@ export class Trading {
   @Column({
     type: 'decimal',
     precision: 15,
-    scale: 2,
+    scale: 3,
     nullable: true,
     comment: '收益金额',
   })
