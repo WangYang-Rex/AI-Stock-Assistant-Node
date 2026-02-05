@@ -33,7 +33,7 @@ export class CloseAuctionService {
     await this.trendsService.syncTrendFromAPI(symbol, market, 1);
 
     // 2. 获取今日所有分时数据
-    const today = new Date('2026-02-03');
+    const today = new Date();
     const startStr = formatToTrendDateTime(today).slice(0, 10) + ' 09:30';
     const endStr = formatToTrendDateTime(today).slice(0, 10) + ' 15:00';
 
