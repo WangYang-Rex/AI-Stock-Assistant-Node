@@ -181,7 +181,7 @@ export class TrendsService {
   }
 
   /**
-   * 定时清理15天以前的分时数据
+   * 定时清理30天以前的分时数据
    * 每天凌晨0点执行
    */
   @Cron('0 0 0 * * *', {
@@ -194,10 +194,10 @@ export class TrendsService {
 
       // 计算15天前的时间字符串
       const fifteenDaysAgo = new Date();
-      fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+      fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 30);
       const fifteenDaysAgoStr = formatToTrendDateTime(fifteenDaysAgo);
 
-      this.logger.log(`📅 清理时间节点: ${fifteenDaysAgoStr} (15天前)`);
+      this.logger.log(`📅 清理时间节点: ${fifteenDaysAgoStr} (30天前)`);
 
       // 删除15天以前的数据
       const result = await this.trendRepository.delete({

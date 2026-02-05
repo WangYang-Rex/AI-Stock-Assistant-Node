@@ -16,7 +16,7 @@ export function evaluateCloseAuctionStrategy(
   const lastBar = minuteBars.at(-1);
   if (!lastBar) {
     return {
-      strategy: STRATEGY_NAME,
+      strategy: STRATEGY_CODE,
       symbol,
       allow: false,
       confidence: 0,
@@ -96,7 +96,7 @@ export function evaluateCloseAuctionStrategy(
   );
 
   return {
-    strategy: STRATEGY_NAME,
+    strategy: STRATEGY_CODE,
     symbol,
     allow: allow,
     confidence: allow ? Math.round(confidence) : 0,

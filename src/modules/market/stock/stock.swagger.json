@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "title": "Stock API - 股票信息接口",
-    "description": "提供股票基础信息的同步、删除、查询等功能",
+    "description": "提供股票基础信息的同步、删除、查询等功能，以及 ETF 成分股管理",
     "version": "1.0.0"
   },
   "paths": {
@@ -172,6 +172,181 @@
           }
         }
       }
+    },
+    "/stocks/constituents/sync": {
+      "post": {
+        "tags": ["ETF成分股管理"],
+        "summary": "批量同步 ETF 成分股数据",
+        "description": "批量同步或覆盖特定 ETF 的成分股及权重数据",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "同步数据",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["data"],
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/EtfConstituent"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "同步成功",
+            "schema": {
+              "$ref": "#/definitions/ApiResponse"
+            }
+          }
+        }
+      }
+    },
+    "/stocks/constituents/list": {
+      "post": {
+        "tags": ["ETF成分股管理"],
+        "summary": "获取ETF成分股列表",
+        "description": "支持按 ETF 代码或成分股代码筛选",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "查询参数",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "etfCode": {
+                  "type": "string",
+                  "description": "ETF代码",
+                  "example": "588080"
+                },
+                "stockCode": {
+                  "type": "string",
+                  "description": "成分股代码",
+                  "example": "688981"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "schema": {
+              "$ref": "#/definitions/EtfConstituentListResponse"
+            }
+          }
+        }
+      }
+    },
+    "/stocks/constituents/create": {
+      "post": {
+        "tags": ["ETF成分股管理"],
+        "summary": "创建ETF成分股",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "成分股数据",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EtfConstituent"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "创建成功",
+            "schema": {
+              "$ref": "#/definitions/EtfConstituentResponse"
+            }
+          }
+        }
+      }
+    },
+    "/stocks/constituents/update": {
+      "post": {
+        "tags": ["ETF成分股管理"],
+        "summary": "更新ETF成分股",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "更新参数",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["id", "data"],
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "记录 ID"
+                },
+                "data": {
+                  "$ref": "#/definitions/EtfConstituent"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "schema": {
+              "$ref": "#/definitions/EtfConstituentResponse"
+            }
+          }
+        }
+      }
+    },
+    "/stocks/constituents/delete": {
+      "post": {
+        "tags": ["ETF成分股管理"],
+        "summary": "删除ETF成分股",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["id"],
+              "properties": {
+                "id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -253,6 +428,19 @@
           "format": "date-time",
           "description": "更新时间"
         }
+      }
+    },
+    "EtfConstituent": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "etfCode": { "type": "string", "example": "588080" },
+        "stockCode": { "type": "string", "example": "688981" },
+        "stockName": { "type": "string", "example": "中芯国际" },
+        "weight": { "type": "number", "example": 0.085 },
+        "rank": { "type": "integer", "example": 1 },
+        "effectiveDate": { "type": "string", "format": "date", "example": "2024-01-01" },
+        "expireDate": { "type": "string", "format": "date", "example": null }
       }
     },
     "ApiResponse": {
@@ -350,6 +538,31 @@
                   "example": true
                 }
               }
+            }
+          }
+        }
+      ]
+    },
+    "EtfConstituentResponse": {
+      "allOf": [
+        { "$ref": "#/definitions/ApiResponse" },
+        {
+          "type": "object",
+          "properties": {
+            "data": { "$ref": "#/definitions/EtfConstituent" }
+          }
+        }
+      ]
+    },
+    "EtfConstituentListResponse": {
+      "allOf": [
+        { "$ref": "#/definitions/ApiResponse" },
+        {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/EtfConstituent" }
             }
           }
         }

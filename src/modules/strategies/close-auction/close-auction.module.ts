@@ -9,6 +9,7 @@ import { StrategyParams } from '../../../entities/strategy-params.entity';
 import { StrategyMetrics } from '../../../entities/strategy-metrics.entity';
 import { StrategyEquityCurve } from '../../../entities/strategy-equity-curve.entity';
 import { TrendsModule } from '../../market/trends/trends.module';
+import { StockModule } from '../../market/stock/stock.module';
 import { CommonModule } from '../../../common/common.module';
 
 @Module({
@@ -22,6 +23,7 @@ import { CommonModule } from '../../../common/common.module';
       StrategyEquityCurve,
     ]),
     TrendsModule,
+    StockModule,
     CommonModule,
   ],
   providers: [CloseAuctionService],

@@ -261,3 +261,21 @@ CREATE TABLE `trend_risks` (
   KEY `idx_code` (`code`),
   KEY `idx_trade_date` (`trade_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='趋势风控结果表';
+
+-- 15. ETF成分股及权重表
+CREATE TABLE `etf_constituents` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `etfCode` varchar(10) NOT NULL COMMENT 'ETF代码',
+  `stockCode` varchar(10) NOT NULL COMMENT '成分股代码',
+  `stockName` varchar(50) NOT NULL COMMENT '成分股名称',
+  `weight` decimal(6,4) NOT NULL COMMENT '权重(0.0825=8.25%)',
+  `rank` int NOT NULL COMMENT '排名',
+  `effectiveDate` date NOT NULL COMMENT '有效开始日期',
+  `expireDate` date DEFAULT NULL COMMENT '有效结束日期',
+  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '系统创建时间',
+  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '系统更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_etf_date` (`etfCode`, `effectiveDate`),
+  KEY `idx_etf_rank` (`etfCode`, `rank`),
+  KEY `idx_stock` (`stockCode`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ETF成分股及权重（支持历史权重）';

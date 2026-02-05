@@ -9,6 +9,8 @@ import { TrendsService } from '../../market/trends/trends.service';
 import { formatToTrendDateTime } from '../../../common/utils/date.utils';
 import { DingtalkService } from '../../../common/services/dingtalk.service';
 import { StrategySignalDto } from './dto/strategy-signal.dto';
+import { EtfConstituentsService } from '../../market/stock/etf-constituents.service';
+
 
 @Injectable()
 export class CloseAuctionService {
@@ -17,6 +19,7 @@ export class CloseAuctionService {
     private readonly signalRepo: Repository<StrategySignal>,
     private readonly trendsService: TrendsService,
     private readonly dingtalkService: DingtalkService,
+    private readonly etfConstituentsService: EtfConstituentsService,
   ) {}
 
   /**
@@ -29,9 +32,9 @@ export class CloseAuctionService {
     await this.trendsService.syncTrendFromAPI(symbol, market, 1);
 
     // 2. 获取今日所有分时数据
-    const today = new Date();
+    const today = new Date('2026-02-03');
     const startStr = formatToTrendDateTime(today).slice(0, 10) + ' 09:30';
-    const endStr = formatToTrendDateTime(today);
+    const endStr = formatToTrendDateTime(today).slice(0, 10) + ' 15:00';
 
     const { trends } = await this.trendsService.findAllTrends({
       code: symbol,
@@ -56,13 +59,79 @@ export class CloseAuctionService {
         volume: t.volume,
       }));
 
-    // 4. 执行评估
+    // 4. 计算成分股共振强度 (Resonance Strength)
+    const resonanceStrength = await this.calculateResonanceStrength(
+      symbol,
+      startStr.slice(0, 10),
+    );
+
+    // 5. 执行评估
     return this.evaluate({
       symbol,
       tradeDate: startStr.slice(0, 10),
       minuteBars,
-      componentStrength: 70, // 默认强度
+      componentStrength: resonanceStrength,
     });
+  }
+
+  /**
+   * 计算ETF成分股共振强度
+   * 基于Top10成分股的尾盘表现和权重
+   */
+  private async calculateResonanceStrength(
+    etfCode: string,
+    date: string,
+  ): Promise<number> {
+    try {
+      // 1. 获取Top10成分股
+      const constituents = await this.etfConstituentsService.getTopConstituents(
+        etfCode,
+        date,
+        10,
+      );
+
+      if (!constituents || constituents.length === 0) {
+        return 70; // 无数据时返回默认强度
+      }
+
+      let totalWeight = 0;
+      let risingWeight = 0;
+      let risingCount = 0;
+
+      // 2. 遍历成分股，获取其今日行情（涨跌幅）
+      for (const item of constituents) {
+        totalWeight += Number(item.weight);
+
+        // 获取成分股最新分时数据以获取涨跌幅
+        // 注意：这里简单起见，利用 trendsService 获取最新价格，实际可能需要更精准的尾盘涨幅
+        const { trends } = await this.trendsService.findAllTrends({
+          code: item.stockCode,
+          page: 1,
+          limit: 1000,
+        });
+
+        const latestTrend = trends[0];
+        if (latestTrend && latestTrend.pct > 0) {
+          risingCount++;
+          risingWeight += Number(item.weight);
+        }
+      }
+
+      if (totalWeight === 0) return 70;
+
+      // 3. 计算得分 (参考 01.md 的公式，但简化为 V1 版)
+      // 方向得分 (40%) + 权重得分 (60%)
+      const directionScore = risingCount / constituents.length;
+      const weightScore = risingWeight / totalWeight;
+
+      const totalScore = directionScore * 0.4 + weightScore * 0.6;
+
+      // 映射到 0-100
+      return Math.round(totalScore * 100);
+    } catch (error) {
+      console.error(`[CloseAuctionService] 计算共振强度失败:`, error);
+      return 70; // 出错时返回默认值，避免阻塞主流程
+    }
   }
 
   async evaluate(input: EvaluateCloseAuctionDto) {
