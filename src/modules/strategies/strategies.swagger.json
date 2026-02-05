@@ -128,6 +128,39 @@
         }
       }
     },
+    "/api/strategies/close-auction/backtest": {
+      "post": {
+        "tags": ["Close Auction"],
+        "summary": "尾盘共振历史回测",
+        "description": "对指定 ETF 进行历史共振得分计算及次日收益联动分析",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["etfCode", "dates"],
+              "properties": {
+                "etfCode": { "type": "string", "example": "588080" },
+                "dates": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "回测日期列表 (YYYY-MM-DD)",
+                  "example": ["2026-02-02", "2026-02-03"]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "回测结果",
+            "schema": { "$ref": "#/definitions/BacktestResultDto" }
+          }
+        }
+      }
+    },
     "/api/strategies/rule-trend/evaluate": {
       "post": {
         "tags": ["Rule Trend"],
@@ -405,6 +438,58 @@
         "action": { "type": "string", "enum": ["ADD", "REDUCE", "HOLD", "STOP"] },
         "percent": { "type": "number" },
         "reason": { "type": "string" }
+      }
+    },
+    "ResonanceDetailDto": {
+      "type": "object",
+      "properties": {
+        "directionConsistency": { "type": "number" },
+        "weightedStrength": { "type": "number" },
+        "syncRatio": { "type": "number" }
+      }
+    },
+    "ResonanceScoreDto": {
+      "type": "object",
+      "properties": {
+        "ts": { "type": "string" },
+        "score": { "type": "integer" },
+        "direction": { "type": "string", "enum": ["UP", "DOWN", "NEUTRAL"] },
+        "detail": { "$ref": "#/definitions/ResonanceDetailDto" }
+      }
+    },
+    "PerformanceDto": {
+      "type": "object",
+      "properties": {
+        "nextOpenReturn": { "type": "number" },
+        "nextHighReturn": { "type": "number" },
+        "nextCloseReturn": { "type": "number" },
+        "isSuccess": { "type": "boolean" }
+      }
+    },
+    "BacktestDayDetailDto": {
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "resonance": { "$ref": "#/definitions/ResonanceScoreDto" },
+        "performance": { "$ref": "#/definitions/PerformanceDto" }
+      }
+    },
+    "BacktestResultDto": {
+      "type": "object",
+      "properties": {
+        "etfCode": { "type": "string" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "totalDays": { "type": "integer" },
+        "bullishDays": { "type": "integer" },
+        "bearishDays": { "type": "integer" },
+        "hitRate": { "type": "number" },
+        "avgOpenReturn": { "type": "number" },
+        "avgMaxReturn": { "type": "number" },
+        "details": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/BacktestDayDetailDto" }
+        }
       }
     }
   }

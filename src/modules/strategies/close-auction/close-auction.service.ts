@@ -10,7 +10,7 @@ import { formatToTrendDateTime } from '../../../common/utils/date.utils';
 import { DingtalkService } from '../../../common/services/dingtalk.service';
 import { StrategySignalDto } from './dto/strategy-signal.dto';
 import { EtfConstituentsService } from '../../market/stock/etf-constituents.service';
-
+import { ResonanceIndicatorService } from './resonance-indicator.service';
 
 @Injectable()
 export class CloseAuctionService {
@@ -20,6 +20,7 @@ export class CloseAuctionService {
     private readonly trendsService: TrendsService,
     private readonly dingtalkService: DingtalkService,
     private readonly etfConstituentsService: EtfConstituentsService,
+    private readonly resonanceIndicatorService: ResonanceIndicatorService,
   ) {}
 
   /**
@@ -76,62 +77,27 @@ export class CloseAuctionService {
 
   /**
    * 计算ETF成分股共振强度
-   * 基于Top10成分股的尾盘表现和权重
+   * 基于Top20成分股的分钟级特征计算
    */
   private async calculateResonanceStrength(
     etfCode: string,
     date: string,
   ): Promise<number> {
-    try {
-      // 1. 获取Top10成分股
-      const constituents = await this.etfConstituentsService.getTopConstituents(
-        etfCode,
-        date,
-        10,
-      );
+    const result = await this.resonanceIndicatorService.calculateResonanceScore(
+      etfCode,
+      date,
+    );
 
-      if (!constituents || constituents.length === 0) {
-        return 70; // 无数据时返回默认强度
-      }
-
-      let totalWeight = 0;
-      let risingWeight = 0;
-      let risingCount = 0;
-
-      // 2. 遍历成分股，获取其今日行情（涨跌幅）
-      for (const item of constituents) {
-        totalWeight += Number(item.weight);
-
-        // 获取成分股最新分时数据以获取涨跌幅
-        // 注意：这里简单起见，利用 trendsService 获取最新价格，实际可能需要更精准的尾盘涨幅
-        const { trends } = await this.trendsService.findAllTrends({
-          code: item.stockCode,
-          page: 1,
-          limit: 1000,
-        });
-
-        const latestTrend = trends[0];
-        if (latestTrend && latestTrend.pct > 0) {
-          risingCount++;
-          risingWeight += Number(item.weight);
-        }
-      }
-
-      if (totalWeight === 0) return 70;
-
-      // 3. 计算得分 (参考 01.md 的公式，但简化为 V1 版)
-      // 方向得分 (40%) + 权重得分 (60%)
-      const directionScore = risingCount / constituents.length;
-      const weightScore = risingWeight / totalWeight;
-
-      const totalScore = directionScore * 0.4 + weightScore * 0.6;
-
-      // 映射到 0-100
-      return Math.round(totalScore * 100);
-    } catch (error) {
-      console.error(`[CloseAuctionService] 计算共振强度失败:`, error);
-      return 70; // 出错时返回默认值，避免阻塞主流程
+    // 适配逻辑：策略引擎期望 score 越高代表越看涨
+    // 如果是向上共振，直接返回 score (70-100)
+    // 如果是向下共振，返回一个较低的分值 (0-30)
+    // 如果是中性，返回 50 左右
+    if (result.direction === 'UP') {
+      return result.score;
+    } else if (result.direction === 'DOWN') {
+      return Math.max(0, 50 - result.score / 2);
     }
+    return 50;
   }
 
   async evaluate(input: EvaluateCloseAuctionDto) {

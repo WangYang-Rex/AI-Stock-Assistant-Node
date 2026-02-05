@@ -1,0 +1,37 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Scheduler API",
+    "description": "定时任务管理接口",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/scheduler/status": {
+      "get": {
+        "tags": ["Scheduler"],
+        "summary": "获取定时任务状态",
+        "responses": {
+          "200": { "description": "成功" }
+        }
+      }
+    },
+    "/api/scheduler/trigger-sync": {
+      "post": {
+        "tags": ["Scheduler"],
+        "summary": "手动触发股票数据同步",
+        "responses": {
+          "200": { "description": "同步任务已触发" }
+        }
+      }
+    },
+    "/api/scheduler/trigger-trend-sync": {
+      "post": {
+        "tags": ["Scheduler"],
+        "summary": "手动触发分时数据同步",
+        "responses": {
+          "200": { "description": "分时数据同步任务已触发" }
+        }
+      }
+    }
+  }
+}

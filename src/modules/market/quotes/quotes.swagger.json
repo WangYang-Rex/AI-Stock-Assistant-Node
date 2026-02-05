@@ -6,7 +6,7 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/quotes/syncStockQuotesFromAPI": {
+    "/api/quotes/syncStockQuotesFromAPI": {
       "post": {
         "tags": ["行情管理"],
         "summary": "同步股票快照",
@@ -64,7 +64,7 @@
         }
       }
     },
-    "/quotes/syncAllStockQuotes": {
+    "/api/quotes/syncAllStockQuotes": {
       "post": {
         "tags": ["行情管理"],
         "summary": "批量同步所有股票快照",
@@ -103,7 +103,7 @@
         }
       }
     },
-    "/quotes/list": {
+    "/api/quotes/list": {
       "post": {
         "tags": ["行情查询"],
         "summary": "获取所有行情快照",
@@ -133,7 +133,7 @@
         }
       }
     },
-    "/quotes/latest": {
+    "/api/quotes/latest": {
       "post": {
         "tags": ["行情查询"],
         "summary": "获取指定股票的最新行情",
@@ -175,7 +175,7 @@
         }
       }
     },
-    "/quotes/delete": {
+    "/api/quotes/delete": {
       "post": {
         "tags": ["行情管理"],
         "summary": "删除行情快照",
@@ -214,7 +214,7 @@
         }
       }
     },
-    "/quotes/rankings-gainers": {
+    "/api/quotes/rankings-gainers": {
       "post": {
         "tags": ["行情排行"],
         "summary": "获取涨幅排行榜",
@@ -252,7 +252,7 @@
         }
       }
     },
-    "/quotes/rankings-losers": {
+    "/api/quotes/rankings-losers": {
       "post": {
         "tags": ["行情排行"],
         "summary": "获取跌幅排行榜",
@@ -290,7 +290,7 @@
         }
       }
     },
-    "/quotes/rankings-volume": {
+    "/api/quotes/rankings-volume": {
       "post": {
         "tags": ["行情排行"],
         "summary": "获取成交量排行榜",

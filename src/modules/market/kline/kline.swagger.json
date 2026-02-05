@@ -13,7 +13,7 @@
     }
   ],
   "paths": {
-    "/klines/sync": {
+    "/api/klines/sync": {
       "post": {
         "tags": [
           "K-lines"
@@ -40,7 +40,7 @@
         }
       }
     },
-    "/klines/list": {
+    "/api/klines/list": {
       "post": {
         "tags": [
           "K-lines"
@@ -67,7 +67,7 @@
         }
       }
     },
-    "/klines/stats": {
+    "/api/klines/stats": {
       "post": {
         "tags": [
           "K-lines"

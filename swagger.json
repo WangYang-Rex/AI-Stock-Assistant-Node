@@ -2,8 +2,8 @@
   "swagger": "2.0",
   "info": {
     "title": "AI股票助手 API",
-    "description": "基于 NestJS 的 AI 股票助手后端服务接口文档。提供股票同步、行情快照、K线分析、交易记录管理及 AI 信号推送等功能。",
-    "version": "1.1.0",
+    "description": "基于 NestJS 的 AI 股票助手后端服务接口文档。提供股票同步、行情快照、K线分析、交易记录管理及 AI 策略信号等功能。",
+    "version": "1.2.0",
     "contact": {
       "name": "AI股票助手开发团队"
     }
@@ -14,336 +14,153 @@
   "consumes": ["application/json"],
   "produces": ["application/json"],
   "tags": [
+    { "name": "健康检查", "description": "系统及数据库运行状态监控" },
     { "name": "股票管理", "description": "股票基础信息同步与管理" },
     { "name": "行情数据", "description": "股票当日分时快照及排行榜" },
     { "name": "K线数据", "description": "历史 K 线数据同步与查询" },
-    { "name": "分时数据", "description": "高频分时趋势数据" },
+    { "name": "分时数据", "description": "当日及最近 5 日分时趋势数据" },
+    { "name": "分钟K线", "description": "高频分钟级行情数据" },
     { "name": "交易记录", "description": "用户交易买卖记录管理" },
-    { "name": "AI信号", "description": "AI 模型生成的买卖建议信号" },
-    { "name": "定时任务", "description": "系统自动化任务管理" },
-    { "name": "健康检查", "description": "系统及数据库运行状态监控" },
-    { "name": "应用", "description": "应用基础接口" }
+    { "name": "策略管理", "description": "综合策略信息与信号查询" },
+    { "name": "尾盘战法", "description": "尾盘共振策略评估与回测" },
+    { "name": "趋势交易", "description": "规则型趋势交易评估" },
+    { "name": "定时任务", "description": "系统自动化任务状态与触发" }
   ],
   "paths": {
-    "/": {
-      "get": {
-        "tags": ["应用"],
-        "summary": "获取欢迎信息",
-        "responses": {
-          "200": { "description": "成功", "schema": { "type": "string" } }
-        }
-      }
-    },
-    "/health": {
+    "/api/health": {
       "get": {
         "tags": ["健康检查"],
-        "summary": "健康检查",
-        "description": "检查服务器及数据库连接状态",
+        "summary": "服务器健康检查",
         "responses": {
-          "200": {
-            "description": "状态正常",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "status": { "type": "string", "example": "ok" },
-                "database": { "type": "string", "example": "connected" },
-                "timestamp": { "type": "string", "format": "date-time" }
-              }
-            }
-          }
+          "200": { "description": "成功", "schema": { "$ref": "#/definitions/HealthResponse" } }
         }
       }
     },
-    "/stocks/sync": {
+    "/api/stocks/sync": {
       "post": {
         "tags": ["股票管理"],
         "summary": "同步股票信息",
         "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "required": ["code", "market"],
-              "properties": {
-                "code": { "type": "string", "description": "股票代码" },
-                "market": { "type": "integer", "description": "市场代码(1-上, 0-深)" }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": { "description": "同步成功", "schema": { "$ref": "#/definitions/ApiResponse" } }
-        }
-      }
-    },
-    "/stocks/list": {
-      "post": {
-        "tags": ["股票管理"],
-        "summary": "获取股票列表",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "market": { "type": "integer" },
-                "marketType": { "type": "string", "enum": ["SH", "SZ"] }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": { "description": "获取成功", "schema": { "$ref": "#/definitions/ApiResponse" } }
-        }
-      }
-    },
-    "/stocks/get-by-code": {
-      "post": {
-        "tags": ["股票管理"],
-        "summary": "根据代码获取股票",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": { "code": { "type": "string" } }
-            }
-          }
-        ],
-        "responses": { "200": { "description": "成功", "schema": { "$ref": "#/definitions/ApiResponse" } } }
-      }
-    },
-    "/quotes/syncStockQuotesFromAPI": {
-      "post": {
-        "tags": ["行情数据"],
-        "summary": "从API同步行情快照",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "code": { "type": "string" },
-                "market": { "type": "integer" }
-              }
-            }
-          }
+          { "name": "body", "in": "body", "required": true, "schema": { "type": "object", "properties": { "code": { "type": "string" }, "market": { "type": "integer" } } } }
         ],
         "responses": { "200": { "description": "成功" } }
       }
     },
-    "/quotes/latest": {
+    "/api/stocks/list": {
       "post": {
-        "tags": ["行情数据"],
-        "summary": "获取最新行情",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": { "code": { "type": "string" } }
-            }
-          }
-        ],
-        "responses": { "200": { "description": "成功", "schema": { "$ref": "#/definitions/Quote" } } }
+        "tags": ["股票管理"],
+        "summary": "股票列表",
+        "responses": { "200": { "description": "成功" } }
       }
     },
-    "/quotes/rankings-gainers": {
+    "/api/stocks/constituents/sync": {
+      "post": {
+        "tags": ["股票管理"],
+        "summary": "同步 ETF 成分股",
+        "parameters": [
+          { "name": "body", "in": "body", "required": true, "schema": { "type": "object", "properties": { "data": { "type": "array", "items": { "type": "object" } } } } }
+        ],
+        "responses": { "200": { "description": "成功" } }
+      }
+    },
+    "/api/quotes/latest": {
+      "post": {
+        "tags": ["行情数据"],
+        "summary": "最新行情快照",
+        "parameters": [
+          { "name": "body", "in": "body", "schema": { "type": "object", "properties": { "code": { "type": "string" } } } }
+        ],
+        "responses": { "200": { "description": "成功" } }
+      }
+    },
+    "/api/quotes/rankings-gainers": {
       "post": {
         "tags": ["行情数据"],
         "summary": "涨幅排行榜",
-        "parameters": [
-          { "name": "body", "in": "body", "schema": { "type": "object", "properties": { "limit": { "type": "integer", "default": 10 } } } }
-        ],
-        "responses": { "200": { "description": "成功", "schema": { "type": "array", "items": { "$ref": "#/definitions/Quote" } } } }
+        "responses": { "200": { "description": "成功" } }
       }
     },
-    "/kline/fetch": {
+    "/api/klines/sync": {
       "post": {
         "tags": ["K线数据"],
-        "summary": "抓取并返回K线数据",
+        "summary": "同步 K 线数据",
         "parameters": [
-          { "name": "body", "in": "body", "schema": { "$ref": "#/definitions/FetchKlineOptions" } }
-        ],
-        "responses": { "200": { "description": "成功", "schema": { "type": "array", "items": { "$ref": "#/definitions/Kline" } } } }
-      }
-    },
-    "/kline/sync": {
-      "post": {
-        "tags": ["K线数据"],
-        "summary": "同步K线数据到数据库",
-        "parameters": [
-          { "name": "body", "in": "body", "schema": { "$ref": "#/definitions/FetchKlineOptions" } }
+          { "name": "body", "in": "body", "schema": { "type": "object", "properties": { "code": { "type": "string" }, "period": { "type": "string" } } } }
         ],
         "responses": { "200": { "description": "成功" } }
       }
     },
-    "/trends/sync-from-api": {
+    "/api/trends/sync-from-api": {
       "post": {
         "tags": ["分时数据"],
-        "summary": "同步分时趋势数据",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "code": { "type": "string" },
-                "market": { "type": "integer" },
-                "ndays": { "type": "integer", "enum": [1, 5], "default": 1 }
-              }
-            }
-          }
-        ],
+        "summary": "同步分时数据",
         "responses": { "200": { "description": "成功" } }
       }
     },
-    "/trading/create": {
+    "/api/market/minute-bar/sync-from-api": {
+      "post": {
+        "tags": ["分钟K线"],
+        "summary": "同步分钟 K 线",
+        "responses": { "200": { "description": "成功" } }
+      }
+    },
+    "/api/trading/create": {
       "post": {
         "tags": ["交易记录"],
         "summary": "创建交易记录",
-        "parameters": [
-          { "name": "body", "in": "body", "schema": { "$ref": "#/definitions/Trading" } }
-        ],
         "responses": { "200": { "description": "成功" } }
       }
     },
-    "/trading/list": {
+    "/api/trading/list": {
       "post": {
         "tags": ["交易记录"],
-        "summary": "获取所有交易记录",
-        "responses": { "200": { "description": "成功", "schema": { "type": "array", "items": { "$ref": "#/definitions/Trading" } } } }
-      }
-    },
-    "/aisignals/get-latest": {
-      "post": {
-        "tags": ["AI信号"],
-        "summary": "获取最新AI信号",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "symbol": { "type": "string" },
-                "limit": { "type": "integer", "default": 20 }
-              }
-            }
-          }
-        ],
-        "responses": { "200": { "description": "成功", "schema": { "type": "array", "items": { "$ref": "#/definitions/AiSignal" } } } }
-      }
-    },
-    "/scheduler/status": {
-      "get": {
-        "tags": ["定时任务"],
-        "summary": "获取定时任务状态",
+        "summary": "交易记录列表",
         "responses": { "200": { "description": "成功" } }
       }
     },
-    "/scheduler/trigger-sync": {
+    "/api/strategies/detail": {
       "post": {
+        "tags": ["策略管理"],
+        "summary": "获取策略聚合详情",
+        "responses": { "200": { "description": "成功" } }
+      }
+    },
+    "/api/strategies/signals/query": {
+      "post": {
+        "tags": ["策略管理"],
+        "summary": "查询策略信号",
+        "responses": { "200": { "description": "成功" } }
+      }
+    },
+    "/api/strategies/close-auction/evaluate": {
+      "post": {
+        "tags": ["尾盘战法"],
+        "summary": "尾盘战法评估",
+        "responses": { "200": { "description": "成功" } }
+      }
+    },
+    "/api/strategies/rule-trend/evaluate": {
+      "post": {
+        "tags": ["趋势交易"],
+        "summary": "趋势交易评估",
+        "responses": { "200": { "description": "成功" } }
+      }
+    },
+    "/api/scheduler/status": {
+      "get": {
         "tags": ["定时任务"],
-        "summary": "手动触发同步任务",
-        "responses": { "200": { "description": "同步已触发" } }
+        "summary": "定时任务状态",
+        "responses": { "200": { "description": "成功" } }
       }
     }
   },
   "definitions": {
-    "ApiResponse": {
+    "HealthResponse": {
       "type": "object",
       "properties": {
-        "statusCode": { "type": "integer" },
-        "message": { "type": "string" },
-        "data": { "type": "object" },
-        "timestamp": { "type": "string" }
-      }
-    },
-    "Stock": {
-      "type": "object",
-      "properties": {
-        "id": { "type": "integer" },
-        "code": { "type": "string" },
-        "name": { "type": "string" },
-        "market": { "type": "integer" },
-        "marketType": { "type": "string" },
-        "price": { "type": "number" },
-        "pct": { "type": "number" },
-        "volume": { "type": "integer" },
-        "totalMarketCap": { "type": "number" }
-      }
-    },
-    "Quote": {
-      "type": "object",
-      "properties": {
-        "id": { "type": "integer" },
-        "code": { "type": "string" },
-        "name": { "type": "string" },
-        "price": { "type": "number" },
-        "high": { "type": "number" },
-        "low": { "type": "number" },
-        "open": { "type": "number" },
-        "preClose": { "type": "number" },
-        "volume": { "type": "integer" },
-        "updateTime": { "type": "integer", "description": "Unix时间戳" }
-      }
-    },
-    "Kline": {
-      "type": "object",
-      "properties": {
-        "id": { "type": "integer" },
-        "code": { "type": "string" },
-        "date": { "type": "string" },
-        "open": { "type": "number" },
-        "close": { "type": "number" },
-        "high": { "type": "number" },
-        "low": { "type": "number" },
-        "volume": { "type": "integer" },
-        "pct": { "type": "number" },
-        "period": { "type": "integer" }
-      }
-    },
-    "FetchKlineOptions": {
-      "type": "object",
-      "properties": {
-        "code": { "type": "string" },
-        "period": { "type": "string", "enum": ["daily", "weekly", "monthly", "1min", "5min", "15min", "30min", "60min"] },
-        "fqType": { "type": "integer", "enum": [0, 1, 2], "description": "0-不复权, 1-前复权, 2-后复权" },
-        "limit": { "type": "integer", "default": 100 },
-        "startDate": { "type": "string", "example": "20240101" },
-        "endDate": { "type": "string" }
-      }
-    },
-    "Trading": {
-      "type": "object",
-      "properties": {
-        "symbol": { "type": "string" },
-        "name": { "type": "string" },
-        "type": { "type": "string", "enum": ["buy", "sell"] },
-        "price": { "type": "number" },
-        "quantity": { "type": "integer" },
-        "amount": { "type": "number" },
-        "tradingTime": { "type": "string", "format": "date-time" }
-      }
-    },
-    "AiSignal": {
-      "type": "object",
-      "properties": {
-        "symbol": { "type": "string" },
-        "signalType": { "type": "string", "enum": ["buy", "sell", "hold"] },
-        "confidence": { "type": "integer", "description": "0-100" },
-        "modelVersion": { "type": "string" },
-        "signalTime": { "type": "string", "format": "date-time" }
+        "status": { "type": "string" },
+        "database": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
       }
     }
   }

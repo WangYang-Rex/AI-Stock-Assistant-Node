@@ -69,7 +69,7 @@ export class SchedulerService {
     await this.syncAllStocksIntradayTrends();
   }
 
-  // 工作日 15:10 同步分时数据
+  // 工作日 15:10 同步所有股票的当日分时数据
   @Cron('0 10 15 * * 1-5', {
     name: 'weekday-trend-sync-afternoon',
     timeZone: 'Asia/Shanghai',
@@ -83,58 +83,7 @@ export class SchedulerService {
    * 同步所有股票的当日分时数据
    */
   private async syncAllStocksIntradayTrends() {
-    this.logger.log('开始同步所有股票当日分时数据...');
-    try {
-      const stocks = await this.stockService.findAll();
-
-      if (stocks.length === 0) {
-        this.logger.warn('没有找到股票数据，跳过分时数据同步');
-        return;
-      }
-
-      this.logger.log(
-        `找到 ${stocks.length} 只股票，开始同步分时数据(ndays=1)...`,
-      );
-
-      let successCount = 0;
-      let errorCount = 0;
-      let totalSyncedRecords = 0;
-
-      // 批量同步，可以考虑并发或者分批处理，目前保持串行防止请求过快封IP
-      // 如果股票数量很大，建议增加延时或并发控制
-      for (const stock of stocks) {
-        try {
-          const result = await this.trendsService.syncTrendFromAPI(
-            stock.code,
-            stock.market,
-            1, // ndays = 1
-          );
-
-          if (result.synced > 0) {
-            successCount++;
-            totalSyncedRecords += result.synced;
-            this.logger.debug(
-              `同步成功: ${stock.name}(${stock.code}) - ${result.synced}条记录`,
-            );
-          } else {
-            // 可能是停牌或者没有数据
-            this.logger.debug(`未获取到数据: ${stock.name}(${stock.code})`);
-          }
-        } catch (error) {
-          errorCount++;
-          this.logger.error(
-            `同步分时数据失败: ${stock.code} - ${stock.name}`,
-            error,
-          );
-        }
-      }
-
-      this.logger.log(
-        `当日分时数据同步完成 - 成功股票数: ${successCount}, 失败股票数: ${errorCount}, 总新增/更新记录: ${totalSyncedRecords}`,
-      );
-    } catch (error) {
-      this.logger.error('分时数据同步任务执行全局异常:', error);
-    }
+    await this.trendsService.syncAllStocksIntradayTrends();
   }
 
   // 手动触发股票数据同步（用于测试）
@@ -183,7 +132,7 @@ export class SchedulerService {
    * 尾盘战法自动执行任务
    * 每天 14:50 执行一次
    */
-  @Cron('0 50 14 * * 1-5', {
+  @Cron('0 52 14 * * 1-5', {
     name: 'close-auction-strategy-check',
     timeZone: 'Asia/Shanghai',
   })

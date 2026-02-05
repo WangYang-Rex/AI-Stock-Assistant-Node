@@ -1,0 +1,210 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Trading API",
+    "description": "用户交易记录管理接口",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/trading/create": {
+      "post": {
+        "tags": ["Trading"],
+        "summary": "创建交易记录",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/Trading" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "创建成功" }
+        }
+      }
+    },
+    "/api/trading/update": {
+      "post": {
+        "tags": ["Trading"],
+        "summary": "更新交易记录",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["id", "updateData"],
+              "properties": {
+                "id": { "type": "integer" },
+                "updateData": { "$ref": "#/definitions/Trading" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "更新成功" }
+        }
+      }
+    },
+    "/api/trading/delete": {
+      "post": {
+        "tags": ["Trading"],
+        "summary": "删除交易记录",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["id"],
+              "properties": {
+                "id": { "type": "integer" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "删除成功" }
+        }
+      }
+    },
+    "/api/trading/list": {
+      "post": {
+        "tags": ["Trading"],
+        "summary": "获取所有交易记录",
+        "responses": {
+          "200": {
+            "description": "成功",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Trading" }
+            }
+          }
+        }
+      }
+    },
+    "/api/trading/get-by-code": {
+      "post": {
+        "tags": ["Trading"],
+        "summary": "根据股票代码获取交易记录",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["code"],
+              "properties": {
+                "code": { "type": "string" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Trading" }
+            }
+          }
+        }
+      }
+    },
+    "/api/trading/get-closed": {
+      "post": {
+        "tags": ["Trading"],
+        "summary": "获取已平仓交易",
+        "responses": {
+          "200": {
+            "description": "成功",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Trading" }
+            }
+          }
+        }
+      }
+    },
+    "/api/trading/get-open": {
+      "post": {
+        "tags": ["Trading"],
+        "summary": "获取持仓中交易",
+        "responses": {
+          "200": {
+            "description": "成功",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Trading" }
+            }
+          }
+        }
+      }
+    },
+    "/api/trading/stats": {
+      "post": {
+        "tags": ["Trading"],
+        "summary": "获取交易统计信息",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": { "type": "string" },
+                "startTime": { "type": "string", "format": "date-time" },
+                "endTime": { "type": "string", "format": "date-time" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "成功" }
+        }
+      }
+    },
+    "/api/trading/clean-old-data": {
+      "post": {
+        "tags": ["Trading"],
+        "summary": "清理过期数据",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "daysToKeep": { "type": "integer", "default": 365 }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "清理成功" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Trading": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "buy_date": { "type": "string", "format": "date" },
+        "buy_price": { "type": "number" },
+        "buy_volume": { "type": "integer" },
+        "sell_date": { "type": "string", "format": "date" },
+        "sell_price": { "type": "number" },
+        "sell_volume": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

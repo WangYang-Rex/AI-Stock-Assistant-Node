@@ -26,6 +26,15 @@ export class TrendsController {
   }
 
   /**
+   * 同步所有股票的当日分时数据
+   * @returns 同步统计信息 { success, fail, totalSynced }
+   */
+  @Post('sync-all-stocks')
+  async syncAllStocksIntradayTrends() {
+    return await this.trendsService.syncAllStocksIntradayTrends();
+  }
+
+  /**
    * 获取分时数据列表
    * @param code 股票代码（可选）
    * @param ndays 获取最近 N 天的数据（可选，1 或 5）

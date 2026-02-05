@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 export interface StrategySignalDto {
   strategy: string;
   symbol: string;

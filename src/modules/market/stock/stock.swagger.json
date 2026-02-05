@@ -6,7 +6,7 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/stocks/sync": {
+    "/api/stocks/sync": {
       "post": {
         "tags": ["股票管理"],
         "summary": "同步股票信息",
@@ -50,7 +50,7 @@
         }
       }
     },
-    "/stocks/delete": {
+    "/api/stocks/delete": {
       "post": {
         "tags": ["股票管理"],
         "summary": "删除股票",
@@ -89,7 +89,7 @@
         }
       }
     },
-    "/stocks/list": {
+    "/api/stocks/list": {
       "post": {
         "tags": ["股票查询"],
         "summary": "获取所有股票",
@@ -131,7 +131,7 @@
         }
       }
     },
-    "/stocks/get-by-code": {
+    "/api/stocks/get-by-code": {
       "post": {
         "tags": ["股票查询"],
         "summary": "根据股票代码获取股票",
@@ -173,7 +173,7 @@
         }
       }
     },
-    "/stocks/constituents/sync": {
+    "/api/stocks/constituents/sync": {
       "post": {
         "tags": ["ETF成分股管理"],
         "summary": "批量同步 ETF 成分股数据",
@@ -210,7 +210,7 @@
         }
       }
     },
-    "/stocks/constituents/list": {
+    "/api/stocks/constituents/list": {
       "post": {
         "tags": ["ETF成分股管理"],
         "summary": "获取ETF成分股列表",
@@ -249,7 +249,7 @@
         }
       }
     },
-    "/stocks/constituents/create": {
+    "/api/stocks/constituents/create": {
       "post": {
         "tags": ["ETF成分股管理"],
         "summary": "创建ETF成分股",
@@ -276,7 +276,7 @@
         }
       }
     },
-    "/stocks/constituents/update": {
+    "/api/stocks/constituents/update": {
       "post": {
         "tags": ["ETF成分股管理"],
         "summary": "更新ETF成分股",
@@ -313,7 +313,7 @@
         }
       }
     },
-    "/stocks/constituents/delete": {
+    "/api/stocks/constituents/delete": {
       "post": {
         "tags": ["ETF成分股管理"],
         "summary": "删除ETF成分股",

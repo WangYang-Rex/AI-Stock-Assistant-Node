@@ -1,0 +1,117 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Minute Bar API",
+    "description": "股票分钟 K 线行情数据接口",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/market/minute-bar/sync-from-api": {
+      "post": {
+        "tags": ["Minute Bar"],
+        "summary": "同步单只股票的当日分钟 K 线",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["code", "market"],
+              "properties": {
+                "code": { "type": "string", "example": "600519" },
+                "market": { "type": "integer", "description": "1-SH, 0-SZ", "example": 1 }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "同步成功" }
+        }
+      }
+    },
+    "/api/market/minute-bar/sync-all-stocks": {
+      "post": {
+        "tags": ["Minute Bar"],
+        "summary": "同步所有股票的当日分钟 K 线",
+        "responses": {
+          "200": { "description": "批量同步已启动" }
+        }
+      }
+    },
+    "/api/market/minute-bar/list": {
+      "post": {
+        "tags": ["Minute Bar"],
+        "summary": "获取分钟 K 线列表",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/MinuteBarQueryDto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/MinuteBar" }
+            }
+          }
+        }
+      }
+    },
+    "/api/market/minute-bar/clear": {
+      "post": {
+        "tags": ["Minute Bar"],
+        "summary": "按日期清理分钟 K 线",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["code", "date"],
+              "properties": {
+                "code": { "type": "string", "example": "600519" },
+                "date": { "type": "string", "example": "2026-02-05" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "清理成功" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "MinuteBar": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "code": { "type": "string" },
+        "datetime": { "type": "string", "format": "date-time" },
+        "open": { "type": "number" },
+        "close": { "type": "number" },
+        "high": { "type": "number" },
+        "low": { "type": "number" },
+        "volume": { "type": "number" },
+        "amount": { "type": "number" }
+      }
+    },
+    "MinuteBarQueryDto": {
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "page": { "type": "integer", "default": 1 },
+        "pageSize": { "type": "integer", "default": 240 }
+      }
+    }
+  }
+}

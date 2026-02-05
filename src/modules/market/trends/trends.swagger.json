@@ -13,7 +13,7 @@
     }
   ],
   "paths": {
-    "/trends/sync-from-api": {
+    "/api/trends/sync-from-api": {
       "post": {
         "tags": [
           "Trends"
@@ -73,7 +73,29 @@
         }
       }
     },
-    "/trends/list": {
+    "/api/trends/sync-all-stocks": {
+      "post": {
+        "tags": [
+          "Trends"
+        ],
+        "summary": "同步所有股票的当日分时数据",
+        "description": "遍历数据库中的所有股票，抓取其当日分时数据并更新到本地数据库",
+        "responses": {
+          "200": {
+            "description": "同步成功",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "type": "integer" },
+                "fail": { "type": "integer" },
+                "totalSynced": { "type": "integer" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trends/list": {
       "post": {
         "tags": [
           "Trends"
@@ -140,7 +162,7 @@
         }
       }
     },
-    "/trends/delete-range": {
+    "/api/trends/delete-range": {
       "post": {
         "tags": [
           "Trends"

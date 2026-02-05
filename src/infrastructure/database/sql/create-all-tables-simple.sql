@@ -279,3 +279,19 @@ CREATE TABLE `etf_constituents` (
   KEY `idx_etf_rank` (`etfCode`, `rank`),
   KEY `idx_stock` (`stockCode`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ETF成分股及权重（支持历史权重）';
+
+-- 16. 分钟 K 线数据表
+CREATE TABLE `stock_minute_bars` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `stock_code` varchar(10) NOT NULL COMMENT '股票代码',
+  `datetime` datetime NOT NULL COMMENT '分钟时间',
+  `open` decimal(10,4) DEFAULT NULL COMMENT '开盘价',
+  `high` decimal(10,4) DEFAULT NULL COMMENT '最高价',
+  `low` decimal(10,4) DEFAULT NULL COMMENT '最低价',
+  `close` decimal(10,4) DEFAULT NULL COMMENT '收盘价',
+  `volume` bigint DEFAULT NULL COMMENT '成交量',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_code_datetime` (`stock_code`, `datetime`),
+  KEY `idx_stock_code` (`stock_code`),
+  KEY `idx_datetime` (`datetime`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='分钟 K 线数据表';
