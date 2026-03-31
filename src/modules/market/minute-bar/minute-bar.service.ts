@@ -114,9 +114,8 @@ export class MinuteBarService {
         const chunk = bars.slice(i, i + chunkSize);
 
         const valuesArr = chunk.map((bar) => {
-          // 处理日期格式，确保兼容
-          const dt = new Date(bar.datetime);
-          const dtStr = dt.toISOString().slice(0, 19).replace('T', ' ');
+          // 直接使用 datetime 字符串，避免 toISOString 导致的时区偏移
+          const dtStr = bar.datetime;
 
           const open = bar.open ?? 'NULL';
           const high = bar.high ?? 'NULL';
