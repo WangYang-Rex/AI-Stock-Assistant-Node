@@ -466,11 +466,25 @@
         "isSuccess": { "type": "boolean" }
       }
     },
+    "CloseAuctionSignalSnapshotDto": {
+      "type": "object",
+      "properties": {
+        "allow": { "type": "boolean" },
+        "confidence": { "type": "number" },
+        "reasons": { "type": "array", "items": { "type": "string" } }
+      }
+    },
     "BacktestDayDetailDto": {
       "type": "object",
       "properties": {
         "date": { "type": "string" },
         "resonance": { "$ref": "#/definitions/ResonanceScoreDto" },
+        "closeAuction": {
+          "oneOf": [
+            { "$ref": "#/definitions/CloseAuctionSignalSnapshotDto" },
+            { "type": "null" }
+          ]
+        },
         "performance": { "$ref": "#/definitions/PerformanceDto" }
       }
     },
@@ -486,6 +500,8 @@
         "hitRate": { "type": "number" },
         "avgOpenReturn": { "type": "number" },
         "avgMaxReturn": { "type": "number" },
+        "closeAuctionEvaluatedDays": { "type": "integer" },
+        "closeAuctionAllowDays": { "type": "integer" },
         "details": {
           "type": "array",
           "items": { "$ref": "#/definitions/BacktestDayDetailDto" }

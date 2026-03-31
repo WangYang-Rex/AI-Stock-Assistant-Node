@@ -11,6 +11,7 @@ import { DingtalkService } from '../../../common/services/dingtalk.service';
 import { StrategySignalDto } from './dto/strategy-signal.dto';
 import { EtfConstituentsService } from '../../market/stock/etf-constituents.service';
 import { ResonanceIndicatorService } from './resonance-indicator.service';
+import { mapResonanceScoreToComponentStrength } from './resonance-strength.util';
 
 @Injectable()
 export class CloseAuctionService {
@@ -87,17 +88,7 @@ export class CloseAuctionService {
       etfCode,
       date,
     );
-
-    // 适配逻辑：策略引擎期望 score 越高代表越看涨
-    // 如果是向上共振，直接返回 score (70-100)
-    // 如果是向下共振，返回一个较低的分值 (0-30)
-    // 如果是中性，返回 50 左右
-    if (result.direction === 'UP') {
-      return result.score;
-    } else if (result.direction === 'DOWN') {
-      return Math.max(0, 50 - result.score / 2);
-    }
-    return 50;
+    return mapResonanceScoreToComponentStrength(result);
   }
 
   async evaluate(input: EvaluateCloseAuctionDto) {

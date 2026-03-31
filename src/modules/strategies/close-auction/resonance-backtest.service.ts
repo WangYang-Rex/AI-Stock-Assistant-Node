@@ -1,12 +1,15 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
   ResonanceIndicatorService,
   ResonanceScore,
 } from './resonance-indicator.service';
-import { EtfConstituentsService } from '../../market/stock/etf-constituents.service';
-import type { ConstituentsMinuteProvider } from '../../market/minute-bar/interfaces';
 import { KlineService } from '../../market/kline/kline.service';
 import { Kline } from '../../../entities/kline.entity';
+import { Trend } from '../../../entities/trend.entity';
+import { TrendsService } from '../../market/trends/trends.service';
+import { evaluateCloseAuctionStrategy } from './close-auction.strategy';
+import { mapResonanceScoreToComponentStrength } from './resonance-strength.util';
+import type { MinuteBar } from './dto/evaluate-close-auction.dto';
 
 export interface BacktestResult {
   etfCode: string;
@@ -18,12 +21,24 @@ export interface BacktestResult {
   hitRate: number; // 向上共振且次日最高价超过今日收盘价的概率
   avgOpenReturn: number; // 向上共振次日开盘平均收益
   avgMaxReturn: number; // 向上共振次日最高平均收益
+  /** 当日库中存在 ETF 分时并成功执行 CLOSE_AUCTION_T1 评估的交易日数 */
+  closeAuctionEvaluatedDays: number;
+  /** 其中 allow === true 的天数（与实盘 evaluateCloseAuctionStrategy 一致） */
+  closeAuctionAllowDays: number;
   details: BacktestDayDetail[];
 }
 
 export interface BacktestDayDetail {
   date: string;
   resonance: ResonanceScore;
+  /**
+   * 与实盘同一套 evaluateCloseAuctionStrategy；库中无当日分时则为 null。
+   */
+  closeAuction: {
+    allow: boolean;
+    confidence: number;
+    reasons: string[];
+  } | null;
   performance?: {
     nextOpenReturn: number;
     nextHighReturn: number;
@@ -38,10 +53,8 @@ export class ResonanceBacktestService {
 
   constructor(
     private readonly resonanceService: ResonanceIndicatorService,
-    private readonly etfConstituentsService: EtfConstituentsService,
     private readonly klineService: KlineService,
-    @Inject('ConstituentsMinuteProvider')
-    private readonly minuteProvider: ConstituentsMinuteProvider,
+    private readonly trendsService: TrendsService,
   ) {}
 
   /**
@@ -61,15 +74,14 @@ export class ResonanceBacktestService {
       orderBy: 'ASC',
     });
 
-    const klineMap = new Map<string, Kline>();
-    klines.forEach((k) => klineMap.set(k.date, k));
-
     const details: BacktestDayDetail[] = [];
     let bullishDaysCount = 0;
     let bearishDaysCount = 0;
     let hitCount = 0;
     let totalOpenReturn = 0;
     let totalMaxReturn = 0;
+    let closeAuctionEvaluatedDays = 0;
+    let closeAuctionAllowDays = 0;
 
     for (const date of dates) {
       try {
@@ -81,7 +93,39 @@ export class ResonanceBacktestService {
           '15:00',
         );
 
-        const detail: BacktestDayDetail = { date, resonance };
+        const detail: BacktestDayDetail = {
+          date,
+          resonance,
+          closeAuction: null,
+        };
+
+        // 2b. 与实盘一致：有 ETF 分时则跑 CLOSE_AUCTION_T1 纯函数
+        const { trends } = await this.trendsService.findAllTrends({
+          code: etfCode,
+          startDatetime: `${date} 09:30`,
+          endDatetime: `${date} 15:00`,
+          limit: 8000,
+        });
+        if (trends.length > 0) {
+          const minuteBars = this.mapTrendsToMinuteBars(trends);
+          const componentStrength =
+            mapResonanceScoreToComponentStrength(resonance);
+          const dto = evaluateCloseAuctionStrategy({
+            symbol: etfCode,
+            tradeDate: date,
+            minuteBars,
+            componentStrength,
+          });
+          detail.closeAuction = {
+            allow: dto.allow,
+            confidence: dto.confidence,
+            reasons: dto.reasons,
+          };
+          closeAuctionEvaluatedDays++;
+          if (dto.allow) {
+            closeAuctionAllowDays++;
+          }
+        }
 
         // 3. 联动次日收益分析
         const currentKlineIndex = klines.findIndex((k) => k.date === date);
@@ -141,7 +185,28 @@ export class ResonanceBacktestService {
         bullishDaysCount > 0 ? totalOpenReturn / bullishDaysCount : 0,
       avgMaxReturn:
         bullishDaysCount > 0 ? totalMaxReturn / bullishDaysCount : 0,
+      closeAuctionEvaluatedDays,
+      closeAuctionAllowDays,
       details,
     };
+  }
+
+  /**
+   * 与 CloseAuctionService.evaluateBySymbol 中分时转 MinuteBar 逻辑对齐。
+   */
+  private mapTrendsToMinuteBars(trends: Trend[]): MinuteBar[] {
+    return [...trends]
+      .sort((a, b) => a.datetime.localeCompare(b.datetime))
+      .map((t) => {
+        const p = Number(t.price ?? 0);
+        return {
+          time: t.datetime.slice(11),
+          open: p,
+          high: p,
+          low: p,
+          close: p,
+          volume: Number(t.volume ?? 0),
+        };
+      });
   }
 }
