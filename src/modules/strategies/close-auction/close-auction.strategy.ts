@@ -4,7 +4,6 @@ import { calcVWAP } from './utils/vwap.util';
 import { isDistribution } from './utils/volume.util';
 
 const STRATEGY_CODE = 'CLOSE_AUCTION_T1';
-const STRATEGY_NAME = '尾盘战法策略';
 
 export function evaluateCloseAuctionStrategy(
   input: EvaluateCloseAuctionDto,
@@ -24,20 +23,8 @@ export function evaluateCloseAuctionStrategy(
       evaluatedAt: new Date().toISOString(),
     };
   }
-  const lastTime = lastBar.time;
 
-  // ① 时间窗口
-  const START_TIME = '14:40';
-  const END_TIME = '15:00';
-  if (lastTime < START_TIME || lastTime > END_TIME) {
-    reasons.push(
-      `非尾盘时间: ${lastTime} (策略设定范围: ${START_TIME}-${END_TIME})`,
-    );
-  } else {
-    reasons.push(`尾盘时间验证通过: ${lastTime}`);
-  }
-
-  // ② VWAP
+  // ① VWAP（评估触发时间由定时任务或手动调用决定，策略内不做时间硬过滤；见 docs/superpowers/specs/2026-03-31-close-auction-t1-signal-design.md）
   const vwap = calcVWAP(minuteBars);
   if (lastBar.close < vwap) {
     allow = false;
@@ -50,7 +37,7 @@ export function evaluateCloseAuctionStrategy(
     );
   }
 
-  // ③ 成交量结构
+  // ② 成交量结构
   if (isDistribution(minuteBars)) {
     allow = false;
     reasons.push('尾盘疑似出货 (成交量异常放量且跌破均价)');
@@ -58,7 +45,7 @@ export function evaluateCloseAuctionStrategy(
     reasons.push('尾盘成交结构健康');
   }
 
-  // ④ 成分股共振
+  // ③ 成分股共振
   if (componentStrength < 60) {
     allow = false;
     reasons.push(`成分股共振不足 (当前强度:${componentStrength})`);
@@ -66,7 +53,7 @@ export function evaluateCloseAuctionStrategy(
     reasons.push(`成分股共振良好 (当前强度:${componentStrength})`);
   }
 
-  // ⑤ 量能
+  // ④ 量能（可选，当前关闭）
   // const volume = lastBar.volume;
   // if (volume < 100000) {
   //   allow = false;
@@ -75,7 +62,7 @@ export function evaluateCloseAuctionStrategy(
   //   reasons.push(`量能充足 (当前:${volume})`);
   // }
 
-  // ⑥ 量比
+  // ⑤ 量比（可选，当前关闭）
   // const volumeRatio = lastBar.volume / vwap;
   // if (volumeRatio < 1) {
   //   allow = false;
@@ -84,7 +71,7 @@ export function evaluateCloseAuctionStrategy(
   //   reasons.push(`量比充足 (当前:${volumeRatio})`);
   // }
 
-  // ⑦ 增加提示
+  // ⑥ 提示
   reasons.push(
     `提示: 尾盘战法只通过当日分时线、成分股共振来判断, 实际噪音太大，仅做参考`,
   );
